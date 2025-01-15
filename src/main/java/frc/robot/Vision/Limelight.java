@@ -32,6 +32,14 @@ public class Limelight extends SubsystemBase {
     this.drivetrain = drivetrain;
     SmartDashboard.putNumber("Field Error", fieldError);
     SmartDashboard.putNumber("Limelight Error", distanceError);
+    LimelightHelpers.setCameraPose_RobotSpace("", 
+      0.3322,    // Forward offset (meters)
+      0.0,    // Side offset (meters)
+      0.1524,    // Height offset (meters)
+      0.0,    // Roll (degrees)
+      180.0,   // Pitch (degrees)
+      0.0     // Yaw (degrees)
+    );
   }
 
   @Override
@@ -39,8 +47,8 @@ public class Limelight extends SubsystemBase {
     if (enable) {
       Double targetDistance = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getDistance(new Translation3d());
       Double confidence = 1 - ((targetDistance - 1) / 6);
-      LimelightHelpers.Results result =
-          LimelightHelpers.getLatestResults(ll).targetingResults;
+      LimelightHelpers.LimelightResults result =
+          LimelightHelpers.getLatestResults(ll);
       if (result.valid) {
         botpose = LimelightHelpers.getBotPose2d_wpiBlue(ll);
         if (field.isPoseWithinArea(botpose)) {
