@@ -30,6 +30,7 @@ public class Limelight extends SubsystemBase {
   private Pose2d botpose;
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(17.55, 8.05));
+  private Boolean initialization = true;
 
   /** Creates a new Limelight. */
   public Limelight(CommandSwerveDrivetrain drivetrain) {
@@ -39,28 +40,37 @@ public class Limelight extends SubsystemBase {
     SmartDashboard.putNumber("Validity Error", validError);
     SmartDashboard.putNumber("Enable Error", enableError);
     LimelightHelpers.setCameraPose_RobotSpace("", 
-      0.3322,    // Forward offset (meters)
+      -0.35,    // Forward offset (meters)
       0.0,    // Side offset (meters)
       0.1524,    // Height offset (meters)
       0.0,    // Roll (degrees)
       180.0,   // Pitch (degrees)
       0.0     // Yaw (degrees)
     );
+    LimelightHelpers.SetRobotOrientation(ll, drivetrain.getRotation3d().getZ() * 180 / Math.PI, 0, 0, 0, 0, 0);
   }
 
   @Override
   public void periodic() {
+    LimelightHelpers.SetRobotOrientation(ll, drivetrain.getRotation3d().getZ() * 180 / Math.PI, 0, 0, 0, 0, 0);
     if (enable) {
       Double targetDistance = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getDistance(new Translation3d());
       Double confidence = 1 - ((targetDistance - 1) / 6);
-      LimelightHelpers.LimelightResults result =
-          LimelightHelpers.getLatestResults(ll);
-      if (result.valid) {
-        botpose = LimelightHelpers.getBotPose2d_wpiBlue(ll);
+      LimelightHelpers.LimelightResults result = LimelightHelpers.getLatestResults(ll);
+      if (LimelightHelpers.getRawFiducials(ll).length > 0) {
+        botpose = LimelightHelpers.getBotPose3d_wpiBlue(ll).toPose2d();
         if (field.isPoseWithinArea(botpose)) {
+          SmartDashboard.putNumber("Robot Pose X", drivetrain.getState().Pose.getX());
+          SmartDashboard.putNumber("Robot Pose Y", drivetrain.getState().Pose.getY());
+          SmartDashboard.putNumber("Robot Pose 0", drivetrain.getState().Pose.getRotation().getDegrees());
+          SmartDashboard.putNumber("Target Pose X", botpose.getX());
+          SmartDashboard.putNumber("Target Pose Y", botpose.getY());
+          SmartDashboard.putNumber("Target Pose 0", botpose.getRotation().getDegrees());
+          SmartDashboard.putNumber("Pose Comparison", drivetrain.getState().Pose.getTranslation().getDistance(botpose.getTranslation()));
           if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.getTranslation()) < 0.5
-              || trust
+              || trust || initialization
               || result.targets_Fiducials.length > 1) {
+            initialization = false;
             drivetrain.addVisionMeasurement(
                 botpose,
                 Timer.getFPGATimestamp()
@@ -98,9 +108,8 @@ public class Limelight extends SubsystemBase {
   }
 
   public Pose2d tagPose() {
-    LimelightHelpers.LimelightResults result = LimelightHelpers.getLatestResults(ll);
-    if (result.valid) {
-      Pose2d tagPose = result.targets_Fiducials[0].getTargetPose_RobotSpace2D();
+    if (LimelightHelpers.getRawFiducials(ll).length > 0) {
+      Pose2d tagPose = LimelightHelpers.getTargetPose3d_RobotSpace(ll).toPose2d();
       double distance = Math.sqrt(Math.pow(tagPose.getX(), 2) + Math.pow(tagPose.getY(), 2));
       if (distance < 3) {
         Transform2d tagTransform = new Transform2d(tagPose.getTranslation(), tagPose.getRotation());
