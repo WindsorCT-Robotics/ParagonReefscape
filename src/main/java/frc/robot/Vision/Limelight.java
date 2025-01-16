@@ -30,7 +30,6 @@ public class Limelight extends SubsystemBase {
   private Pose2d botpose;
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(17.55, 8.05));
-  private Boolean initialization = true;
 
   /** Creates a new Limelight. */
   public Limelight(CommandSwerveDrivetrain drivetrain) {
@@ -58,7 +57,7 @@ public class Limelight extends SubsystemBase {
       Double confidence = 1 - ((targetDistance - 1) / 6);
       LimelightHelpers.LimelightResults result = LimelightHelpers.getLatestResults(ll);
       if (LimelightHelpers.getRawFiducials(ll).length > 0) {
-        botpose = LimelightHelpers.getBotPose3d_wpiBlue(ll).toPose2d();
+        botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll).pose;
         if (field.isPoseWithinArea(botpose)) {
           SmartDashboard.putNumber("Robot Pose X", drivetrain.getState().Pose.getX());
           SmartDashboard.putNumber("Robot Pose Y", drivetrain.getState().Pose.getY());
@@ -68,9 +67,8 @@ public class Limelight extends SubsystemBase {
           SmartDashboard.putNumber("Target Pose 0", botpose.getRotation().getDegrees());
           SmartDashboard.putNumber("Pose Comparison", drivetrain.getState().Pose.getTranslation().getDistance(botpose.getTranslation()));
           if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.getTranslation()) < 0.5
-              || trust || initialization
-              || result.targets_Fiducials.length > 1) {
-            initialization = false;
+              || trust
+              || LimelightHelpers.getRawFiducials(ll).length > 1) {
             drivetrain.addVisionMeasurement(
                 botpose,
                 Timer.getFPGATimestamp()
