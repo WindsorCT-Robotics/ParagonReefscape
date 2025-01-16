@@ -6,7 +6,9 @@ package frc.robot.Vision;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -93,5 +95,18 @@ public class Limelight extends SubsystemBase {
 
   public void trustLL(boolean trust) {
     this.trust = trust;
+  }
+
+  public Pose2d tagPose() {
+    LimelightHelpers.LimelightResults result = LimelightHelpers.getLatestResults(ll);
+    if (result.valid) {
+      Pose2d tagPose = result.targets_Fiducials[0].getTargetPose_RobotSpace2D();
+      double distance = Math.sqrt(Math.pow(tagPose.getX(), 2) + Math.pow(tagPose.getY(), 2));
+      if (distance < 3) {
+        Transform2d tagTransform = new Transform2d(tagPose.getTranslation(), tagPose.getRotation());
+        return drivetrain.getState().Pose.plus(tagTransform);
+      }
+    }
+    return new Pose2d(-1, -1, new Rotation2d());
   }
 }
