@@ -23,15 +23,19 @@ public class Limelight extends SubsystemBase {
   private Boolean trust = false;
   private int fieldError = 0;
   private int distanceError = 0;
+  private int validError = 0;
+  private int enableError = 0;
   private Pose2d botpose;
   private static final RectanglePoseArea field =
-        new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(16.54, 8.02));
+        new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(17.55, 8.05));
 
   /** Creates a new Limelight. */
   public Limelight(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
     SmartDashboard.putNumber("Field Error", fieldError);
     SmartDashboard.putNumber("Limelight Error", distanceError);
+    SmartDashboard.putNumber("Validity Error", validError);
+    SmartDashboard.putNumber("Enable Error", enableError);
     LimelightHelpers.setCameraPose_RobotSpace("", 
       0.3322,    // Forward offset (meters)
       0.0,    // Side offset (meters)
@@ -69,7 +73,13 @@ public class Limelight extends SubsystemBase {
           fieldError++;
           SmartDashboard.putNumber("Field Error", fieldError);
         }
+      } else {
+        validError++;
+        SmartDashboard.putNumber("Validity Error", validError);
       }
+    } else {
+      enableError++;
+      SmartDashboard.putNumber("Enable Error", enableError);
     }
   }
 
