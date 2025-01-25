@@ -4,17 +4,20 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.Utils;
+
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.lib.Limelight.LimelightHelpers;
 import frc.lib.Limelight.RectanglePoseArea;
+import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
 
 public class Limelight extends SubsystemBase {
   CommandSwerveDrivetrain drivetrain;
@@ -26,7 +29,7 @@ public class Limelight extends SubsystemBase {
   private Boolean invalidError = false;
   private Boolean fieldError = false;
   private Boolean distanceError = false;
-  private Pose2d botpose;
+  private PoseEstimate botpose;
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(16.54, 8.02));
 
@@ -62,24 +65,22 @@ public class Limelight extends SubsystemBase {
       Double ta_output = LimelightHelpers.getTA(ll);
 
       Double targetDistance = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getDistance(new Translation3d()); //Calculates how far away the april tag is
-      Double confidence = 1 - ((targetDistance - 1) / 6);
+      Double confidence = 1.0; //- ((targetDistance - 1) / 6);
       LimelightHelpers.LimelightResults result =
           LimelightHelpers.getLatestResults(ll); //Gets everything that the camera sees 
       if (!(tx_output == 0 && ty_output == 0 && ta_output == 0)) { //If result finds a vaild target then continues if statement result.valid
         invalidError = false;
-        botpose = LimelightHelpers.getBotPose2d_wpiBlue(ll);
-        if (field.isPoseWithinArea(botpose)) { 
+        botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+        if (field.isPoseWithinArea(botpose.pose)) { 
           fieldError = false;
-          if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.getTranslation()) < 0.5 //Compares the drivetrain aussumed position to the limelight's assumed position
+          if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.pose.getTranslation()) < 0.5 //Compares the drivetrain aussumed position to the limelight's assumed position
               || trust
-              || result.targets_Fiducials //targets_Apriltags
+              || result.targets_Fiducials //Fiducials = Apriltags
               .length > 1) {
             distanceError = false;
             drivetrain.addVisionMeasurement(
-                botpose,
-                Timer.getFPGATimestamp()
-                    - (result.latency_capture / 1000.0)
-                    - (result.latency_pipeline / 1000.0),
+                botpose.pose,
+                Utils.fpgaToCurrentTime(botpose.timestampSeconds), // Timer.getFPGATimestamp() - (result.latency_capture / 1000.0) - (result.latency_pipeline / 1000.0),
                 VecBuilder.fill(confidence, confidence, .01));
                 SmartDashboard.putNumber("Target Distance", targetDistance);
           } else {
