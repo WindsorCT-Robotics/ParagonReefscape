@@ -17,12 +17,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.ExtendElevatorCommand;
+import frc.robot.commands.RetractElevatorCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.Limelight;
 
 public class RobotContainer {
+
+    private ElevatorSubsystem elevator;
+    
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -47,6 +52,8 @@ public class RobotContainer {
     Pose2d odomStart = new Pose2d(0, 0, new Rotation2d(0, 0));
     
     public RobotContainer() {
+        elevator = new ElevatorSubsystem();
+
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Autos'", autoChooser);
         configureBindings();
@@ -78,6 +85,9 @@ public class RobotContainer {
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
+        joystick.povDown().onTrue(new RetractElevatorCommand(elevator));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
