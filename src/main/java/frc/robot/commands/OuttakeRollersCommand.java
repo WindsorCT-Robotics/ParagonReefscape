@@ -17,7 +17,7 @@ public class OuttakeRollersCommand extends Command {
 
     @Override
     public void execute() {
-        outtake.moveOuttakeRollers(new Percent(0.75));
+        outtake.outtakeRollers(new Percent(0));
     }
 
     @Override
