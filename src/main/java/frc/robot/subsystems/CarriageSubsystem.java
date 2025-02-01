@@ -48,6 +48,8 @@ public class CarriageSubsystem extends SubsystemBase {
         rollersConfig.idleMode(IdleMode.kBrake);
 
         rollers.configure(rollersConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        outtakeRollers.configure(rollersConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        intakeRollers.configure(rollersConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
         rollerEncoder = rollers.getEncoder();
@@ -59,14 +61,14 @@ public class CarriageSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Outtake Beam Breaker ", beamBreaker.get());
+        SmartDashboard.putBoolean("Outtake Beam Breaker", beamBreaker.get());
     }
 
     // public void moveRollers(Percent speed) {
     //     rollers.set(speed.asDouble());
     // }
 
-    public void moveouttakeRollers(Percent percent) {
+    public void moveOuttakeRollers(Percent percent) {
         Percent speed = new Percent(CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
         outtakeRollers.set(speed.asDouble());
     }
