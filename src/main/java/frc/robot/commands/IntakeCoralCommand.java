@@ -10,7 +10,7 @@ public class IntakeCoralCommand extends SequentialCommandGroup{
             new IntakeRollersCommand(intake), new OuttakeRollersCommand(outtake),
             new ParallelDeadlineGroup(
                 new IntakeRollersBeamCommand(intake),
-                new OuttakeRollersIntakeBeamCommand(outtake)
+                new OuttakeRollersIntakeBeamCommand(outtake, intake)
             )
         );
     }
