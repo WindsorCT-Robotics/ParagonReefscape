@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Units.Percent;
 import frc.robot.Units.Rotations;
+import frc.robot.Units.RotationsPerMinute;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -23,8 +24,8 @@ public class CarriageSubsystem extends SubsystemBase {
     private static final int BEAM_BREAKER_PIN = 2;
 
     private SparkMax rollers;
-    private SparkMax outtakeRollers;
-    private SparkMax intakeRollers;
+    private SparkMax moveouttakeRollers;
+    private SparkMax moveIntakeRollers;
     private SparkMaxConfig rollersConfig;
     private final DigitalInput beamBreaker;
     private RelativeEncoder rollerEncoder;
@@ -34,11 +35,13 @@ public class CarriageSubsystem extends SubsystemBase {
     private static final int MOTOR_MAX_RPM = 11000;
     private static final double MOTOR_GEAR_RATIO = (double) 1 / 16; // Gear ratio is 4:1, 4:1
 
+    public static RotationsPerMinute targetRPM = new RotationsPerMinute(300, 1);
+
     private static final double ROLLERS_CIRCUMFERENCE = Math.PI * 1.67; // Outer diameter is 1.67"
 
     public CarriageSubsystem() {
-        outtakeRollers = new SparkMax(OUTTAKE_MOTOR_CANID, MotorType.kBrushless);
-        intakeRollers = new SparkMax(INTAKE_MOTOR_CANID, MotorType.kBrushless);
+        moveouttakeRollers = new SparkMax(OUTTAKE_MOTOR_CANID, MotorType.kBrushless);
+        moveIntakeRollers = new SparkMax(INTAKE_MOTOR_CANID, MotorType.kBrushless);
         rollersConfig = new SparkMaxConfig();
 
         rollersConfig.inverted(true);
@@ -48,8 +51,8 @@ public class CarriageSubsystem extends SubsystemBase {
 
         beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
         rollerEncoder = rollers.getEncoder();
-        outtakeEncoder = outtakeRollers.getEncoder();
-        intakeEncoder = outtakeRollers.getEncoder();
+        outtakeEncoder = moveouttakeRollers.getEncoder();
+        intakeEncoder = moveouttakeRollers.getEncoder();
 
         SmartDashboard.putNumber("Outtake Percent Speed", CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
     }
@@ -59,29 +62,42 @@ public class CarriageSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("Outtake Beam Breaker ", beamBreaker.get());
     }
 
-    public void moveRollers(Percent speed) {
-        rollers.set(speed.asDouble());
+    // public void moveRollers(Percent speed) {
+    //     rollers.set(speed.asDouble());
+    // }
+
+    public void moveouttakeRollers(Percent percent) {
+        Percent speed = new Percent(CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
+        moveouttakeRollers.set(speed.asDouble());
     }
 
-    public void outtakeRollers() {
-        Percent speed = new Percent(CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
-        // rollers.set(speed.asDouble());
-        outtakeRollers.set(speed.asDouble());
+    public void outtakeRollers(Percent speed) {
+        moveouttakeRollers.set(speed.asDouble());
     }
 
-    public void intakeRollers() {
+    public void moveIntakeRollers(Percent percent) {
         Percent speed = new Percent(CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
-        // rollers.set(speed.asDouble());
-        intakeRollers.set(speed.asDouble());
+        moveIntakeRollers.set(speed.asDouble());
+    }
+
+    public void intakeRollers(Percent speed) {
+        moveIntakeRollers.set(speed.asDouble());
     }
 
     public boolean isBeamBroken() {
         return !beamBreaker.get();
     }
 
-    public double getRollerPosition() { // Stopped on this.
-        // return outtakeEncoder.getPosition() intakeEncoder.getPosition(); 
-        // rollerEncoder.getPosition();
+    // public double getRollerPosition() {
+    //     return rollerEncoder.getPosition();
+    // }
+
+    public double getIntakeRollerPosition() {
+        return intakeEncoder.getPosition(); 
+    }
+
+    public double getOuttakeRollerPosition() {
+        return outtakeEncoder.getPosition();
     }
 
     public void resetRollerEncoder() {
@@ -91,7 +107,7 @@ public class CarriageSubsystem extends SubsystemBase {
     
     public void stop() {
     // rollers.stopMotor();
-    intakeRollers.stopMotor();
-    outtakeRollers.stopMotor();
+    moveIntakeRollers.stopMotor();
+    moveouttakeRollers.stopMotor();
     }
 }
