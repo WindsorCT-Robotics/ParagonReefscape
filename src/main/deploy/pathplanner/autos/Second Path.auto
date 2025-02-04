@@ -5,27 +5,66 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Start Auto Coral Score V2"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Start Auto Coral Score V2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ExtendElevatorCommand"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Auto Pick-up V2"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Auto Pick-up V2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "RetractElevatorCommand"
+                }
+              }
+            ]
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 2.0
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "End Auto Coral V2"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "End Auto Coral V2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "ExtendElevatorCommand"
+                }
+              }
+            ]
           }
         }
       ]
