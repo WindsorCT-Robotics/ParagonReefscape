@@ -1,13 +1,14 @@
 package frc.robot.commands;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Units.Percent;
 import frc.robot.subsystems.CarriageSubsystem;
 
 public class OuttakeRollersCommand extends Command {
-    private final CarriageSubsystem outtake;
+    private final CarriageSubsystem rollers;
 
-    public OuttakeRollersCommand(CarriageSubsystem outtake) {
-        this.outtake = outtake;
+    public OuttakeRollersCommand(CarriageSubsystem rollers) {
+        this.rollers = rollers;
     }
 
     @Override
@@ -17,16 +18,16 @@ public class OuttakeRollersCommand extends Command {
 
     @Override
     public void execute() {
-        outtake.outtakeRollers(new Percent(0));
+        rollers.moveOuttakeRollers();
     }
 
     @Override
     public void end(boolean interrupted) {
-        outtake.stop();
+        rollers.stopOuttakeRollers();
     }
 
     @Override
     public boolean isFinished() {
-        return outtake.isBeamBroken();
+        return rollers.isBeamBroken();
     }
 }

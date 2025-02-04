@@ -1,13 +1,13 @@
 package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Units.Percent;
 import frc.robot.subsystems.CarriageSubsystem;
+import frc.robot.Units.Percent;
 
 public class IntakeRollersBeamCommand extends Command {
-    private final CarriageSubsystem intake;
+    private final CarriageSubsystem rollers;
 
-    public IntakeRollersBeamCommand(CarriageSubsystem intake) {
-        this.intake = intake;
+    public IntakeRollersBeamCommand(CarriageSubsystem rollers) {
+        this.rollers = rollers;
     }
 
     @Override
@@ -17,16 +17,16 @@ public class IntakeRollersBeamCommand extends Command {
 
     @Override
     public void execute() {
-        intake.intakeRollers(new Percent(0));
+    rollers.moveIntakeRollers();
     }
 
     @Override
     public void end(boolean interrupted) {
-        intake.stop();
+        rollers.stopIntakeRollers();
     }
 
     @Override
     public boolean isFinished() {
-        return !intake.isBeamBroken();
+        return !rollers.isBeamBroken();
     }
 }

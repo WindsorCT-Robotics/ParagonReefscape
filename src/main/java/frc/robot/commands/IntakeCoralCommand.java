@@ -5,12 +5,12 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class IntakeCoralCommand extends SequentialCommandGroup{
-    public IntakeCoralCommand(CarriageSubsystem intake, CarriageSubsystem outtake) {
+    public IntakeCoralCommand(CarriageSubsystem rollers) {
         addCommands(
-            new IntakeRollersCommand(intake), new OuttakeRollersCommand(outtake),
+            new IntakeRollersCommand(rollers), new OuttakeRollersCommand(rollers),
             new ParallelDeadlineGroup(
-                new IntakeRollersBeamCommand(intake),
-                new OuttakeRollersIntakeBeamCommand(outtake, intake)
+                new OuttakeBeamCommand(rollers),
+                new IntakeRollersCommand(rollers)
             )
         );
     }
