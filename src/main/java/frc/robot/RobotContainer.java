@@ -22,12 +22,16 @@ import frc.robot.commands.RetractElevatorCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.commands.IntakeBeamCommand;
+import frc.robot.commands.OuttakeBeamCommand;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
-
     private ElevatorSubsystem elevator;
-    
+    private CarriageSubsystem carriage;
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -53,7 +57,7 @@ public class RobotContainer {
     
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
-
+        carriage = new CarriageSubsystem();
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Autos'", autoChooser);
         configureBindings();
@@ -84,7 +88,9 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        // joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        joystick.leftBumper().onTrue(new IntakeBeamCommand(carriage));
+        joystick.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
 
         joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
         joystick.povDown().onTrue(new RetractElevatorCommand(elevator));

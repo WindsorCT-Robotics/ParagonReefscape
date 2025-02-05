@@ -7,25 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "mew mew mew mew math"
+            "pathName": "BL Start Coral Score Outter Barge"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "moo mmoo meadows"
+            "pathName": "Coral Pick-Up BL"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "i think i have it in the bag"
+            "pathName": "BL End Coral Score"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Other Autos",
+  "folder": "Alternate Autos",
   "choreoAuto": false
 }
