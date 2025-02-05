@@ -38,7 +38,7 @@ public class CarriageSubsystem extends SubsystemBase {
 
 
     public CarriageSubsystem() {
-        speed = new Percent(0.2);
+        speed = new Percent(0.15);
         outtakeRollers = new SparkMax(OUTTAKE_MOTOR_CANID, MotorType.kBrushless);
         intakeRollers = new SparkMax(INTAKE_MOTOR_CANID, MotorType.kBrushless);
         rollersConfig = new SparkMaxConfig();

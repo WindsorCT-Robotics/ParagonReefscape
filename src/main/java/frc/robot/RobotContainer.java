@@ -32,7 +32,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) / 2; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
