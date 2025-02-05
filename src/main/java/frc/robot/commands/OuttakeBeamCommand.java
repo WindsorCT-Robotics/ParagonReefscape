@@ -1,6 +1,5 @@
 package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Units.Percent;
 import frc.robot.subsystems.CarriageSubsystem;
 
 public class OuttakeBeamCommand extends Command {

@@ -17,7 +17,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.IntakeCoralCommand;
+import frc.robot.commands.IntakeBeamCommand;
+import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
@@ -82,7 +83,8 @@ public class RobotContainer {
 
         // reset the field-centric heading on left bumper press
         // joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        joystick.leftBumper().onTrue(new IntakeCoralCommand(carriage));
+        joystick.leftBumper().onTrue(new IntakeBeamCommand(carriage));
+        joystick.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

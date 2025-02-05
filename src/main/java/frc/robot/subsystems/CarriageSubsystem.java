@@ -17,9 +17,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class CarriageSubsystem extends SubsystemBase {
     // private static final int ROLLER_MOTOR_CANID = 15;
-    private static final int OUTTAKE_MOTOR_CANID = 15;
     private static final int INTAKE_MOTOR_CANID = 16;
-    private static final int BEAM_BREAKER_PIN = 2;
+    private static final int OUTTAKE_MOTOR_CANID = 15;
+    private static final int BEAM_BREAKER_PIN = 0;
 
     private SparkMax rollers;
     private SparkMax outtakeRollers;
@@ -29,21 +29,21 @@ public class CarriageSubsystem extends SubsystemBase {
     private RelativeEncoder rollerEncoder;
     private RelativeEncoder outtakeEncoder;
     private RelativeEncoder intakeEncoder;
-    
+
     private Percent speed;
 
-    private static final int MOTOR_MAX_RPM = 0;
-    private static final double MOTOR_GEAR_RATIO = 0;
+    private static final int MOTOR_MAX_RPM = 5000;
+    private static final double INTAKE_MOTOR_GEAR_RATIO = 1 / 5;
+    private static final double OUTTAKE_MOTOR_GEAR_RATIO = 14 / 50;
 
-    public static RotationsPerMinute targetRPM = new RotationsPerMinute(0, 0);
 
     public CarriageSubsystem() {
-        speed = new Percent(0.0);
+        speed = new Percent(0.2);
         outtakeRollers = new SparkMax(OUTTAKE_MOTOR_CANID, MotorType.kBrushless);
         intakeRollers = new SparkMax(INTAKE_MOTOR_CANID, MotorType.kBrushless);
         rollersConfig = new SparkMaxConfig();
 
-        rollersConfig.inverted(true);
+        rollersConfig.inverted(false);
         rollersConfig.idleMode(IdleMode.kBrake);
 
         // rollers.configure(rollersConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -55,40 +55,36 @@ public class CarriageSubsystem extends SubsystemBase {
         outtakeEncoder = outtakeRollers.getEncoder();
         intakeEncoder = intakeRollers.getEncoder();
 
-        SmartDashboard.putNumber("Outtake Percent Speed", CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
-        SmartDashboard.putNumber("Percent Roller Speed", 0.0);
+        SmartDashboard.putNumber("Roller Speed RPM", 10);
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("Outtake Beam Breaker", beamBreaker.get());
-        speed = new Percent(SmartDashboard.getNumber("Percent Roller Speed", 0.0));
-        System.out.println(speed.asDouble());
+        
     }
 
     // public void moveRollers(Percent speed) {
     //     rollers.set(speed.asDouble());  
     // }
 
+    // public void moveOuttakeRollers() {
+    //     outtakeRollers.set(speed.asDouble());
+    // }
+
+    // Needed if were to match different gear ratios
     public void moveOuttakeRollers() {
         outtakeRollers.set(speed.asDouble());
     }
 
-    // Needed if were to match different gear ratios
-    // public void outtakeRollers() {
-    //     Percent speed = new Percent(CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
-    //     outtakeRollers.set(speed.asDouble());
+    // public void moveIntakeRollers() {
+    //     intakeRollers.set(speed.asDouble());
     // }
 
+    // Needed if were to match different gear ratios
     public void moveIntakeRollers() {
         intakeRollers.set(speed.asDouble());
     }
-
-    // Needed if were to match different gear ratios
-    // public void intakeRollers() {
-    //     Percent speed = new Percent(CarriageSubsystem.targetRPM.asDouble() / (MOTOR_MAX_RPM * MOTOR_GEAR_RATIO));
-    //     intakeRollers.set(speed.asDouble());
-    // }
 
     public boolean isBeamBroken() {
         return !beamBreaker.get();
@@ -113,7 +109,10 @@ public class CarriageSubsystem extends SubsystemBase {
     }
     
     public void stopRollers() {
-        rollers.stopMotor();
+        // rollers.stopMotor();
+
+        intakeRollers.stopMotor();
+        outtakeRollers.stopMotor();
     }
 
     public void stopIntakeRollers() {
