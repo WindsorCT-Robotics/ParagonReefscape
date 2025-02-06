@@ -30,11 +30,11 @@ public class Telemetry {
      */
     public Telemetry(double maxSpeed) {
         MaxSpeed = maxSpeed;
-        // SignalLogger.start();
+        // SignalLogger.start(); 
     }
 
     /* What to publish over networktables for telemetry */
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();    
 
     /* Robot swerve drive state */
     private final NetworkTable driveStateTable = inst.getTable("DriveState");

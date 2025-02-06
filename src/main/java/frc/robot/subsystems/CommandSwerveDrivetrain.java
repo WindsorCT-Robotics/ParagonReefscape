@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import javax.print.attribute.standard.DialogOwner;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -18,6 +20,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -38,6 +41,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+
+    private final DigitalInput lBeamBreaker;
+    private final DigitalInput rBeamBreaker;
+
+    private static final int L_BEAM_BREAKER_PIN = 2;
+    private static final int R_BEAM_BREAKER_PIN = 1;
 
     private Field2d field = new Field2d();
 
@@ -143,6 +152,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         configureAutoBuilder();
         SmartDashboard.putData(field);
+
+        
+        rBeamBreaker = new DigitalInput(R_BEAM_BREAKER_PIN);
+        lBeamBreaker = new DigitalInput(L_BEAM_BREAKER_PIN);
     }
 
     /**
@@ -169,6 +182,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         configureAutoBuilder();
         SmartDashboard.putData(field);
+
+        
+        rBeamBreaker = new DigitalInput(R_BEAM_BREAKER_PIN);
+        lBeamBreaker = new DigitalInput(L_BEAM_BREAKER_PIN);
     }
 
     /**
@@ -203,6 +220,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         configureAutoBuilder();
         SmartDashboard.putData(field);
+
+        
+        rBeamBreaker = new DigitalInput(R_BEAM_BREAKER_PIN);
+        lBeamBreaker = new DigitalInput(L_BEAM_BREAKER_PIN);
     }
 
     /**
@@ -280,6 +301,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Drivetrain X", getState().Pose.getTranslation().getX());
         SmartDashboard.putNumber("Drivetrain Y", getState().Pose.getTranslation().getY());
         SmartDashboard.putNumber("Drivetrain Current Direction", getState().Pose.getRotation().getDegrees());
+
+        SmartDashboard.putBoolean("L Beam Breaker", lBeamBreaker.get());
+        SmartDashboard.putBoolean("R Beam Breaker", rBeamBreaker.get());
         
         field.setRobotPose(getState().Pose);
 
@@ -308,5 +332,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
+    }
+
+    public boolean isLBeamBroken() {
+        return !lBeamBreaker.get();
+    }
+
+    public boolean isRBeamBroken() {
+        return !rBeamBreaker.get();
     }
 }

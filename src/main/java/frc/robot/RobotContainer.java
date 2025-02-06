@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,10 +20,16 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.RetractElevatorCommand;
+import frc.robot.commands.RightBeamAdjustment;
+import frc.robot.commands.RightL2ScoreCommand;
+import frc.robot.commands.RightL3ScoreCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.commands.IntakeBeamCommand;
+import frc.robot.commands.LeftBeamAdjustment;
+import frc.robot.commands.LeftL2ScoreCommand;
+import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarriageSubsystem;
@@ -36,6 +43,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
+    private final SwerveRequest.RobotCentric relativeDrive = new RobotCentric();
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.01).withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
@@ -94,6 +102,14 @@ public class RobotContainer {
 
         joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
         joystick.povDown().onTrue(new RetractElevatorCommand(elevator));
+
+        joystick.povLeft().onTrue(new LeftBeamAdjustment(drivetrain));
+        joystick.povRight().onTrue(new RightBeamAdjustment(drivetrain));
+
+        joystick.a().onTrue(new LeftL2ScoreCommand(carriage, elevator, drivetrain));
+        joystick.b().onTrue(new RightL2ScoreCommand(carriage, elevator, drivetrain));
+        joystick.x().onTrue(new LeftL3ScoreCommand(carriage, elevator, drivetrain));
+        joystick.y().onTrue(new RightL3ScoreCommand(carriage, elevator, drivetrain));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
