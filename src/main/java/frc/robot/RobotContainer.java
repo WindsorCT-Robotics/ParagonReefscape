@@ -31,6 +31,8 @@ import frc.robot.commands.LeftBeamAdjustment;
 import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
+import frc.robot.commands.ReefAlignCommand;
+import frc.robot.commands.ReefAlignCommand1;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
@@ -83,10 +85,10 @@ public class RobotContainer {
             )
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        // joystick.b().whileTrue(drivetrain.applyRequest(() ->
+        //     point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        // ));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -100,8 +102,10 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(new IntakeBeamCommand(carriage));
         joystick.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
 
-        joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
-        joystick.povDown().onTrue(new RetractElevatorCommand(elevator));
+        // joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
+        // joystick.povDown().onTrue(new RetractElevatorCommand(elevator));
+        joystick.povUp().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
+        joystick.povDown().onTrue(new ReefAlignCommand1(drivetrain));
 
         joystick.povLeft().onTrue(new LeftBeamAdjustment(drivetrain));
         joystick.povRight().onTrue(new RightBeamAdjustment(drivetrain));

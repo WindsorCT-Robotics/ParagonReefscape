@@ -14,7 +14,6 @@ public class RightL2ScoreCommand extends SequentialCommandGroup {
                 new RetractElevatorCommand(elevator),
                 new RightBeamAdjustment(drivetrain)
             ),
-            new WaitCommand(0.5),
             new OuttakeBeamCommand(rollers)
         );
     }

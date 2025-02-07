@@ -14,7 +14,6 @@ public class LeftL3ScoreCommand extends SequentialCommandGroup {
                 new ExtendElevatorCommand(elevator),
                 new LeftBeamAdjustment(drivetrain)
             ),
-            new WaitCommand(0.5),
             new OuttakeBeamCommand(rollers),
             new RetractElevatorCommand(elevator)
         );
