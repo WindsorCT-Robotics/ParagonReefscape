@@ -18,25 +18,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.ExtendElevatorCommand;
-import frc.robot.commands.RetractElevatorCommand;
-import frc.robot.commands.RightBeamAdjustment;
 import frc.robot.commands.RightL2ScoreCommand;
 import frc.robot.commands.RightL3ScoreCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.commands.IntakeBeamCommand;
-import frc.robot.commands.LeftBeamAdjustment;
 import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.commands.ReefAlignCommand;
-import frc.robot.commands.ReefAlignCommand1;
-import frc.robot.generated.TunerConstants;
+import frc.robot.commands.ResetSimPoseToDriveCommand;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
     private ElevatorSubsystem elevator;
@@ -105,10 +99,11 @@ public class RobotContainer {
         // joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
         // joystick.povDown().onTrue(new RetractElevatorCommand(elevator));
         joystick.povUp().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
-        joystick.povDown().onTrue(new ReefAlignCommand1(drivetrain));
+        joystick.povDown().onTrue(new ReefAlignCommand(drivetrain, vision));
 
-        joystick.povLeft().onTrue(new LeftBeamAdjustment(drivetrain));
-        joystick.povRight().onTrue(new RightBeamAdjustment(drivetrain));
+        // joystick.povLeft().onTrue(new LeftBeamAdjustment(drivetrain));
+        // joystick.povRight().onTrue(new RightBeamAdjustment(drivetrain));
+        joystick.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
 
         joystick.a().onTrue(new LeftL2ScoreCommand(carriage, elevator, drivetrain));
         joystick.b().onTrue(new RightL2ScoreCommand(carriage, elevator, drivetrain));

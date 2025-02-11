@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.Limelight.LimelightHelpers;
 import frc.lib.Limelight.RectanglePoseArea;
+import frc.lib.Limelight.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
 
 public class Limelight extends SubsystemBase {
@@ -103,5 +104,9 @@ public class Limelight extends SubsystemBase {
 
   public void trustLL(boolean trust) {
     this.trust = trust;
+  }
+
+  public String getLimelightName() {
+    return ll;
   }
 }
