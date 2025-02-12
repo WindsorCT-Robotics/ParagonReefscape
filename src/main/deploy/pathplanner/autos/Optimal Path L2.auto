@@ -11,21 +11,33 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "LeftL2ScoreCommand"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Pick-up Coral"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 3.0
+            "name": "IntakeBeamCommand"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "End Coral Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RightL2ScoreCommand"
           }
         }
       ]

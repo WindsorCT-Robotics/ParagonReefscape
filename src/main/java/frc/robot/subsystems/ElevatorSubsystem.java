@@ -25,7 +25,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private static final double TARGET_LOWER = 0.0;
-    private static final double TARGET_UPPER = 66.0;
+    private static final double TARGET_UPPER = 67.0;
 
     public ElevatorSubsystem() {
         elevMotor = new SparkMax(MOTOR_CANID, MotorType.kBrushless);

@@ -7,25 +7,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start Auto Coral Score V3"
+            "pathName": "Start Coral Score Inner Barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LeftL3ScoreCommand"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Auto Pick-up V2"
+            "pathName": "Pick-up Coral"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 3.0
+            "name": "IntakeBeamCommand"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "End Auto Coral V2"
+            "pathName": "End Coral Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RightL3ScoreCommand"
           }
         }
       ]

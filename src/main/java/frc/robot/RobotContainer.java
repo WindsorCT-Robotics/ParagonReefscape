@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,12 +24,14 @@ import frc.robot.commands.RightL3ScoreCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.IntakeBeamCommand;
 import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.commands.ReefAlignCommand;
 import frc.robot.commands.ResetSimPoseToDriveCommand;
+import frc.robot.commands.RetractElevatorCommand;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
 
@@ -62,10 +65,28 @@ public class RobotContainer {
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
+
+        RegisterNamedComands();
+
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Autos'", autoChooser);
+
         configureBindings();
-    }   
+    }
+
+    private void RegisterNamedComands()
+    {
+        NamedCommands.registerCommand("IntakeBeamCommand", new IntakeBeamCommand(carriage));
+        NamedCommands.registerCommand("LeftL3ScoreCommand", new LeftL3ScoreCommand(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("RightL3ScoreCommand", new RightL3ScoreCommand(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("LeftL2ScoreCommand", new LeftL2ScoreCommand(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("RightL2ScoreCommand", new RightL2ScoreCommand(carriage, elevator, drivetrain));
+    }
+
+    public void BuildAutos()
+    {
+
+    }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
