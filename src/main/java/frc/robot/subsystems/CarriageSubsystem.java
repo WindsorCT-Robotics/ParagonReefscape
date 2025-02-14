@@ -5,6 +5,9 @@ import frc.robot.Units.Percent;
 import frc.robot.Units.RotationsPerMinute;
 
 import com.revrobotics.spark.SparkMax;
+
+import javax.print.event.PrintEvent;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -77,12 +80,20 @@ public class CarriageSubsystem extends SubsystemBase {
         outtakeRollers.set(speed.asDouble());
     }
 
+    public void manualMoveOuttakeRollers(Percent speed) {
+        outtakeRollers.set(speed.asDouble());
+    }
+
     // public void moveIntakeRollers() {
     //     intakeRollers.set(speed.asDouble());
     // }
 
     // Needed if were to match different gear ratios
     public void moveIntakeRollers() {
+        intakeRollers.set(speed.asDouble());
+    }
+
+    public void manualMoveIntakeRollers(Percent speed) {
         intakeRollers.set(speed.asDouble());
     }
 

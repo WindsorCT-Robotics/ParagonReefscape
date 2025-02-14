@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RightL2ScoreCommand;
 import frc.robot.commands.RightL3ScoreCommand;
@@ -26,6 +27,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.IntakeBeamCommand;
+import frc.robot.commands.ManualIntakeOuttakeCommand;
 import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
@@ -47,11 +49,14 @@ public class RobotContainer {
             .withDeadband(MaxSpeed * 0.01).withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    private final SwerveRequest.Idle coast = new SwerveRequest.Idle();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController driverController = new CommandXboxController(0);
+
+    private final CommandXboxController opController = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -68,8 +73,8 @@ public class RobotContainer {
 
         RegisterNamedComands();
 
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Autos'", autoChooser);
+        autoChooser = AutoBuilder.buildAutoChooser("Optimal Path");
+        SmartDashboard.putData("Autos", autoChooser);
 
         configureBindings();
     }
@@ -83,53 +88,68 @@ public class RobotContainer {
         NamedCommands.registerCommand("RightL2ScoreCommand", new RightL2ScoreCommand(carriage, elevator, drivetrain));
     }
 
-    public void BuildAutos()
-    {
-
-    }
-
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
+
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * Math.abs(joystick.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * Math.abs(joystick.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * Math.abs(joystick.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
-        // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        // joystick.b().whileTrue(drivetrain.applyRequest(() ->
-        //     point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        // driverController.b().whileTrue(drivetrain.applyRequest(() ->
+        //     point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         // ));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driverController.back().and(driverController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driverController.back().and(driverController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
-        // joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        joystick.leftBumper().onTrue(new IntakeBeamCommand(carriage));
-        joystick.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
+        // driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // joystick.povUp().onTrue(new ExtendElevatorCommand(elevator));
-        // joystick.povDown().onTrue(new RetractElevatorCommand(elevator));
-        joystick.povUp().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
-        joystick.povDown().onTrue(new ReefAlignCommand(drivetrain, vision));
+        driverController.leftBumper().onTrue(new IntakeBeamCommand(carriage).until(opController.x()));
+        // driverController.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
 
-        // joystick.povLeft().onTrue(new LeftBeamAdjustment(drivetrain));
-        // joystick.povRight().onTrue(new RightBeamAdjustment(drivetrain));
-        joystick.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+        // driverController.povUp().onTrue(new ExtendElevatorCommand(elevator));
+        // driverController.povDown().onTrue(new RetractElevatorCommand(elevator));
 
-        joystick.a().onTrue(new LeftL2ScoreCommand(carriage, elevator, drivetrain));
-        joystick.b().onTrue(new RightL2ScoreCommand(carriage, elevator, drivetrain));
-        joystick.x().onTrue(new LeftL3ScoreCommand(carriage, elevator, drivetrain));
-        joystick.y().onTrue(new RightL3ScoreCommand(carriage, elevator, drivetrain));
+        driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
+        
+        driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
+        // driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+
+        driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
+        drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
+            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2) // Drive left with negative X (left)
+            .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate / 1.5))); // Drive counterclockwise with negative X (left));
+        
+        driverController.povDown().and(driverController.x()).onTrue(new LeftL2ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
+        driverController.povDown().and(driverController.b()).onTrue(new RightL2ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
+        
+        driverController.povUp().and(driverController.x()).onTrue(new LeftL3ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
+        driverController.povUp().and(driverController.b()).onTrue(new RightL3ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
+
+
+        opController.x().whileTrue(drivetrain.applyRequest(() -> coast));
+
+        opController.povUp().onTrue(new ExtendElevatorCommand(elevator).until(opController.x()));
+        opController.povDown().onTrue(new RetractElevatorCommand(elevator).until(opController.x()));
+
+        opController.rightBumper().onTrue(new OuttakeBeamCommand(carriage).until(opController.x()));
+        opController.leftBumper().onTrue(new IntakeBeamCommand(carriage).until(opController.x()));
+
+        Trigger opLeftJoy = new Trigger(() -> Math.abs(opController.getLeftY()) > 0.2);
+        opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getRightY()));
+
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

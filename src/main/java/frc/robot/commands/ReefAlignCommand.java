@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Limelight;
 import frc.lib.Limelight.LimelightHelpers;
@@ -19,6 +20,7 @@ import frc.lib.Limelight.LimelightHelpers.RawFiducial;
 public class ReefAlignCommand extends Command{
     private final CommandSwerveDrivetrain drivetrain;
     private final Limelight limelight;
+    private final CommandXboxController op;
     private PathPlannerPath path;
     private double aprilTagID;
     private List<Waypoint> waypoints;
@@ -41,9 +43,10 @@ public class ReefAlignCommand extends Command{
     private final double xOffset = 0.1;
     private final double yOffset = 0.1;
 
-    public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight) {
+    public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op) {
         this.drivetrain = drivetrain;
         this.limelight = limelight;
+        this.op = op;
         
         ID_17[0] = 3.84; ID_17[1] = 2.88;
         ID_18[0] = 3.2; ID_18[1] = 4.05;
@@ -181,7 +184,7 @@ public class ReefAlignCommand extends Command{
             // Prevent the path from being flipped if the coordinates are already correct
             path.preventFlipping = true;
 
-            drivetrain.followPathCommand(path).schedule();   
+            drivetrain.followPathCommand(path).until(op.x()).schedule(); 
         }
     }
 
