@@ -2,11 +2,8 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Units.Percent;
-import frc.robot.Units.RotationsPerMinute;
 
 import com.revrobotics.spark.SparkMax;
-
-import javax.print.event.PrintEvent;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;

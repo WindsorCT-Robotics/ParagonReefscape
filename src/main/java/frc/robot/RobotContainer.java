@@ -32,7 +32,6 @@ import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.commands.ReefAlignCommand;
-import frc.robot.commands.ResetSimPoseToDriveCommand;
 import frc.robot.commands.RetractElevatorCommand;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
@@ -147,8 +146,8 @@ public class RobotContainer {
         opController.rightBumper().onTrue(new OuttakeBeamCommand(carriage).until(opController.x()));
         opController.leftBumper().onTrue(new IntakeBeamCommand(carriage).until(opController.x()));
 
-        Trigger opLeftJoy = new Trigger(() -> Math.abs(opController.getLeftY()) > 0.2);
-        opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getRightY()));
+        Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
+        opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getLeftY()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Start Coral Score Inner Barge"
+            "pathName": "Start Coral Score Outter Barge"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "LeftL3ScoreCommand"
+            "name": "LeftL2ScoreCommand"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "End Pick-up Coral"
+            "pathName": "Start Pick-up Coral"
           }
         },
         {
@@ -37,7 +37,31 @@
         {
           "type": "named",
           "data": {
-            "name": "RightL3ScoreCommand"
+            "name": "RightL2ScoreCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "End Pick-up Coral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeBeamCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ID 18 End Coral Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LeftL2ScoreCommand"
           }
         }
       ]

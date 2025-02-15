@@ -20,7 +20,7 @@ public class LeftBeamAdjustment extends Command {
 
     @Override
     public void initialize() {
-        drivetrain.setControl(new SwerveRequest.RobotCentric().withVelocityY(0.5));
+        drivetrain.setControl(new SwerveRequest.RobotCentric().withVelocityY(0.8));
     }
 
     @Override
@@ -35,6 +35,6 @@ public class LeftBeamAdjustment extends Command {
 
     @Override
     public boolean isFinished() {
-        return !drivetrain.isLBeamBroken();
+        return drivetrain.getLTOFBeam();
     }
 }

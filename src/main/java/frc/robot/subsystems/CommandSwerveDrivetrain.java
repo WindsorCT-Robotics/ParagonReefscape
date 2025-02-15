@@ -16,6 +16,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.playingwithfusion.CANVenom;
+import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import dev.doglog.DogLog;
 
@@ -50,11 +53,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
-    private final DigitalInput lBeamBreaker;
-    private final DigitalInput rBeamBreaker;
+    private final TimeOfFlight lTOFSensor;
+    private final TimeOfFlight rTOFSensor;
 
-    private static final int L_BEAM_BREAKER_PIN = 2;
-    private static final int R_BEAM_BREAKER_PIN = 1;
+    private final double TOFSensorThreshold = 320;
+
+    private static final int L_TOF_CANID = 18;
+    private static final int R_TOF_CANID = 17;
 
     private Field2d field = new Field2d();
 
@@ -165,8 +170,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putData(field);
 
         
-        rBeamBreaker = new DigitalInput(R_BEAM_BREAKER_PIN);
-        lBeamBreaker = new DigitalInput(L_BEAM_BREAKER_PIN);
+        rTOFSensor = new TimeOfFlight(R_TOF_CANID);
+        lTOFSensor = new TimeOfFlight(L_TOF_CANID);
+        configTOFSensors();
     }
 
     /**
@@ -195,8 +201,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putData(field);
 
         
-        rBeamBreaker = new DigitalInput(R_BEAM_BREAKER_PIN);
-        lBeamBreaker = new DigitalInput(L_BEAM_BREAKER_PIN);
+        rTOFSensor = new TimeOfFlight(R_TOF_CANID);
+        lTOFSensor = new TimeOfFlight(L_TOF_CANID);
+        configTOFSensors();
     }
 
     /**
@@ -233,8 +240,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putData(field);
 
         
-        rBeamBreaker = new DigitalInput(R_BEAM_BREAKER_PIN);
-        lBeamBreaker = new DigitalInput(L_BEAM_BREAKER_PIN);
+        rTOFSensor = new TimeOfFlight(R_TOF_CANID);
+        lTOFSensor = new TimeOfFlight(L_TOF_CANID);
+        configTOFSensors();
     }
 
     /**
@@ -330,8 +338,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putNumber("Drivetrain Y", getState().Pose.getTranslation().getY());
         SmartDashboard.putNumber("Drivetrain Current Direction", getState().Pose.getRotation().getDegrees());
 
-        SmartDashboard.putBoolean("L Beam Breaker", lBeamBreaker.get());
-        SmartDashboard.putBoolean("R Beam Breaker", rBeamBreaker.get());
+        SmartDashboard.putNumber("L Sensor Measure (MM)", lTOFSensor.getRange());
+        SmartDashboard.putNumber("R Sensor Measure (MM)", rTOFSensor.getRange());
+
+        SmartDashboard.putBoolean("L Sensor", getLTOFBeam());
+        SmartDashboard.putBoolean("R Sensor", getRTOFBeam());
         
         field.setRobotPose(getState().Pose);
 
@@ -372,18 +383,33 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     }
 
-    public boolean isLBeamBroken() {
-        return !lBeamBreaker.get();
-    }
+    // public boolean isLBeamBroken() {
+    //     return !lTOFSensor.get();
+    // }
 
-    public boolean isRBeamBroken() {
-        return !rBeamBreaker.get();
-    }
+    // public boolean isRBeamBroken() {
+    //     return !rTOFSensor.get();
+    // }
 
     public void resetPoseSimulationToDrive() {
         if (this.mapleSimSwerveDrivetrain != null)
             mapleSimSwerveDrivetrain.mapleSimDrive.setSimulationWorldPose(getState().Pose);
         Timer.delay(0.1); // Wait for simulation to update
         super.resetPose(getState().Pose);
+    }
+
+    private void configTOFSensors() {
+        rTOFSensor.setRangingMode(RangingMode.Short, kNumConfigAttempts);
+        lTOFSensor.setRangingMode(RangingMode.Short, kNumConfigAttempts);
+        rTOFSensor.setRangeOfInterest( 6, 6, 9, 9);
+        lTOFSensor.setRangeOfInterest( 6, 6, 9, 9);
+    }
+
+    public boolean getLTOFBeam() {
+        return lTOFSensor.getRange() > TOFSensorThreshold; // millimeters
+    }
+
+    public boolean getRTOFBeam() {
+        return rTOFSensor.getRange() > TOFSensorThreshold; // millimeters
     }
 }

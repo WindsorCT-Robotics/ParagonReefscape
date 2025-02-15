@@ -19,7 +19,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Pick-up Coral"
+            "pathName": "Start Pick-up Coral"
           }
         },
         {
@@ -31,13 +31,37 @@
         {
           "type": "path",
           "data": {
-            "pathName": "End Coral Score"
+            "pathName": "2nd Coral Score"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "RightL2ScoreCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "End Pick-up Coral"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeBeamCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ID 18 End Coral Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "LeftL2ScoreCommand"
           }
         }
       ]

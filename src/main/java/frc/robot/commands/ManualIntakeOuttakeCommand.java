@@ -22,8 +22,8 @@ public class ManualIntakeOuttakeCommand extends Command {
 
     @Override
     public void execute() {
-        rollers.manualMoveIntakeRollers(new Percent(speed.getAsDouble()));
-        rollers.manualMoveOuttakeRollers(new Percent(speed.getAsDouble()));
+        rollers.manualMoveIntakeRollers(new Percent(speed.getAsDouble() / 4.5));
+        rollers.manualMoveOuttakeRollers(new Percent(speed.getAsDouble() / 4.5));
     }
 
     @Override
@@ -33,6 +33,6 @@ public class ManualIntakeOuttakeCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return !rollers.isBeamBroken();
+        return false;
     }
 }
