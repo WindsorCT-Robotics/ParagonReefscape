@@ -40,20 +40,17 @@ public class ReefAlignCommand extends Command{
     private final double redAdjustY = 0.0;
     private final double preIDAdjust = 0.15;
 
-    private final double xOffset = 0.1;
-    private final double yOffset = 0.1;
-
     public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op) {
         this.drivetrain = drivetrain;
         this.limelight = limelight;
         this.op = op;
         
-        ID_17[0] = 3.84; ID_17[1] = 2.88;
-        ID_18[0] = 3.2; ID_18[1] = 4.05;
-        ID_19[0] = 3.84; ID_19[1] = 5.16;
-        ID_20[0] = 5.15 - xOffset; ID_20[1] = 5.15 - yOffset;
-        ID_21[0] = 5.8; ID_21[1] = 4.05;
-        ID_22[0] = 5.15; ID_22[1] = 2.9;
+        ID_17[0] = 3.94; ID_17[1] = 3.08; 
+        ID_18[0] = 3.2 + 0.172 - 0.0508; ID_18[1] = 4.05;
+        ID_19[0] = 3.84 + 0.1016; ID_19[1] = 5.16 - 0.1016;
+        ID_20[0] = 5.15 - 0.1016; ID_20[1] = 5.15 - 0.1016;
+        ID_21[0] = 5.8 - 0.1778; ID_21[1] = 4.05;
+        ID_22[0] = 5.15 - 0.127; ID_22[1] = 2.9 + 0.127;
 
         // Blue IDs
         blueID[0][0] = new Pose2d(ID_17[0] - preIDAdjust, ID_17[1] - preIDAdjust, Rotation2d.fromDegrees(60)); // Pre ID 17
