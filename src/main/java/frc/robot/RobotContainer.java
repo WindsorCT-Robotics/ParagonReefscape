@@ -32,6 +32,7 @@ import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.commands.ReefAlignCommand;
+import frc.robot.commands.ResetSimPoseToDriveCommand;
 import frc.robot.commands.RetractElevatorCommand;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
@@ -124,7 +125,7 @@ public class RobotContainer {
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
         
         driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
-        // driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+        driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
 
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
         drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
