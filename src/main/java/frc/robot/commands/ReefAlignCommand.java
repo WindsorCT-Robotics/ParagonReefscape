@@ -40,7 +40,7 @@ public class ReefAlignCommand extends Command{
         {4.90474, 3.3063434, 120}  // ID_22
     };
 
-    private final double redAdjustX = 8.58;
+    private final double redAdjustX = 8.569452;
     private final double redAdjustY = 0.0;
     private final double preIDAdjust = -0.5;
 

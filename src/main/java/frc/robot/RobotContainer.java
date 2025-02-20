@@ -30,6 +30,7 @@ import frc.robot.commands.IntakeBeamCommand;
 import frc.robot.commands.ManualIntakeOuttakeCommand;
 import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
+import frc.robot.commands.LimelightReefAlignCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.commands.ReefAlignCommand;
 import frc.robot.commands.ResetSimPoseToDriveCommand;
@@ -124,7 +125,11 @@ public class RobotContainer {
 
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
         
-        driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
+        // driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
+        
+        driverController.leftStick().onTrue(new LimelightReefAlignCommand(drivetrain, vision, opController, "center"));
+        driverController.povRight().and(driverController.leftStick().onTrue(new LimelightReefAlignCommand(drivetrain, vision, opController, "right")));
+        driverController.povLeft().and(driverController.leftStick().onTrue(new LimelightReefAlignCommand(drivetrain, vision, opController, "left")));
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
 
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
