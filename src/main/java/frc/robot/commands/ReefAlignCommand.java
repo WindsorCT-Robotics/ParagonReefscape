@@ -31,7 +31,7 @@ public class ReefAlignCommand extends Command{
 
     // Measurements of actual april tags
 
-    double[][] aprilTagPoses = {
+    private double[][] aprilTagPoses = {
         {4.073906, 3.306318, 60}, // ID_17
         {3.6576, 4.0259, 0},     // ID_18
         {4.073906, 4.745482, -60}, // ID_19
@@ -169,7 +169,6 @@ public class ReefAlignCommand extends Command{
     @Override
     public void initialize() {
         aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-        aprilTagID = 22.0;
         if (aprilTagID != 0.0) {
             // Create a list of waypoints from poses. Each pose represents one waypoint.
             // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
@@ -189,7 +188,7 @@ public class ReefAlignCommand extends Command{
             // Prevent the path from being flipped if the coordinates are already correct
             path.preventFlipping = true;
             System.out.println(waypoints);
-            drivetrain.followPathCommand(path).until(op.x()).schedule();    
+            drivetrain.followPathCommand(path).until(op.x()).schedule();
         }
     }
 

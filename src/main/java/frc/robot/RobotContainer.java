@@ -73,7 +73,7 @@ public class RobotContainer {
 
         RegisterNamedComands();
 
-        autoChooser = AutoBuilder.buildAutoChooser("Optimal Path");
+        autoChooser = AutoBuilder.buildAutoChooser("Inner Barge Optimal Path L2");
         SmartDashboard.putData("Autos", autoChooser);
 
         configureBindings();
