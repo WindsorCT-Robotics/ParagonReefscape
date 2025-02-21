@@ -21,6 +21,10 @@ import frc.lib.Limelight.RectanglePoseArea;
 import frc.lib.Limelight.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
 
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 public class Limelight extends SubsystemBase {
   CommandSwerveDrivetrain drivetrain;
   Alliance alliance;
@@ -37,9 +41,9 @@ public class Limelight extends SubsystemBase {
 
   /** Creates a new Limelight. */
   public Limelight(CommandSwerveDrivetrain drivetrain) {
+    this.drivetrain = drivetrain;
     HttpCamera limelight = new HttpCamera("Limelight", "http://10.5.71.11:5800/");
     CameraServer.addCamera(limelight);
-    this.drivetrain = drivetrain;
   }
 
   @Override
