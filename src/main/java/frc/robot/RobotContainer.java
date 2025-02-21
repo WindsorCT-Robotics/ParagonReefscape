@@ -127,8 +127,8 @@ public class RobotContainer {
         // driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
         
         driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, "center"));
-        driverController.povRight().and(driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, "right")));
-        driverController.povLeft().and(driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, "left")));
+        driverController.povRight().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "right"));
+        driverController.povLeft().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "left"));
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
 
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->

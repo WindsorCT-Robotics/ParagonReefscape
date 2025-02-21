@@ -34,8 +34,8 @@ public class ReefAlignCommand extends Command{
     private final double redAdjustY = 0.0;
     private final double preIDAdjust = -0.5;
 
-    private final double leftAngle = -90.0;
-    private final double rightAngle = 90.0;
+    private final double leftAngle = 90.0;
+    private final double rightAngle = -90.0;
 
     private final double branchOffset = 0.3;
 
@@ -81,9 +81,23 @@ public class ReefAlignCommand extends Command{
 
         createOffsets(-0.4); // Meters
 
-        for (int id = 0; id < 23; id++) {
-            aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0), createPreAdjustments(preIDAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-            aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+        int subtract = 6;
+        for (int id = 17; id < 23; id++) {
+            // Blue IDs
+            if (id >= 17) {
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0), createPreAdjustments(preIDAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+            }
+            // Red IDs
+            if (id - subtract >= 6 && id - subtract <= 11) {
+                aprilTagPoses[id - subtract][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0) + redAdjustX, createPreAdjustments(preIDAdjust, id, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id - subtract][1] = new Pose2d(aprilTagPositions[id][0] + redAdjustX, aprilTagPositions[id][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                subtract = subtract + 2;
+            }
+
+            System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+        }
+            
         }
 
         // // Blue IDs
@@ -124,21 +138,38 @@ public class ReefAlignCommand extends Command{
 
         // aprilTagPoses[6][0] = new Pose2d(aprilTagPositions[5][0] + createPreAdjustments(preIDAdjust, 5, 0) + redAdjustX, aprilTagPositions[5][1] - createPreAdjustments(preIDAdjust, 5, 1), Rotation2d.fromDegrees(aprilTagPositions[5][2])); // Pre ID 6
         // aprilTagPoses[6][1] = new Pose2d(aprilTagPositions[5][0] + redAdjustX, aprilTagPositions[5][1], Rotation2d.fromDegrees(aprilTagPositions[5][2])); // ID 6
-    }
 
     private void trajectory() {
+        double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
+        double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
+
+        if (direction.equalsIgnoreCase("left")) {
+            waypoints = PathPlannerPath.waypointsFromPoses(
+                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
+                new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
+        }
+
+        if (direction.equalsIgnoreCase("center")) {
             waypoints = PathPlannerPath.waypointsFromPoses(aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
+        }
+
+        if (direction.equalsIgnoreCase("right")) {
+            waypoints = PathPlannerPath.waypointsFromPoses(
+                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
+                new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
+        }
     }
 
     @Override
     public void initialize() {
         aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        aprilTagID = 6;
         if (aprilTagID > 0.0) {
             // Create a list of waypoints from poses. Each pose represents one waypoint.
             // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
-            orientation = Rotation2d.fromDegrees(aprilTagPositions[(int) aprilTagID][2]);
-            changePathOnTheFly();
+            orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             trajectory();
+
             PathConstraints constraints = new PathConstraints(0.5, 0.5, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
             // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
 
@@ -206,23 +237,6 @@ public class ReefAlignCommand extends Command{
             return calculateDirectionalTranslation(aprilTagPositions[row][col], distance, aprilTagPositions[row][2], "x"); // X coordinate
         } else {
             return calculateDirectionalTranslation(aprilTagPositions[row][col], distance, aprilTagPositions[row][2], "y"); // Y coordinate
-        }
-    }
-
-    public void changePathOnTheFly() {
-        if (direction.equalsIgnoreCase("left")) {
-            aprilTagPoses[(int) aprilTagID][0] = new Pose2d(calculateDirectionalTranslation(aprilTagPoses[(int) aprilTagID][0].getX(), branchOffset, orientation.getDegrees() + leftAngle, "x"), aprilTagPoses[(int) aprilTagID][0].getY(), orientation);
-            aprilTagPoses[(int) aprilTagID][1] = new Pose2d(calculateDirectionalTranslation(aprilTagPoses[(int) aprilTagID][1].getX(), branchOffset, orientation.getDegrees() + leftAngle, "y"), aprilTagPoses[(int) aprilTagID][1].getY(), orientation);
-        }
-
-        if (direction.equalsIgnoreCase("center")) {
-            aprilTagPoses[(int) aprilTagID][0] = new Pose2d(calculateDirectionalTranslation(aprilTagPoses[(int) aprilTagID][0].getX(), branchOffset, orientation.getDegrees(), "x"), aprilTagPoses[(int) aprilTagID][0].getY(), orientation);
-            aprilTagPoses[(int) aprilTagID][1] = new Pose2d(calculateDirectionalTranslation(aprilTagPoses[(int) aprilTagID][1].getX(), branchOffset, orientation.getDegrees(), "y"), aprilTagPoses[(int) aprilTagID][1].getY(), orientation);
-        }
-
-        if (direction.equalsIgnoreCase("right")) {
-            aprilTagPoses[(int) aprilTagID][0] = new Pose2d(calculateDirectionalTranslation(aprilTagPoses[(int) aprilTagID][0].getX(), branchOffset, orientation.getDegrees() + rightAngle, "x"), aprilTagPoses[(int) aprilTagID][0].getY(), orientation);
-            aprilTagPoses[(int) aprilTagID][1] = new Pose2d(calculateDirectionalTranslation(aprilTagPoses[(int) aprilTagID][1].getX(), branchOffset, orientation.getDegrees() + rightAngle, "y"), aprilTagPoses[(int) aprilTagID][1].getY(), orientation);
         }
     }
 }
