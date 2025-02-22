@@ -28,18 +28,21 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.commands.ExtendElevatorCommand;
 import frc.robot.commands.IntakeBeamCommand;
 import frc.robot.commands.ManualIntakeOuttakeCommand;
+import frc.robot.commands.MoveAlgaeCommand;
 import frc.robot.commands.LeftL2ScoreCommand;
 import frc.robot.commands.LeftL3ScoreCommand;
 import frc.robot.commands.OuttakeBeamCommand;
 import frc.robot.commands.ReefAlignCommand;
 import frc.robot.commands.ResetSimPoseToDriveCommand;
 import frc.robot.commands.RetractElevatorCommand;
+import frc.robot.subsystems.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
 
 public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
+    private AlgaeRemoverSubsystem algaeRemover;
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) / 2; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -70,6 +73,7 @@ public class RobotContainer {
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
+        algaeRemover = new AlgaeRemoverSubsystem();
 
         RegisterNamedComands();
 
@@ -153,6 +157,8 @@ public class RobotContainer {
 
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
         opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getLeftY()));
+
+        opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.x()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
