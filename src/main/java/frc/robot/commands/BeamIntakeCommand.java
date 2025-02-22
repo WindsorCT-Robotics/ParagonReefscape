@@ -1,11 +1,13 @@
 package frc.robot.commands;
-import edu.wpi.first.wpilibj2.command.Command;
+
 import frc.robot.subsystems.CarriageSubsystem;
 
-public class IntakeBeamCommand extends Command {
+import edu.wpi.first.wpilibj2.command.Command;
+
+public class BeamIntakeCommand extends Command {
     private final CarriageSubsystem rollers;
 
-    public IntakeBeamCommand(CarriageSubsystem rollers) {
+    public BeamIntakeCommand(CarriageSubsystem rollers) {
         this.rollers = rollers;
     }
 

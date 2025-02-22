@@ -1,19 +1,16 @@
 package frc.robot.commands;
 
-import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
-public class LeftBeamAdjustment extends Command {
+import edu.wpi.first.wpilibj2.command.Command;
+
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
+public class BeamLeftAdjustment extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
 
-    private RobotCentric robotCentric;
-
-    public LeftBeamAdjustment(CommandSwerveDrivetrain drivetrain) {
+    public BeamLeftAdjustment(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
         addRequirements(this.drivetrain);
     }

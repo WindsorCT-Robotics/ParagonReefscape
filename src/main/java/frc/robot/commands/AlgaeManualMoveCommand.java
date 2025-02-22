@@ -1,12 +1,20 @@
 package frc.robot.commands;
-import edu.wpi.first.wpilibj2.command.Command;
+
+import frc.robot.Units.Percent;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
 
-public class MoveAlgaeCommand extends Command {
-    private final AlgaeRemoverSubsystem motor;
+import edu.wpi.first.wpilibj2.command.Command;
 
-    public MoveAlgaeCommand(AlgaeRemoverSubsystem motor) {
+import java.util.function.DoubleSupplier;
+
+
+public class AlgaeManualMoveCommand extends Command {
+    private final AlgaeRemoverSubsystem motor;
+    private DoubleSupplier speed;
+
+    public AlgaeManualMoveCommand(AlgaeRemoverSubsystem motor, DoubleSupplier speed) {
         this.motor = motor;
+        this.speed = speed;
     }
 
     @Override
@@ -16,7 +24,7 @@ public class MoveAlgaeCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor();
+        motor.manualMoveMotor(new Percent(speed.getAsDouble() / 10));
     }
 
     @Override

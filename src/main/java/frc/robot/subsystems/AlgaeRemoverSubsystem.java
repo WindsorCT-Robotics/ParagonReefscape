@@ -1,20 +1,19 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Units.Percent;
 
-import com.revrobotics.spark.SparkMax;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
-    private static final int ALGAE_MOTOR_CANID = 16;
+    // private static final int ALGAE_MOTOR_CANID = 17;
 
     private SparkMax motor;
     private SparkMaxConfig motorConfig;
@@ -25,7 +24,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
 
     public AlgaeRemoverSubsystem() {
         speed = new Percent(0.2);
-        motor = new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless);
+        // motor = new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless);
         motorConfig = new SparkMaxConfig();
 
         motorConfig.inverted(false);

@@ -1,10 +1,12 @@
 package frc.robot.commands;
-import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Units.Percent;
 import frc.robot.subsystems.CarriageSubsystem;
+
+import edu.wpi.first.wpilibj2.command.Command;
+
+import java.util.function.DoubleSupplier;
+
 
 public class ManualIntakeOuttakeCommand extends Command {
     private final CarriageSubsystem rollers;

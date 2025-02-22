@@ -20,29 +20,27 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.RightL2ScoreCommand;
-import frc.robot.commands.RightL3ScoreCommand;
+import frc.robot.commands.ScoreRightL2Command;
+import frc.robot.commands.ScoreRightL3Command;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.commands.ExtendElevatorCommand;
-import frc.robot.commands.IntakeBeamCommand;
+import frc.robot.commands.ElevatorExtendCommand;
+import frc.robot.commands.BeamIntakeCommand;
 import frc.robot.commands.ManualIntakeOuttakeCommand;
-import frc.robot.commands.MoveAlgaeCommand;
-import frc.robot.commands.LeftL2ScoreCommand;
-import frc.robot.commands.LeftL3ScoreCommand;
-import frc.robot.commands.OuttakeBeamCommand;
+import frc.robot.commands.ScoreLeftL2Command;
+import frc.robot.commands.ScoreLeftL3Command;
+import frc.robot.commands.BeamOuttakeCommand;
 import frc.robot.commands.ReefAlignCommand;
 import frc.robot.commands.ResetSimPoseToDriveCommand;
-import frc.robot.commands.RetractElevatorCommand;
-import frc.robot.subsystems.AlgaeRemoverSubsystem;
+import frc.robot.commands.ElevatorRetractCommand;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
 
 public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
-    private AlgaeRemoverSubsystem algaeRemover;
+    // private AlgaeRemoverSubsystem algaeRemover;
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) / 2; // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -73,7 +71,7 @@ public class RobotContainer {
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
-        algaeRemover = new AlgaeRemoverSubsystem();
+        // algaeRemover = new AlgaeRemoverSubsystem();
 
         RegisterNamedComands();
 
@@ -85,11 +83,11 @@ public class RobotContainer {
 
     private void RegisterNamedComands()
     {
-        NamedCommands.registerCommand("IntakeBeamCommand", new IntakeBeamCommand(carriage));
-        NamedCommands.registerCommand("LeftL3ScoreCommand", new LeftL3ScoreCommand(carriage, elevator, drivetrain));
-        NamedCommands.registerCommand("RightL3ScoreCommand", new RightL3ScoreCommand(carriage, elevator, drivetrain));
-        NamedCommands.registerCommand("LeftL2ScoreCommand", new LeftL2ScoreCommand(carriage, elevator, drivetrain));
-        NamedCommands.registerCommand("RightL2ScoreCommand", new RightL2ScoreCommand(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("IntakeBeamCommand", new BeamIntakeCommand(carriage));
+        NamedCommands.registerCommand("LeftL3ScoreCommand", new ScoreLeftL3Command(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("RightL3ScoreCommand", new ScoreRightL3Command(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("LeftL2ScoreCommand", new ScoreLeftL2Command(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("RightL2ScoreCommand", new ScoreRightL2Command(carriage, elevator, drivetrain));
     }
 
     private void configureBindings() {
@@ -120,7 +118,7 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         // driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        driverController.leftBumper().onTrue(new IntakeBeamCommand(carriage).until(opController.x()));
+        driverController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.x()));
         // driverController.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
 
         // driverController.povUp().onTrue(new ExtendElevatorCommand(elevator));
@@ -131,8 +129,8 @@ public class RobotContainer {
         // driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
         
         driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, "center"));
-        driverController.povRight().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "right"));
-        driverController.povLeft().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "left"));
+        driverController.b().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "left"));
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
 
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
@@ -140,25 +138,25 @@ public class RobotContainer {
             .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2) // Drive left with negative X (left)
             .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate / 1.5))); // Drive counterclockwise with negative X (left));
         
-        driverController.povDown().and(driverController.x()).onTrue(new LeftL2ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
-        driverController.povDown().and(driverController.b()).onTrue(new RightL2ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
+        driverController.povDown().and(driverController.x()).onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.x()));
+        driverController.povDown().and(driverController.b()).onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.x()));
         
-        driverController.povUp().and(driverController.x()).onTrue(new LeftL3ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
-        driverController.povUp().and(driverController.b()).onTrue(new RightL3ScoreCommand(carriage, elevator, drivetrain).until(opController.x()));
+        driverController.povUp().and(driverController.x()).onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.x()));
+        driverController.povUp().and(driverController.b()).onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.x()));
 
 
         opController.x().whileTrue(drivetrain.applyRequest(() -> coast));
 
-        opController.povUp().onTrue(new ExtendElevatorCommand(elevator).until(opController.x()));
-        opController.povDown().onTrue(new RetractElevatorCommand(elevator).until(opController.x()));
+        opController.povUp().onTrue(new ElevatorExtendCommand(elevator).until(opController.x()));
+        opController.povDown().onTrue(new ElevatorRetractCommand(elevator).until(opController.x()));
 
-        opController.rightBumper().onTrue(new OuttakeBeamCommand(carriage).until(opController.x()));
-        opController.leftBumper().onTrue(new IntakeBeamCommand(carriage).until(opController.x()));
+        opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.x()));
+        opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.x()));
 
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
         opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getLeftY()));
 
-        opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.x()));
+        // opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.x()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

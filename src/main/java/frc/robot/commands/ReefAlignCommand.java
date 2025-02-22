@@ -1,21 +1,21 @@
 package frc.robot.commands;
 
-import java.util.List;
+
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Limelight;
+import frc.lib.Limelight.LimelightHelpers;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Limelight;
-import frc.lib.Limelight.LimelightHelpers;
-import frc.lib.Limelight.LimelightHelpers.RawFiducial;
+import java.util.List;
 
 public class ReefAlignCommand extends Command{
     private final CommandSwerveDrivetrain drivetrain;
@@ -32,12 +32,12 @@ public class ReefAlignCommand extends Command{
 
     private final double redAdjustX = 8.569452;
     private final double redAdjustY = 0.0;
-    private final double preIDAdjust = -0.5;
+    private final double preIDAdjust = -0.3;
 
     private final double leftAngle = 90.0;
     private final double rightAngle = -90.0;
 
-    private final double branchOffset = 0.3;
+    private final double branchOffset = 0.1651;
 
     public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op, String direction) {
         this.drivetrain = drivetrain;
@@ -60,8 +60,8 @@ public class ReefAlignCommand extends Command{
         aprilTagPositions[17][2] = 60; // Angle
 
         aprilTagPositions[18][0] = 3.6576; // X position
-        aprilTagPositions[18][1] = 3.306318; // Y position
-        aprilTagPositions[18][2] = 60; // Angle
+        aprilTagPositions[18][1] = 4.0259; // Y position
+        aprilTagPositions[18][2] = 0; // Angle
 
         aprilTagPositions[19][0] = 4.073906; // X position
         aprilTagPositions[19][1] = 4.745482; // Y position
@@ -163,7 +163,6 @@ public class ReefAlignCommand extends Command{
     @Override
     public void initialize() {
         aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-        aprilTagID = 6;
         if (aprilTagID > 0.0) {
             // Create a list of waypoints from poses. Each pose represents one waypoint.
             // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.

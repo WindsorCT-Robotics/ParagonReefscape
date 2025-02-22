@@ -38,14 +38,11 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.simulation.VisionTargetSim;
 
 public class VisionSim {
     // Simulation
     private PhotonCameraSim cameraSim;
     private VisionSystemSim visionSim;
-    private VisionTargetSim visionTargetSim;
-    private int fiducialID = -1;
     private final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     private final double camPitch = Units.degreesToRadians(0.0);
     private final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));

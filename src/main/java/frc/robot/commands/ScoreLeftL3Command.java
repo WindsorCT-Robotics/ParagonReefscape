@@ -1,20 +1,22 @@
 package frc.robot.commands;
+
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
+
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-public class RightL2ScoreCommand extends SequentialCommandGroup {
+public class ScoreLeftL3Command extends SequentialCommandGroup {
 
-    public RightL2ScoreCommand(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain) {
+    public ScoreLeftL3Command(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain) {
         addCommands(
             new ParallelCommandGroup(
-                new RetractElevatorCommand(elevator),
-                new RightBeamAdjustment(drivetrain)
+                new ElevatorExtendCommand(elevator),
+                new BeamLeftAdjustment(drivetrain)
             ),
-            new OuttakeBeamCommand(rollers)
+            new BeamOuttakeCommand(rollers),
+            new ElevatorRetractCommand(elevator)
         );
     }
 }

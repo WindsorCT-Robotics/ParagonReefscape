@@ -1,19 +1,18 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Units.Percent;
 
-import com.revrobotics.spark.SparkMax;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class CarriageSubsystem extends SubsystemBase {
     // private static final int ROLLER_MOTOR_CANID = 15;
@@ -31,11 +30,6 @@ public class CarriageSubsystem extends SubsystemBase {
     private RelativeEncoder intakeEncoder;
 
     private Percent speed;
-
-    private static final int MOTOR_MAX_RPM = 5000;
-    private static final double INTAKE_MOTOR_GEAR_RATIO = 1 / 5;
-    private static final double OUTTAKE_MOTOR_GEAR_RATIO = 14 / 50;
-
 
     public CarriageSubsystem() {
         speed = new Percent(0.2);
@@ -68,11 +62,10 @@ public class CarriageSubsystem extends SubsystemBase {
     //     rollers.set(speed.asDouble());  
     // }
 
-    // public void moveOuttakeRollers() {
-    //     outtakeRollers.set(speed.asDouble());
+    // public void manualMoveRollers(Percent speed) {
+    //     intakeRollers.set(speed.asDouble());
     // }
-
-    // Needed if were to match different gear ratios
+    
     public void moveOuttakeRollers() {
         outtakeRollers.set(speed.asDouble());
     }
@@ -81,11 +74,6 @@ public class CarriageSubsystem extends SubsystemBase {
         outtakeRollers.set(speed.asDouble());
     }
 
-    // public void moveIntakeRollers() {
-    //     intakeRollers.set(speed.asDouble());
-    // }
-
-    // Needed if were to match different gear ratios
     public void moveIntakeRollers() {
         intakeRollers.set(speed.asDouble());
     }
