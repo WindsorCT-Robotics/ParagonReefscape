@@ -6,6 +6,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.Utils;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -30,9 +32,11 @@ public class Limelight extends SubsystemBase {
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(16.54, 8.02));
 
-  /** Creates a new Limelight. */
   public Limelight(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
+    HttpCamera httpCamera = new HttpCamera("limelight", "http://10.5.71.11:5800/");
+    CameraServer.addCamera(httpCamera);
+    httpCamera.setExposureAuto();
   }
 
   @Override

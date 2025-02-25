@@ -8,8 +8,6 @@ package frc.robot.utils.simulation;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.io.IOException;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;

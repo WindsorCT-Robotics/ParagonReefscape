@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.io.IOException;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeAlgaeOnField;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
@@ -13,8 +11,6 @@ import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFie
 import org.photonvision.PhotonCamera;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +18,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
@@ -46,7 +41,6 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_robotContainer = new RobotContainer();
-
   }
 
   @Override
@@ -80,10 +74,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    HttpCamera httpCamera = new HttpCamera("limelight", "http://10.5.71.11:5800/");
-    CameraServer.addCamera(httpCamera);
-    CameraServer.startAutomaticCapture(httpCamera);
-    Shuffleboard.getTab("SmartDashboard").add(httpCamera);
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

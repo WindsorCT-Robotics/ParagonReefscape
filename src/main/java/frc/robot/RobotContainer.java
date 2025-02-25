@@ -118,41 +118,57 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         // driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
+
+
+        // Driver Bindings
+
+
+        // Intake
         driverController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.x()));
-        // driverController.rightBumper().onTrue(new OuttakeBeamCommand(carriage));
 
-        // driverController.povUp().onTrue(new ExtendElevatorCommand(elevator));
-        // driverController.povDown().onTrue(new RetractElevatorCommand(elevator));
-
+        // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
         
-        // driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController));
-        
-        driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, "center"));
-        driverController.b().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "right"));
-        driverController.x().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, "left"));
-        driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+        // Auto Reef Alignment
+        driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, false, "center"));
+        driverController.b().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, false, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, false, "left"));
 
+        // Auto Coral Station Alignment
+        driverController.y().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, true, "center"));
+
+
+        // driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+
+        // Reduces max speed by 2
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
         drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
             .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2) // Drive left with negative X (left)
             .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate / 1.5))); // Drive counterclockwise with negative X (left));
         
+        // Aligns to branch and scores in L2
         driverController.povDown().and(driverController.x()).onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.x()));
         driverController.povDown().and(driverController.b()).onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.x()));
         
+        // Aligns to branch and scores in L2
         driverController.povUp().and(driverController.x()).onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.x()));
         driverController.povUp().and(driverController.b()).onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.x()));
 
 
-        opController.x().whileTrue(drivetrain.applyRequest(() -> coast));
 
+        // Operator Bindings
+
+
+
+        // Extends and retracts the elevator
         opController.povUp().onTrue(new ElevatorExtendCommand(elevator).until(opController.x()));
         opController.povDown().onTrue(new ElevatorRetractCommand(elevator).until(opController.x()));
 
+        // Rolls intake/outtake until x is pressed or sensor is tripped
         opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.x()));
         opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.x()));
 
+        // Manually controls the intake and outtake rollers
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
         opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getLeftY()));
 

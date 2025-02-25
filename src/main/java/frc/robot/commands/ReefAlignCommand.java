@@ -21,6 +21,7 @@ public class ReefAlignCommand extends Command{
     private final CommandSwerveDrivetrain drivetrain;
     private final Limelight limelight;
     private final CommandXboxController op;
+    private final boolean isCoralStation;
     private final String direction;
     private PathPlannerPath path;
     private double aprilTagID;
@@ -39,11 +40,12 @@ public class ReefAlignCommand extends Command{
 
     private final double branchOffset = 0.1651;
 
-    public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op, String direction) {
+    public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op, boolean isCoralStation, String direction) {
         this.drivetrain = drivetrain;
         this.limelight = limelight;
         this.op = op;
         this.direction = direction;
+        this.isCoralStation = isCoralStation;
         
         // Tuned measurements
         // ID_17[0] = 3.94; ID_17[1] = 3.08; 
@@ -54,6 +56,22 @@ public class ReefAlignCommand extends Command{
         // ID_22[0] = 5.15 - 0.127; ID_22[1] = 2.9 + 0.127;
 
         // Measurements of actual april tags
+
+        aprilTagPositions[1][0] = 0.851154 + redAdjustX;
+        aprilTagPositions[1][1] = 0.65532;
+        aprilTagPositions[1][2] = 126;
+
+        aprilTagPositions[2][0] = 0.851154 + redAdjustX;
+        aprilTagPositions[2][1] = 7.39648;
+        aprilTagPositions[2][2] = 234;
+
+        aprilTagPositions[12][0] = 0.851154; // X position
+        aprilTagPositions[12][1] = 0.65532; // Y position
+        aprilTagPositions[12][2] = 54; // Angle
+
+        aprilTagPositions[13][0] = 0.851154; // X position
+        aprilTagPositions[13][1] = 7.39648; // Y position
+        aprilTagPositions[13][2] = 306; // Angle
 
         aprilTagPositions[17][0] = 4.073906; // X position
         aprilTagPositions[17][1] = 3.306318; // Y position
@@ -78,9 +96,16 @@ public class ReefAlignCommand extends Command{
         aprilTagPositions[22][0] = 4.90474; // X position
         aprilTagPositions[22][1] = 3.3063434; // Y position
         aprilTagPositions[22][2] = 120; // Angle
-
+        
         createOffsets(-0.4); // Meters
 
+        // Coral Stations
+        for (int id = 0; id < 2; id++) {
+            aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0), createPreAdjustments(preIDAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+            aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+        }
+
+        // Coral Reef
         int subtract = 6;
         for (int id = 17; id < 23; id++) {
             // Blue IDs
@@ -143,6 +168,7 @@ public class ReefAlignCommand extends Command{
         double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
         double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
 
+        // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
                 new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
@@ -157,6 +183,10 @@ public class ReefAlignCommand extends Command{
             waypoints = PathPlannerPath.waypointsFromPoses(
                 new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
+        }
+
+        if (isCoralStation == true) {
+            
         }
     }
 
