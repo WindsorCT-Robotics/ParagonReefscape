@@ -6,6 +6,8 @@ import frc.lib.Limelight.LimelightHelpers;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -15,6 +17,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 
 import java.util.List;
+import java.util.Set;
 
 public class ReefAlignCommand extends Command{
     private final CommandSwerveDrivetrain drivetrain;
@@ -29,11 +32,12 @@ public class ReefAlignCommand extends Command{
     
     Pose2d[][] aprilTagPoses = new Pose2d[23][2];
     double[][] aprilTagPositions = new double[23][3];
-    int[] usedAprilTags = {1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20, 21, 22};
+    private static final Set<Integer> usedAprilTags = Set.of(1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20, 21, 22);
 
     private final double redAdjustX = 8.569452;
     private final double redAdjustY = 0.0;
-    private final double preIDAdjust = -0.3;
+    private final double preReefAdjust = -0.3;
+    private final double preCoralStationAdjust = 0.3;
 
     private final double leftAngle = 90.0;
     private final double rightAngle = -90.0;
@@ -97,7 +101,7 @@ public class ReefAlignCommand extends Command{
         aprilTagPositions[22][1] = 3.3063434; // Y position
         aprilTagPositions[22][2] = 120; // Angle
         
-        createOffsets(-0.4); // Meters
+        createOffsets(-0.4, 0.4); // Meters
         
         // Coral Reef
         int subtract = 6;
@@ -106,13 +110,13 @@ public class ReefAlignCommand extends Command{
 
             // Coral Stations
             if (id >= 12 && id <= 13) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0), createPreAdjustments(preIDAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preCoralStationAdjust, id, 0), createPreAdjustments(preCoralStationAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
                 aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
             }
             
             // Reef
             if (id >= 17) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0), createPreAdjustments(preIDAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preReefAdjust, id, 0), createPreAdjustments(preReefAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
                 aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
             }
             
@@ -120,13 +124,13 @@ public class ReefAlignCommand extends Command{
             
             // Coral Stations
             if (id >= 1 && id <=2) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0), createPreAdjustments(preIDAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preCoralStationAdjust, id, 0), createPreAdjustments(preCoralStationAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
                 aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
             }
             
             // Reef
             if (id - subtract >= 6 && id - subtract <= 11) {
-                aprilTagPoses[id - subtract][0] = new Pose2d(createPreAdjustments(preIDAdjust, id, 0) + redAdjustX, createPreAdjustments(preIDAdjust, id, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id - subtract][0] = new Pose2d(createPreAdjustments(preReefAdjust, id, 0) + redAdjustX, createPreAdjustments(preReefAdjust, id, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
                 aprilTagPoses[id - subtract][1] = new Pose2d(aprilTagPositions[id][0] + redAdjustX, aprilTagPositions[id][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
                 subtract = subtract + 2;
             }
@@ -136,12 +140,8 @@ public class ReefAlignCommand extends Command{
 
     private void trajectory() {
         // Checks if the id that is being used is an id that is allowed to be used for positioning
-        for (int usableIDs = 0; usableIDs < usedAprilTags.length; usableIDs++) {
-            if (usedAprilTags[usableIDs] == aprilTagID) {
-                break;
-            } else {
-                return;
-            }
+        if (!usedAprilTags.contains((int) aprilTagID)) {
+            return;
         }
 
         double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
@@ -156,21 +156,24 @@ public class ReefAlignCommand extends Command{
 
         if (direction.equalsIgnoreCase("center")) {
             if (isCoralStation == true) {
-                if (aprilTagID == 6) {
-                    aprilTagID = 1.0;
+                // Blue
+                if (drivetrain.getState().Pose.getY() < 4.025) {
+                    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                        aprilTagID = 12.0;
+                    } else {
+                        aprilTagID = 1.0;
+                    }
                 }
                 
-                if (aprilTagID == 8) {
-                    aprilTagID = 2;
+                if (drivetrain.getState().Pose.getY() > 4.025) {
+                    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                        aprilTagID = 13.0;
+                    } else {
+                        aprilTagID = 2.0;
+                    }
                 }
-                
-                if (aprilTagID == 17) {
-                    aprilTagID = 12;
-                }
-                
-                if (aprilTagID == 19) {
-                    aprilTagID = 13;
-                }
+
+                orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
             
             waypoints = PathPlannerPath.waypointsFromPoses(aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
@@ -191,9 +194,12 @@ public class ReefAlignCommand extends Command{
             // Create a list of waypoints from poses. Each pose represents one waypoint.
             // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
+
             trajectory();
+
             if (waypoints == null) {
-                end(false);
+                System.out.println("Waypoints is null");
+                return;
             }
 
             PathConstraints constraints = new PathConstraints(0.5, 0.5, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
@@ -246,13 +252,21 @@ public class ReefAlignCommand extends Command{
         return currentPose;
     }
 
-    public void createOffsets(double distance) {
+    public void createOffsets(double reefOffset, double coralStationOffset) {
         for (int row = 0; row < aprilTagPositions.length; row++) {
             for (int col = 0; col < aprilTagPositions[row].length - 1; col++) {
                 if (col == 0) {
-                    aprilTagPositions[row][col] = calculateDirectionalTranslation(aprilTagPositions[row][col], distance, aprilTagPositions[row][2], "x"); // X coordinate
+                    if (Set.of(1, 2, 12, 13).contains(row)) {
+                        aprilTagPositions[row][col] = calculateDirectionalTranslation(aprilTagPositions[row][col], coralStationOffset, aprilTagPositions[row][2], "x"); // X coordinate
+                    } else {
+                        aprilTagPositions[row][col] = calculateDirectionalTranslation(aprilTagPositions[row][col], reefOffset, aprilTagPositions[row][2], "x"); // X coordinate
+                    }
                 } else {
-                    aprilTagPositions[row][col] = calculateDirectionalTranslation(aprilTagPositions[row][col], distance, aprilTagPositions[row][2], "y"); // Y coordinate
+                    if (Set.of(1, 2, 12, 13).contains(row)) {
+                        aprilTagPositions[row][col] = calculateDirectionalTranslation(aprilTagPositions[row][col], coralStationOffset, aprilTagPositions[row][2], "y"); // X coordinate
+                    } else {
+                        aprilTagPositions[row][col] = calculateDirectionalTranslation(aprilTagPositions[row][col], reefOffset, aprilTagPositions[row][2], "y"); // Y coordinate
+                    }
                 }
             }
         }

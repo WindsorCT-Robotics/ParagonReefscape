@@ -138,7 +138,7 @@ public class RobotContainer {
         driverController.y().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, true, "center"));
 
 
-        // driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+        driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
 
         // Reduces max speed by 2
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
