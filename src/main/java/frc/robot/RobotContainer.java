@@ -27,7 +27,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.commands.ElevatorExtendCommand;
 import frc.robot.commands.BeamIntakeCommand;
-import frc.robot.commands.ManualIntakeOuttakeCommand;
+import frc.robot.commands.ManualMoveRollersCommand;
 import frc.robot.commands.ScoreLeftL2Command;
 import frc.robot.commands.ScoreLeftL3Command;
 import frc.robot.commands.BeamOuttakeCommand;
@@ -130,12 +130,12 @@ public class RobotContainer {
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
         
         // Auto Reef Alignment
-        driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, false, "center"));
-        driverController.b().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, false, "right"));
-        driverController.x().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, false, "left"));
+        driverController.leftStick().onTrue(new ReefAlignCommand(drivetrain, vision, opController, driverController, false, "center"));
+        driverController.b().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, driverController, false, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, driverController, false, "left"));
 
         // Auto Coral Station Alignment
-        driverController.y().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, true, "center"));
+        driverController.y().and(driverController.leftStick()).onTrue(new ReefAlignCommand(drivetrain, vision, opController, driverController, true, "center"));
 
 
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
@@ -170,7 +170,7 @@ public class RobotContainer {
 
         // Manually controls the intake and outtake rollers
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
-        opLeftJoy.whileTrue(new ManualIntakeOuttakeCommand(carriage, () -> -opController.getLeftY()));
+        opLeftJoy.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
 
         // opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.x()));
 

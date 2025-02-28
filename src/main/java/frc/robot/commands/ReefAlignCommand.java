@@ -23,6 +23,7 @@ public class ReefAlignCommand extends Command{
     private final CommandSwerveDrivetrain drivetrain;
     private final Limelight limelight;
     private final CommandXboxController op;
+    private final CommandXboxController drive;
     private final boolean isCoralStation;
     private final String direction;
     private PathPlannerPath path;
@@ -44,10 +45,11 @@ public class ReefAlignCommand extends Command{
 
     private final double branchOffset = 0.1651;
 
-    public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op, boolean isCoralStation, String direction) {
+    public ReefAlignCommand(CommandSwerveDrivetrain drivetrain, Limelight limelight, CommandXboxController op, CommandXboxController drive, boolean isCoralStation, String direction) {
         this.drivetrain = drivetrain;
         this.limelight = limelight;
         this.op = op;
+        this.drive = drive;
         this.direction = direction;
         this.isCoralStation = isCoralStation;
         
@@ -216,7 +218,7 @@ public class ReefAlignCommand extends Command{
             // Prevent the path from being flipped if the coordinates are already correct
             path.preventFlipping = true;
             System.out.println(waypoints);
-            drivetrain.followPathCommand(path).until(op.x()).schedule();
+            drivetrain.followPathCommand(path).until(drive.x()).schedule();
         }
     }
 

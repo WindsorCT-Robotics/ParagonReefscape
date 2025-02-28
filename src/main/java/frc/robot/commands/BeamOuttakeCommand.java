@@ -18,8 +18,7 @@ public class BeamOuttakeCommand extends Command {
 
     @Override
     public void execute() {
-        rollers.moveIntakeRollers();
-        rollers.moveOuttakeRollers();
+        rollers.moveRollers();
     }
 
     @Override

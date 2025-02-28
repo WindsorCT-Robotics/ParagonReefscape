@@ -57,8 +57,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final double TOFSensorThreshold = 320;
 
-    private static final int L_TOF_CANID = 18;
-    private static final int R_TOF_CANID = 17;
+    private static final int L_TOF_CANID = 17;
+    private static final int R_TOF_CANID = 16;
 
     private Field2d field = new Field2d();
 

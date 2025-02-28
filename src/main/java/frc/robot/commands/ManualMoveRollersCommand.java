@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.DoubleSupplier;
 
 
-public class ManualIntakeOuttakeCommand extends Command {
+public class ManualMoveRollersCommand extends Command {
     private final CarriageSubsystem rollers;
     private DoubleSupplier speed;
 
-    public ManualIntakeOuttakeCommand(CarriageSubsystem rollers, DoubleSupplier speed) {
+    public ManualMoveRollersCommand(CarriageSubsystem rollers, DoubleSupplier speed) {
         this.rollers = rollers;
         this.speed = speed;
     }
@@ -24,8 +24,7 @@ public class ManualIntakeOuttakeCommand extends Command {
 
     @Override
     public void execute() {
-        rollers.manualMoveIntakeRollers(new Percent(speed.getAsDouble() / 4.5));
-        rollers.manualMoveOuttakeRollers(new Percent(speed.getAsDouble() / 4.5));
+        rollers.manualMoveRollers(new Percent(speed.getAsDouble() / 4.5));
     }
 
     @Override

@@ -69,7 +69,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Encoder Position", elevMotor.getEncoder().getPosition());
+        SmartDashboard.putNumber("Encoder Position", encoder.getPosition());
         SmartDashboard.putBoolean("Forward Limit Switch", elevMotor.getForwardLimitSwitch().isPressed());
         SmartDashboard.putBoolean("Reverse Limit Switch", elevMotor.getReverseLimitSwitch().isPressed());
     }
