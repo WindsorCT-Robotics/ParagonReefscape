@@ -103,6 +103,10 @@ public class RobotContainer {
             )
         );
 
+        Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
+        Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
+        Trigger opLeftJoy = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
+
         // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // driverController.b().whileTrue(drivetrain.applyRequest(() ->
         //     point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
@@ -124,7 +128,7 @@ public class RobotContainer {
 
 
         // Intake
-        driverController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.x()));
+        driverController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
 
         // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
@@ -145,34 +149,39 @@ public class RobotContainer {
         drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
             .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2) // Drive left with negative X (left)
             .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate / 1.5))); // Drive counterclockwise with negative X (left));
-        
-        // Aligns to branch and scores in L2
-        driverController.povDown().and(driverController.x()).onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.x()));
-        driverController.povDown().and(driverController.b()).onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.x()));
-        
-        // Aligns to branch and scores in L2
-        driverController.povUp().and(driverController.x()).onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.x()));
-        driverController.povUp().and(driverController.b()).onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.x()));
 
 
 
         // Operator Bindings
+        // Make new commands that combines ReefAlign and AutoAlign
 
 
+        // Removes Algae from Reef
+        opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.leftStick()));
+
+        // Aligns to troph
+        opController.x().onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opController.b().onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+
+        // Aligns to branch and scores in L2
+        opLeftTrigger.whileTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opRightTrigger.whileTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        
+        // Aligns to branch and scores in L3
+        driverController.leftBumper().onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        driverController.rightBumper().onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
 
         // Extends and retracts the elevator
-        opController.povUp().onTrue(new ElevatorExtendCommand(elevator).until(opController.x()));
-        opController.povDown().onTrue(new ElevatorRetractCommand(elevator).until(opController.x()));
+        opController.povUp().onTrue(new ElevatorExtendCommand(elevator).until(opController.leftStick()));
+        opController.povDown().onTrue(new ElevatorRetractCommand(elevator).until(opController.leftStick()));
 
         // Rolls intake/outtake until x is pressed or sensor is tripped
-        opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.x()));
-        opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.x()));
+        opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.leftStick()));
+        opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
 
         // Manually controls the intake and outtake rollers
-        Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
-        opLeftJoy.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
-
-        // opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.x()));
+        
+        opLeftTrigger.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
