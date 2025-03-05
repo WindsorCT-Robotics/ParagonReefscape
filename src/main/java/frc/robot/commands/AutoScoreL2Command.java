@@ -14,7 +14,7 @@ public class AutoScoreL2Command extends SequentialCommandGroup {
         if (direction.equalsIgnoreCase("left")) {
             addCommands(
             new ParallelCommandGroup(
-                new ReefAlignCommand(drivetrain, limelight, op, drive, false, direction),
+                drivetrain.pathToAlign(limelight, false, direction),
                 new ElevatorToL2Command(elevator),
                 new BeamLeftAdjustment(drivetrain)
             ),
@@ -25,7 +25,7 @@ public class AutoScoreL2Command extends SequentialCommandGroup {
         if (direction.equalsIgnoreCase("right")) {
             addCommands(
             new ParallelCommandGroup(
-                new ReefAlignCommand(drivetrain, limelight, op, drive, false, direction),
+                drivetrain.pathToAlign(limelight, false, direction),
                 new ElevatorToL2Command(elevator),
                 new BeamRightAdjustment(drivetrain)
             ),
