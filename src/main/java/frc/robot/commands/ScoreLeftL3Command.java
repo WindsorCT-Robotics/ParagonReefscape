@@ -12,11 +12,11 @@ public class ScoreLeftL3Command extends SequentialCommandGroup {
     public ScoreLeftL3Command(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain) {
         addCommands(
             new ParallelCommandGroup(
-                new ElevatorExtendCommand(elevator),
+                new ElevatorToL3Command(elevator),
                 new BeamLeftAdjustment(drivetrain)
             ),
             new BeamOuttakeCommand(rollers),
-            new ElevatorRetractCommand(elevator)
+            new ElevatorToL1Command(elevator)
         );
     }
 }

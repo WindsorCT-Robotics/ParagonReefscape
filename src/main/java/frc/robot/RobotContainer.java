@@ -25,15 +25,8 @@ import frc.robot.commands.ScoreRightL3Command;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.commands.ElevatorExtendCommand;
-import frc.robot.commands.BeamIntakeCommand;
-import frc.robot.commands.ManualMoveRollersCommand;
-import frc.robot.commands.ScoreLeftL2Command;
-import frc.robot.commands.ScoreLeftL3Command;
-import frc.robot.commands.BeamOuttakeCommand;
-import frc.robot.commands.ReefAlignCommand;
-import frc.robot.commands.ResetSimPoseToDriveCommand;
-import frc.robot.commands.ElevatorRetractCommand;
+import frc.robot.commands.*;
+import frc.robot.subsystems.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
 
@@ -41,7 +34,7 @@ public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
     // private AlgaeRemoverSubsystem algaeRemover;
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) / 2; // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -105,7 +98,8 @@ public class RobotContainer {
 
         Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
         Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
-        Trigger opLeftJoy = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
+        Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
+        Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
 
         // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // driverController.b().whileTrue(drivetrain.applyRequest(() ->
@@ -129,6 +123,9 @@ public class RobotContainer {
 
         // Intake
         driverController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
+
+        // Outtake
+        driverController.rightStick().onTrue(new BeamOuttakeCommand(carriage));
 
         // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
@@ -157,31 +154,42 @@ public class RobotContainer {
 
 
         // Removes Algae from Reef
-        opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.leftStick()));
+        // opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.leftStick()));
 
         // Aligns to troph
-        opController.x().onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
-        opController.b().onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opController.x().onTrue(new ScoreLeftL1Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opController.b().onTrue(new ScoreRightL1Command(carriage, elevator, drivetrain).until(opController.leftStick()));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.whileTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
-        opRightTrigger.whileTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opLeftTrigger.onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opRightTrigger.onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
         
         // Aligns to branch and scores in L3
-        driverController.leftBumper().onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
-        driverController.rightBumper().onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opController.leftBumper().onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opController.rightBumper().onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
 
         // Extends and retracts the elevator
-        opController.povUp().onTrue(new ElevatorExtendCommand(elevator).until(opController.leftStick()));
-        opController.povDown().onTrue(new ElevatorRetractCommand(elevator).until(opController.leftStick()));
+        opController.povUp().onTrue(new ElevatorToL3Command(elevator).until(opController.leftStick()));
+        opController.povLeft().onTrue(new ElevatorToL2Command(elevator).until(opController.leftStick()));
+        opController.povDown().onTrue(new ElevatorToL1Command(elevator).until(opController.leftStick()));
 
         // Rolls intake/outtake until x is pressed or sensor is tripped
-        opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.leftStick()));
-        opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
+        // opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.leftStick()));
+        // opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
+        
+        // Controls algae remover
+
+        // opController.povUp().onTrue(new AlgaeMoveDownCommand(AlgaeRemoverSubsystem));
+
+        // opController.povDown().onTrue(new AlgaeMoveUpCommand(AlgaeRemoverSubsystem));
 
         // Manually controls the intake and outtake rollers
         
-        opLeftTrigger.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
+        opRightJoy.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
+
+        // Manually controls the algae remover
+
+        // opLeftJoy.whileTrue(new AlgaeManualMoveCommand(AlgaeRemoverSubsystem, () -> opController.getLeftY()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

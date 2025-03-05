@@ -4,10 +4,10 @@ import frc.robot.subsystems.AlgaeRemoverSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class AlgaeMoveCommand extends Command {
+public class AlgaeMoveDownCommand extends Command {
     private final AlgaeRemoverSubsystem motor;
 
-    public AlgaeMoveCommand(AlgaeRemoverSubsystem motor) {
+    public AlgaeMoveDownCommand(AlgaeRemoverSubsystem motor) {
         this.motor = motor;
     }
 

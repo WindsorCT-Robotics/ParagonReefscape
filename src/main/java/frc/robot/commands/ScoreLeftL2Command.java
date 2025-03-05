@@ -12,10 +12,11 @@ public class ScoreLeftL2Command extends SequentialCommandGroup {
     public ScoreLeftL2Command(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain) {
         addCommands(
             new ParallelCommandGroup(
-                new ElevatorRetractCommand(elevator),
+                new ElevatorToL2Command(elevator),
                 new BeamLeftAdjustment(drivetrain)
             ),
-            new BeamOuttakeCommand(rollers)
+            new BeamOuttakeCommand(rollers),
+            new ElevatorToL1Command(elevator)
         );
     }
 }

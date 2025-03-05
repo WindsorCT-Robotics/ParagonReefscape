@@ -7,7 +7,7 @@ public class ScoreL3Command extends SequentialCommandGroup {
 
     public ScoreL3Command(CarriageSubsystem rollers, ElevatorSubsystem elevator) {
         addCommands(
-            new ElevatorExtendCommand(elevator),
+            new ElevatorToL3Command(elevator),
             new BeamOuttakeCommand(rollers)
         );
     }

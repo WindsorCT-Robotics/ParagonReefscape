@@ -24,15 +24,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final SparkClosedLoopController closedLoopController;
     private final RelativeEncoder encoder;
 
-    private static final double TARGET_LOWER = 0.0;
-    private static final double TARGET_UPPER = 67.0;
+    private static final double L1 = 0.0;
+    private static final double L2 = 14.0;
+    private static final double L3 = 45.0;
 
     public ElevatorSubsystem() {
         elevMotor = new SparkMax(MOTOR_CANID, MotorType.kBrushless);
         elevMotorConfig = new SparkMaxConfig();
 
-        elevMotorConfig.limitSwitch.forwardLimitSwitchType(Type.kNormallyClosed);
-        elevMotorConfig.limitSwitch.reverseLimitSwitchType(Type.kNormallyClosed);
+        elevMotorConfig.limitSwitch.forwardLimitSwitchType(Type.kNormallyOpen);
+        elevMotorConfig.limitSwitch.reverseLimitSwitchType(Type.kNormallyOpen);
 
         closedLoopController = elevMotor.getClosedLoopController();
         encoder = elevMotor.getEncoder();
@@ -55,8 +56,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevMotorConfig.closedLoop.maxMotion
             // Set MAXMotion parameters for position control. We don't need to pass
             // a closed loop slot, as it will default to slot 0.
-            .maxVelocity(5000)
-            .maxAcceleration(5000)
+            .maxVelocity(5600)
+            .maxAcceleration(5600)
             .allowedClosedLoopError(0.5)
             // Set MAXMotion parameters for velocity control in slot 1
             .maxAcceleration(500, ClosedLoopSlot.kSlot1)
@@ -64,6 +65,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             .allowedClosedLoopError(1, ClosedLoopSlot.kSlot1);    
 
         elevMotorConfig.idleMode(IdleMode.kBrake);
+        elevMotorConfig.inverted(true);
         elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
 
@@ -77,26 +79,34 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("Reverse Limit Switch", elevMotor.getReverseLimitSwitch().isPressed());
     }
 
-    public boolean isAtTop() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - TARGET_UPPER) <= 0.5);
+    public boolean isAtL3() {
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.5);
     }
 
-    public boolean isAtBottom() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - TARGET_LOWER) <= 0.5);
+    public boolean isAtL2() {
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L2) <= 0.5);
     }
 
-    public void setToTop(){
-        closedLoopController.setReference(TARGET_UPPER, ControlType.kMAXMotionPositionControl,
+    public boolean isAtL1() {
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L1) <= 0.5);
+    }
+
+    public void setToL3(){
+        closedLoopController.setReference(L3, ControlType.kMAXMotionPositionControl,
           ClosedLoopSlot.kSlot0);    
     }
 
-
-    public void setToBottom(){
-        closedLoopController.setReference(TARGET_LOWER, ControlType.kMAXMotionPositionControl,
+    public void setToL2(){
+        closedLoopController.setReference(L2, ControlType.kMAXMotionPositionControl,
           ClosedLoopSlot.kSlot0);    
     }
 
-    public void motorStop() {
+    public void setToL1(){
+        closedLoopController.setReference(L1, ControlType.kMAXMotionPositionControl,
+          ClosedLoopSlot.kSlot0);    
+    }
+
+    public void stopMotor() {
         elevMotor.stopMotor();
     }
 }

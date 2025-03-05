@@ -7,16 +7,15 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
-public class ScoreRightL3Command extends SequentialCommandGroup {
+public class ScoreRightL1Command extends SequentialCommandGroup {
 
-    public ScoreRightL3Command(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain) {
+    public ScoreRightL1Command(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain) {
         addCommands(
             new ParallelCommandGroup(
-                new ElevatorToL3Command(elevator),
+                new ElevatorToL1Command(elevator),
                 new BeamRightAdjustment(drivetrain)
             ),
-            new BeamOuttakeCommand(rollers),
-            new ElevatorToL1Command(elevator)
+            new BeamOuttakeCommand(rollers)
         );
     }
 }

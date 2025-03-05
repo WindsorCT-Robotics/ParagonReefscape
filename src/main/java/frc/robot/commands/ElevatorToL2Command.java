@@ -1,31 +1,32 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorSubsystem;
 
-import edu.wpi.first.wpilibj2.command.Command;
-
-public class ElevatorRetractCommand extends Command {
+public class ElevatorToL2Command extends Command {
     private final ElevatorSubsystem elevator;
 
-    public ElevatorRetractCommand(ElevatorSubsystem elevator) {
+    public ElevatorToL2Command(ElevatorSubsystem elevator) {
         this.elevator = elevator;
     }
 
     @Override
-    public void initialize() {}
+    public void initialize() {
+        elevator.setToL2();
+    }
 
     @Override
     public void execute() {
-        elevator.setToBottom();
+
     }
 
     @Override
     public void end(boolean interrupted) {
-        elevator.motorStop();
+        elevator.stopMotor();
     }
 
     @Override
     public boolean isFinished() {
-        return elevator.isAtBottom();
+        return elevator.isAtL2();
     }
 }
