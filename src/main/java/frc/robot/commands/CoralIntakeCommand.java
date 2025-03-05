@@ -4,10 +4,10 @@ import frc.robot.subsystems.CarriageSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class BeamIntakeCommand extends Command {
+public class CoralIntakeCommand extends Command {
     private final CarriageSubsystem rollers;
 
-    public BeamIntakeCommand(CarriageSubsystem rollers) {
+    public CoralIntakeCommand(CarriageSubsystem rollers) {
         this.rollers = rollers;
     }
 

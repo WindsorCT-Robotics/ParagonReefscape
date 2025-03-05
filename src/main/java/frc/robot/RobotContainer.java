@@ -20,8 +20,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.ScoreRightL2Command;
-import frc.robot.commands.ScoreRightL3Command;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -76,11 +74,13 @@ public class RobotContainer {
 
     private void RegisterNamedComands()
     {
-        NamedCommands.registerCommand("IntakeBeamCommand", new BeamIntakeCommand(carriage));
-        NamedCommands.registerCommand("LeftL3ScoreCommand", new ScoreLeftL3Command(carriage, elevator, drivetrain));
-        NamedCommands.registerCommand("RightL3ScoreCommand", new ScoreRightL3Command(carriage, elevator, drivetrain));
-        NamedCommands.registerCommand("LeftL2ScoreCommand", new ScoreLeftL2Command(carriage, elevator, drivetrain));
-        NamedCommands.registerCommand("RightL2ScoreCommand", new ScoreRightL2Command(carriage, elevator, drivetrain));
+        NamedCommands.registerCommand("IntakeBeamCommand", new CoralIntakeCommand(carriage));
+        NamedCommands.registerCommand("LeftL3ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 3));
+        NamedCommands.registerCommand("RightL3ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 3));
+        NamedCommands.registerCommand("LeftL2ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 2));
+        NamedCommands.registerCommand("RightL2ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 2));
+        NamedCommands.registerCommand("LeftL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 1));
+        NamedCommands.registerCommand("RightL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 1));
     }
 
     private void configureBindings() {
@@ -122,10 +122,10 @@ public class RobotContainer {
 
 
         // Intake
-        driverController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
+        driverController.leftBumper().onTrue(new CoralIntakeCommand(carriage).until(opController.leftStick()));
 
         // Outtake
-        driverController.rightStick().onTrue(new BeamOuttakeCommand(carriage));
+        driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage));
 
         // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
@@ -156,22 +156,22 @@ public class RobotContainer {
         // Removes Algae from Reef
         // opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.leftStick()));
 
-        // Aligns to troph
-        opController.x().onTrue(new ScoreLeftL1Command(carriage, elevator, drivetrain).until(opController.leftStick()));
-        opController.b().onTrue(new ScoreRightL1Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        // Aligns to trough
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
+        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.onTrue(new ScoreLeftL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
-        opRightTrigger.onTrue(new ScoreRightL2Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
+        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
         
         // Aligns to branch and scores in L3
-        opController.leftBumper().onTrue(new ScoreLeftL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
-        opController.rightBumper().onTrue(new ScoreRightL3Command(carriage, elevator, drivetrain).until(opController.leftStick()));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
 
         // Extends and retracts the elevator
-        opController.povUp().onTrue(new ElevatorToL3Command(elevator).until(opController.leftStick()));
-        opController.povLeft().onTrue(new ElevatorToL2Command(elevator).until(opController.leftStick()));
-        opController.povDown().onTrue(new ElevatorToL1Command(elevator).until(opController.leftStick()));
+        opController.povUp().onTrue(new ElevatorMoveCommand(elevator, 3).until(opController.leftStick()));
+        opController.povLeft().onTrue(new ElevatorMoveCommand(elevator, 2).until(opController.leftStick()));
+        opController.povDown().onTrue(new ElevatorMoveCommand(elevator, 1).until(opController.leftStick()));
 
         // Rolls intake/outtake until x is pressed or sensor is tripped
         // opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.leftStick()));
