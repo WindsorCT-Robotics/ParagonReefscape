@@ -131,9 +131,9 @@ public class RobotContainer {
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
         
         // Auto Reef Alignment
-        driverController.leftStick().onTrue(new PathCommand(drivetrain, vision, false, "center"));
-        driverController.b().and(driverController.leftStick()).onTrue(new PathCommand(drivetrain, vision, false, "right"));
-        driverController.x().and(driverController.leftStick()).onTrue(new PathCommand(drivetrain, vision, false, "left"));
+        driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
+        driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
 
         // Auto Coral Station Alignment
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center"));

@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -427,8 +428,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
-        System.out.println("pathToAlign running");
+    public Command pathToAlignGenerator(Limelight limelight, boolean isCoralStation, String direction) {
+        System.out.println("Begin generating path");
         aprilTagPositions[1][0] = 16.697198;
         aprilTagPositions[1][1] = 0.65532;
         aprilTagPositions[1][2] = 126;
@@ -508,7 +509,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         List<Waypoint> waypoints;
         Rotation2d orientation;
         double aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-        System.out.println(aprilTagID);
+        System.out.println("Current apriltag is " + aprilTagID);
         
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
@@ -516,6 +517,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
         } else {
+            System.out.println("No valid apriltag");
             return Commands.none();
         }
 
@@ -536,7 +538,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Prevent the path from being flipped if the coordinates are already correct
         path.preventFlipping = true;
         try {
-            System.out.println("Following path");
+            System.out.println("Path made and executing");
             return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
             setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
                 .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
@@ -548,9 +550,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 new PIDConstants(7, 0, 0)
             ), RobotConfig.fromGUISettings(), () -> false, this);
         } catch (IOException | ParseException ex) {
-            System.out.println("No Command");
+            System.out.println("No Command due to try-catch");
             return Commands.none();
         }
+    }
+
+    public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
+        System.out.println("Calling Deferred Command");
+        return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
     }
 
     @Override
