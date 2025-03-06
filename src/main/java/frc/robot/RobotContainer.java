@@ -57,7 +57,7 @@ public class RobotContainer {
 
     public final Limelight vision = new Limelight(drivetrain);
 
-    Pose2d odomStart = new Pose2d(0, 0, new Rotation2d(0, 0));
+    Pose2d odomStart = new Pose2d(0, 0, new Rotation2d(1, 0));
     
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
@@ -131,9 +131,9 @@ public class RobotContainer {
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
         
         // Auto Reef Alignment
-        driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
-        driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
-        driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
+        driverController.leftStick().onTrue(new PathCommand(drivetrain, vision, false, "center"));
+        driverController.b().and(driverController.leftStick()).onTrue(new PathCommand(drivetrain, vision, false, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(new PathCommand(drivetrain, vision, false, "left"));
 
         // Auto Coral Station Alignment
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center"));

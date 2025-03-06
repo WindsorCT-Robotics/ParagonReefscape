@@ -428,6 +428,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
+        System.out.println("pathToAlign running");
         aprilTagPositions[1][0] = 16.697198;
         aprilTagPositions[1][1] = 0.65532;
         aprilTagPositions[1][2] = 126;
@@ -501,51 +502,53 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 aprilTagPoses[id - subtract][1] = new Pose2d(aprilTagPositions[id][0] + redAdjustX, aprilTagPositions[id][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
                 subtract = subtract + 2;
             }
-            System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+            // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
         }
 
+        List<Waypoint> waypoints;
+        Rotation2d orientation;
         double aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-        if (aprilTagID > 0.0) {
-            // Create a list of waypoints from poses. Each pose represents one waypoint.
-            // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
-            Rotation2d orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
-
-            List<Waypoint> waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
-
-            if (waypoints == null) {
-                System.out.println("Waypoints is null");
-                return Commands.none();
-            }
-
-            PathConstraints constraints = new PathConstraints(0.5, 0.5, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
-            // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
-
-            // Create the path using the waypoints created above
-            PathPlannerPath path = new PathPlannerPath(
-                    waypoints,
-                    constraints,
-                    null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
-                    new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
-            );
-
-            // Prevent the path from being flipped if the coordinates are already correct
-            path.preventFlipping = true;
-
-            try {
-                return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
-                setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
-                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(3, 0, 0),
-                    // PID constants for rotation
-                    new PIDConstants(7, 0, 0)
-                ), RobotConfig.fromGUISettings(), () -> false, this);
-            } catch (IOException | ParseException ex) {
-                return Commands.none();
-            }
+        System.out.println(aprilTagID);
+        
+        // Create a list of waypoints from poses. Each pose represents one waypoint.
+        // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
+        if (usedAprilTags.contains((int) aprilTagID)) {
+            orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
+            waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
         } else {
+            return Commands.none();
+        }
+
+        if (waypoints == null) {
+            System.out.println("Waypoints is null");
+            return Commands.none();
+        }
+
+        PathConstraints constraints = new PathConstraints(1, 1, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
+        // Create the path using the waypoints created above
+        PathPlannerPath path = new PathPlannerPath(
+                waypoints,
+                constraints,
+                null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+                new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
+        );
+        // Prevent the path from being flipped if the coordinates are already correct
+        path.preventFlipping = true;
+        try {
+            System.out.println("Following path");
+            return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
+            setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+            new PPHolonomicDriveController(
+                // PID constants for translation
+                new PIDConstants(3, 0, 0),
+                // PID constants for rotation
+                new PIDConstants(7, 0, 0)
+            ), RobotConfig.fromGUISettings(), () -> false, this);
+        } catch (IOException | ParseException ex) {
+            System.out.println("No Command");
             return Commands.none();
         }
     }
