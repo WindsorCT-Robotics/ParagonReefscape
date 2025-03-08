@@ -75,12 +75,20 @@ public class RobotContainer {
     private void RegisterNamedComands()
     {
         NamedCommands.registerCommand("IntakeBeamCommand", new CoralIntakeCommand(carriage));
+
+        NamedCommands.registerCommand("LeftScoreCommand", new ScoreNoElevatorCommand(carriage, drivetrain, "left"));
+        NamedCommands.registerCommand("RightScoreCommand", new ScoreNoElevatorCommand(carriage, drivetrain, "right"));
+
         NamedCommands.registerCommand("LeftL3ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 3));
         NamedCommands.registerCommand("RightL3ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 3));
         NamedCommands.registerCommand("LeftL2ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 2));
         NamedCommands.registerCommand("RightL2ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 2));
         NamedCommands.registerCommand("LeftL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 1));
         NamedCommands.registerCommand("RightL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 1));
+
+        NamedCommands.registerCommand("L1", new ElevatorMoveCommand(elevator, 1));
+        NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2));
+        NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3));
     }
 
     private void configureBindings() {
@@ -128,12 +136,22 @@ public class RobotContainer {
         driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage));
 
         // Relative Drive Forward
-        driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(0.75)));
+        driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2).withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2)));
         
         // Auto Reef Alignment
         driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
         driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
         driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
+
+        // // Auto Score
+        // driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(driverController.leftStick()));
+        // driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(driverController.leftStick()));
+
+        // driverController.povDown().and(driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(driverController.leftStick())));
+        // driverController.povDown().and(driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(driverController.leftStick())));
+
+        // driverController.povUp().and(driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(driverController.leftStick())));
+        // driverController.povUp().and(driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(driverController.leftStick())));
 
         // Auto Coral Station Alignment
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center"));
@@ -172,6 +190,9 @@ public class RobotContainer {
         opController.povUp().onTrue(new ElevatorMoveCommand(elevator, 3).until(opController.leftStick()));
         opController.povLeft().onTrue(new ElevatorMoveCommand(elevator, 2).until(opController.leftStick()));
         opController.povDown().onTrue(new ElevatorMoveCommand(elevator, 1).until(opController.leftStick()));
+
+        // Resets elevator
+        opController.rightStick().onTrue(new ElevatorResetCommand(elevator));
 
         // Rolls intake/outtake until x is pressed or sensor is tripped
         // opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.leftStick()));

@@ -106,6 +106,18 @@ public class ElevatorSubsystem extends SubsystemBase {
           ClosedLoopSlot.kSlot0);    
     }
 
+    public void moveMotor() {
+        elevMotor.set(-0.2);
+    }
+
+    public boolean getLowerLimit() {
+        return elevMotor.getReverseLimitSwitch().isPressed();
+    }
+
+    public void resetRelativeEncoder() {
+        elevMotor.getEncoder().setPosition(0);
+    }
+
     public void stopMotor() {
         elevMotor.stopMotor();
     }
