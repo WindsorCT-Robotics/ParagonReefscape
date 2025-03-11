@@ -62,6 +62,7 @@ import java.util.function.Supplier;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+    private double aprilTagID;
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -77,7 +78,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // For On the fly pathing to april tags
     Pose2d[][] aprilTagPoses = new Pose2d[23][2];
     double[][] aprilTagPositions = new double[23][3];
-    private static final Set<Integer> usedAprilTags = Set.of(1, 2, 6, 7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20, 21, 22);
+    private static final Set<Integer> usedAprilTags = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
 
     private final double redAdjustX = 8.569452;
     private final double redAdjustY = 0.0;
@@ -512,7 +513,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         List<Waypoint> waypoints;
         Rotation2d orientation;
-        double aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
         System.out.println("Current apriltag is " + aprilTagID);
         
         // Create a list of waypoints from poses. Each pose represents one waypoint.
@@ -561,36 +562,77 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Calling Deferred Command");
-        return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
-    }
-
-    public Command setOrientation() {
-        return new Command() {
-            double direction = 0;
+        return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight)) {
+            boolean invalidTarget;
 
             @Override
             public void initialize() {
-                applyRequest(() -> new SwerveRequest.RobotCentricFacingAngle().withTargetDirection(Rotation2d.fromDegrees(direction)));
+                if (aprilTagID == 0) {
+                    invalidTarget = true;
+                } else {
+                    invalidTarget = false;
+                }
+            }
+
+            @Override
+            public boolean isFinished() {
+                return invalidTarget;
+            }
+        };
+    }
+
+    public Command setOrientation(CommandXboxController driverController) {
+        return new Command() {
+            double orientation;
+            
+            @Override
+            public void initialize() {
+                orientation = 0;
             }
 
             @Override
             public void execute() {
-                if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
-                    if (getState().Pose.getY() >= 4.026) {
-                        direction = 306;
+                System.out.println(DriverStation.getAlliance().orElse(Alliance.Blue));
+                if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
+                    if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
+                        if (getState().Pose.getY() > 4.026) {
+                            orientation = -54;
+                        } else {
+                            orientation = 54;
+                        }
                     } else {
-                        direction = 54;
+                        orientation = 0;
                     }
                 } else {
-                    if (getState().Pose.getY() >= 4.026) {
-                        direction = 234;
+                    if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
+                        if (getState().Pose.getY() > 4.026) {
+                            orientation = 54;
+                        } else {
+                            orientation = -54;
+                        }
                     } else {
-                        direction = 126;
+                        orientation = 0;
                     }
+                }
+
+                System.out.println(DriverStation.getAlliance().orElse(Alliance.Blue));
+                System.out.println(orientation);
+                if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 5) {
+                    setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(15, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                } else {
+                    setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                 }
             }
         };
     }
+
+    public boolean isValidTarget(Limelight limelight) {
+        aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        return usedAprilTags.contains((int) aprilTagID);
+    }
+
 
     @Override
     public void periodic() {

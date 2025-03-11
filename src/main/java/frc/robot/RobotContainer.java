@@ -111,8 +111,10 @@ public class RobotContainer {
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
         Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
 
-        double direction = new SetOrientationCommand(drivetrain).getDirection();
-        System.out.println(direction);
+        Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.2 || driverController.getLeftY() < -0.2);
+        Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.2 || driverController.getRightX() < -0.2);
+
+        Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision));
 
         // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // driverController.b().whileTrue(drivetrain.applyRequest(() ->
@@ -163,10 +165,18 @@ public class RobotContainer {
 
         // Auto direction align to coral stations
         // driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> new SwerveRequest.FieldCentricFacingAngle().withTargetDirection(Rotation2d.fromDegrees(180)).withHeadingPID(30, 0, 2)));
-        driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> fieldCentricFacingAngle.withTargetDirection(Rotation2d.fromDegrees(direction)).withHeadingPID(30, 0, 2)));
+        driverController.y().toggleOnTrue(drivetrain.setOrientation(driverController)
+        .until(driverRightJoy)
+        .until(opController.x())
+        .until(opController.b())
+        .until(opLeftTrigger)
+        .until(opRightTrigger)
+        .until(opController.leftBumper())
+        .until(opController.rightBumper()));
+        
+        // .alongWith(drivetrain.applyRequest(() -> fieldCentricFacingAngle.withTargetDirection(Rotation2d.fromDegrees(1)).withHeadingPID(30, 0, 2))));
 
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
-        
         // Reduces max speed by 2
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
         drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
@@ -178,16 +188,16 @@ public class RobotContainer {
         // Operator Bindings
 
         // Aligns to trough
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
-        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()));
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.b().and(isValidTarget).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
-        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
+        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
         
         // Aligns to branch and scores in L3
-        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
-        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
 
         // Extends and retracts the elevator
         opController.povUp().onTrue(new ElevatorMoveCommand(elevator, 3).until(opController.leftStick()));
@@ -217,7 +227,6 @@ public class RobotContainer {
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
-        System.out.println(direction);
     }
 
     public Command getAutonomousCommand() {
