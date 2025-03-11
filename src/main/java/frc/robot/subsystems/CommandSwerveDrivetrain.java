@@ -23,13 +23,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
@@ -558,6 +562,34 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Calling Deferred Command");
         return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
+    }
+
+    public Command setOrientation() {
+        return new Command() {
+            double direction = 0;
+
+            @Override
+            public void initialize() {
+                applyRequest(() -> new SwerveRequest.RobotCentricFacingAngle().withTargetDirection(Rotation2d.fromDegrees(direction)));
+            }
+
+            @Override
+            public void execute() {
+                if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                    if (getState().Pose.getY() >= 4.026) {
+                        direction = 306;
+                    } else {
+                        direction = 54;
+                    }
+                } else {
+                    if (getState().Pose.getY() >= 4.026) {
+                        direction = 234;
+                    } else {
+                        direction = 126;
+                    }
+                }
+            }
+        };
     }
 
     @Override

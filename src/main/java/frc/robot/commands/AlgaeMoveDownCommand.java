@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import frc.robot.Units.Percent;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +19,7 @@ public class AlgaeMoveDownCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor();
+        motor.moveMotor(new Percent(-0.2));
     }
 
     @Override

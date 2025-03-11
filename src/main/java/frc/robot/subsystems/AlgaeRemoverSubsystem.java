@@ -42,11 +42,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         
     }
 
-    public void moveMotor() {
-        motor.set(speed.asDouble());
-    }
-
-    public void manualMoveMotor(Percent speed) {
+    public void moveMotor(Percent speed) {
         motor.set(speed.asDouble());
     }
 

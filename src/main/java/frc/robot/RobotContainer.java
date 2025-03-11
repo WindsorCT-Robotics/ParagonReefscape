@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -40,6 +41,7 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.01).withRotationalDeadband(MaxAngularRate * 0.01) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    private final SwerveRequest.FieldCentricFacingAngle fieldCentricFacingAngle = new FieldCentricFacingAngle();
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.Idle coast = new SwerveRequest.Idle();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -109,6 +111,9 @@ public class RobotContainer {
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
         Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
 
+        double direction = new SetOrientationCommand(drivetrain).getDirection();
+        System.out.println(direction);
+
         // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // driverController.b().whileTrue(drivetrain.applyRequest(() ->
         //     point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
@@ -130,18 +135,18 @@ public class RobotContainer {
 
 
         // Intake
-        driverController.leftBumper().onTrue(new CoralIntakeCommand(carriage).until(opController.leftStick()));
+        driverController.leftBumper().onTrue(new CoralIntakeCommand(carriage).until(driverController.x()));
 
         // Outtake
-        driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage));
+        driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage).until(driverController.x()));
 
         // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2).withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2)));
         
-        // Auto Reef Alignment
-        driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
-        driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
-        driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
+        // // Auto Reef Alignment
+        // driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
+        // driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
+        // driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
 
         // // Auto Score
         // driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(driverController.leftStick()));
@@ -154,11 +159,14 @@ public class RobotContainer {
         // driverController.povUp().and(driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(driverController.leftStick())));
 
         // Auto Coral Station Alignment
-        driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center"));
+        driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center").until(driverController.x()));
 
+        // Auto direction align to coral stations
+        // driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> new SwerveRequest.FieldCentricFacingAngle().withTargetDirection(Rotation2d.fromDegrees(180)).withHeadingPID(30, 0, 2)));
+        driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> fieldCentricFacingAngle.withTargetDirection(Rotation2d.fromDegrees(direction)).withHeadingPID(30, 0, 2)));
 
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
-
+        
         // Reduces max speed by 2
         driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
         drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
@@ -168,11 +176,6 @@ public class RobotContainer {
 
 
         // Operator Bindings
-        // Make new commands that combines ReefAlign and AutoAlign
-
-
-        // Removes Algae from Reef
-        // opController.y().onTrue(new MoveAlgaeCommand(algaeRemover).until(opController.leftStick()));
 
         // Aligns to trough
         opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
@@ -214,6 +217,7 @@ public class RobotContainer {
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
+        System.out.println(direction);
     }
 
     public Command getAutonomousCommand() {
