@@ -14,7 +14,7 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
-    private static final int ALGAE_MOTOR_CANID = 18;
+    private static final int ALGAE_MOTOR_CANID = 17;
 
     private SparkMax motor;
     private SparkMaxConfig motorConfig;

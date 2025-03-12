@@ -72,8 +72,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final double TOFSensorThreshold = 320;
 
-    private static final int L_TOF_CANID = 17;
-    private static final int R_TOF_CANID = 16;
+    private static final int L_TOF_CANID = 19;
+    private static final int R_TOF_CANID = 18;
 
     // For On the fly pathing to april tags
     Pose2d[][] aprilTagPoses = new Pose2d[23][2];
@@ -562,23 +562,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Calling Deferred Command");
-        return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight)) {
-            boolean invalidTarget;
-
-            @Override
-            public void initialize() {
-                if (aprilTagID == 0) {
-                    invalidTarget = true;
-                } else {
-                    invalidTarget = false;
-                }
-            }
-
-            @Override
-            public boolean isFinished() {
-                return invalidTarget;
-            }
-        };
+        return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
     }
 
     public Command setOrientation(CommandXboxController driverController) {
@@ -618,7 +602,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 System.out.println(DriverStation.getAlliance().orElse(Alliance.Blue));
                 System.out.println(orientation);
                 if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 5) {
-                    setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(15, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                    setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
                     .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                 } else {
                     setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)

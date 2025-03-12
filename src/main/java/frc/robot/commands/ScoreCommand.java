@@ -14,7 +14,7 @@ public class ScoreCommand extends SequentialCommandGroup {
                 new ElevatorMoveCommand(elevator, level),
                 new BeamAdjustment(drivetrain, direction)
             ),
-            new CoralOuttakeCommand(rollers),
+            new CoralOuttakeCommand(rollers, level, direction),
             new ElevatorMoveCommand(elevator, 1)
         );
     }

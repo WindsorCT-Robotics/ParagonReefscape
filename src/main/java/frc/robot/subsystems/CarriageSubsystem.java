@@ -15,31 +15,41 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 public class CarriageSubsystem extends SubsystemBase {
-    private static final int ROLLER_MOTOR_CANID = 15;
+    private static final int ROLLER_LEFT_MOTOR_CANID = 15;
+    private static final int ROLLER_RIGHT_MOTOR_CANID = 16;
     private static final int BEAM_BREAKER_PIN = 0;
 
-    private SparkMax rollers;
-    private SparkMaxConfig rollersConfig;
+    private SparkMax rollerLeft;
+    private SparkMax rollerRight;
     private RelativeEncoder rollerEncoder;
+
+    private SparkMaxConfig rollerLeftConfig;
+    private SparkMaxConfig rollerRightConfig;
+
+    private final Percent speed;
+    private final Percent speedFast;
+    private final Percent speedSlow;
 
     private final DigitalInput beamBreaker;
 
-    private Percent speed;
-
     public CarriageSubsystem() {
-        speed = new Percent(1);
-        rollers = new SparkMax(ROLLER_MOTOR_CANID, MotorType.kBrushless);
-        rollersConfig = new SparkMaxConfig();
+        speed = new Percent(0.25);
+        speedFast = new Percent(0.27);
+        speedSlow = new Percent(0.07);
+        rollerLeft = new SparkMax(ROLLER_LEFT_MOTOR_CANID, MotorType.kBrushless);
+        rollerRight = new SparkMax(ROLLER_RIGHT_MOTOR_CANID, MotorType.kBrushless);
+        rollerLeftConfig = new SparkMaxConfig();
+        rollerRightConfig = new SparkMaxConfig();
 
-        rollersConfig.inverted(false);
-        rollersConfig.idleMode(IdleMode.kBrake);
+        rollerLeftConfig.inverted(true);
+        rollerRightConfig.inverted(false);
 
-        rollers.configure(rollersConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rollerLeftConfig.idleMode(IdleMode.kBrake);
+        rollerRightConfig.idleMode(IdleMode.kBrake);
 
+        rollerLeft.configure(rollerLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rollerRight.configure(rollerRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
-        rollerEncoder = rollers.getEncoder();
-
-        SmartDashboard.putNumber("Roller Speed RPM", 10);
     }
 
     @Override
@@ -49,19 +59,27 @@ public class CarriageSubsystem extends SubsystemBase {
     }
 
     public void moveRollers() {
-        rollers.set(speed.asDouble());  
+        rollerLeft.set(speed.asDouble());
+        rollerRight.set(speed.asDouble());
     }
 
     public void manualMoveRollers(Percent speed) {
-        rollers.set(speed.asDouble());
+        rollerLeft.set(speed.asDouble());
+        rollerRight.set(speed.asDouble());
+    }
+
+    public void moveRollersLeft() {
+        rollerLeft.set(speedFast.asDouble());
+        rollerRight.set(speedSlow.asDouble());
+    }
+
+    public void moveRollersRight() {
+        rollerLeft.set(speedSlow.asDouble());
+        rollerRight.set(speedFast.asDouble());
     }
 
     public boolean isBeamBroken() {
         return !beamBreaker.get();
-    }
-
-    public double getRollerPosition() {
-        return rollerEncoder.getPosition();
     }
 
     public void resetRollerEncoder() {
@@ -69,6 +87,15 @@ public class CarriageSubsystem extends SubsystemBase {
     }
     
     public void stopRollers() {
-        rollers.stopMotor();
+        rollerLeft.stopMotor();
+        rollerRight.stopMotor();
+    }
+
+    public Percent getSpeedSlow() {
+        return speedSlow;
+    }
+
+    public Percent getSpeedFast() {
+        return speedFast;
     }
 }

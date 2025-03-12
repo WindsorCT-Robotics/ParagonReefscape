@@ -140,15 +140,15 @@ public class RobotContainer {
         driverController.leftBumper().onTrue(new CoralIntakeCommand(carriage).until(driverController.x()));
 
         // Outtake
-        driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage).until(driverController.x()));
+        driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage, 2, "e").until(driverController.x()));
 
         // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2).withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2)));
         
-        // // Auto Reef Alignment
-        // driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
-        // driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
-        // driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
+        // Auto Reef Alignment
+        driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
+        driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
 
         // // Auto Score
         // driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(driverController.leftStick()));
@@ -188,16 +188,22 @@ public class RobotContainer {
         // Operator Bindings
 
         // Aligns to trough
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opController.b().and(isValidTarget).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
+        // .onlyIf(() -> !driverLeftJoy.getAsBoolean()).onlyIf(() -> driverRightJoy.getAsBoolean()));
+        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()));
+        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
+        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
+        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
         
         // Aligns to branch and scores in L3
-        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
+        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
+        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
 
         // Extends and retracts the elevator
         opController.povUp().onTrue(new ElevatorMoveCommand(elevator, 3).until(opController.leftStick()));
