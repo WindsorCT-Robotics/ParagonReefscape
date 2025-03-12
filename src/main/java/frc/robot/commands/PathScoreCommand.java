@@ -12,6 +12,7 @@ public class PathScoreCommand extends SequentialCommandGroup {
     public PathScoreCommand(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain, Limelight limelight, String direction, int level) {
         addCommands(
             new ParallelCommandGroup(
+                new RepositionCoralCommand(rollers),
                 new SequentialCommandGroup(
                     drivetrain.pathToAlign(limelight, false, direction),
                     new BeamAdjustment(drivetrain, direction)

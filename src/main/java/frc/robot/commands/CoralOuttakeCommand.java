@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import frc.robot.subsystems.CarriageSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class CoralOuttakeCommand extends Command {
@@ -24,7 +23,7 @@ public class CoralOuttakeCommand extends Command {
                 rollers.moveRollersLeft();
             }
         } else {
-            rollers.moveRollers();
+            rollers.moveRollers(false);
         }
     }
 

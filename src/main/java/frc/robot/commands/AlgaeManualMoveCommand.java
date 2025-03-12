@@ -24,7 +24,7 @@ public class AlgaeManualMoveCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor(new Percent(speed.getAsDouble() / 10));
+        motor.manualMoveMotor(new Percent(speed.getAsDouble() / 10));
     }
 
     @Override

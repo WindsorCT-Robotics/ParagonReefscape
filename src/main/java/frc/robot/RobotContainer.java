@@ -32,7 +32,7 @@ import frc.robot.subsystems.Limelight;
 public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
-    // private AlgaeRemoverSubsystem algaeRemover;
+    private AlgaeRemoverSubsystem algaeRemover;
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -64,7 +64,7 @@ public class RobotContainer {
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
-        // algaeRemover = new AlgaeRemoverSubsystem();
+        algaeRemover = new AlgaeRemoverSubsystem();
 
         RegisterNamedComands();
 
@@ -188,21 +188,21 @@ public class RobotContainer {
         // Operator Bindings
 
         // Aligns to trough
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
         // .onlyIf(() -> !driverLeftJoy.getAsBoolean()).onlyIf(() -> driverRightJoy.getAsBoolean()));
-        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()));
+        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
         // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
+        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
         // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
+        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
         // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
         
         // Aligns to branch and scores in L3
-        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
         // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
         // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
 
         // Extends and retracts the elevator
@@ -219,9 +219,9 @@ public class RobotContainer {
         
         // Controls algae remover
 
-        // opController.povUp().onTrue(new AlgaeMoveDownCommand(AlgaeRemoverSubsystem));
+        opController.povUp().toggleOnTrue(new AlgaeMoveDownCommand(algaeRemover).until(opController.leftStick()).until(opController.povDown()));
 
-        // opController.povDown().onTrue(new AlgaeMoveUpCommand(AlgaeRemoverSubsystem));
+        opController.povDown().toggleOnTrue(new AlgaeMoveUpCommand(algaeRemover).until(opController.leftStick()).until(opController.povUp()));
 
         // Manually controls the intake and outtake rollers
         

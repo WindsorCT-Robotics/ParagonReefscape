@@ -18,7 +18,7 @@ public class CoralIntakeCommand extends Command {
 
     @Override
     public void execute() {
-        rollers.moveRollers();
+        rollers.moveRollers(false);
     }
 
     @Override

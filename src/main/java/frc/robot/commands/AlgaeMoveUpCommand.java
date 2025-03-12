@@ -19,7 +19,7 @@ public class AlgaeMoveUpCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor(new Percent(0.2));
+        motor.moveMotor(true);
     }
 
     @Override

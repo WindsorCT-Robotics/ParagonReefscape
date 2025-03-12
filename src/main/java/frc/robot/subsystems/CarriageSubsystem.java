@@ -58,9 +58,15 @@ public class CarriageSubsystem extends SubsystemBase {
         
     }
 
-    public void moveRollers() {
-        rollerLeft.set(speed.asDouble());
-        rollerRight.set(speed.asDouble());
+    public void moveRollers(boolean reverse) {
+        if (reverse != true) {
+            rollerLeft.set(speed.asDouble());
+            rollerRight.set(speed.asDouble());
+        } else{
+            rollerLeft.set(-speed.asDouble());
+            rollerRight.set(-speed.asDouble());
+        }
+        
     }
 
     public void manualMoveRollers(Percent speed) {

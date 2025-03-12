@@ -32,9 +32,6 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         motorConfig.idleMode(IdleMode.kBrake);
         
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        motorEncoder = motor.getEncoder();
-
-        SmartDashboard.putNumber("Algae Motor Speed RPM", 10);
     }
 
     @Override
@@ -42,7 +39,16 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         
     }
 
-    public void moveMotor(Percent speed) {
+    public void moveMotor(boolean reverse) {
+        if (!reverse) {
+            motor.set(speed.asDouble());
+        } else {
+            motor.set(-speed.asDouble());
+        }
+        
+    }
+
+    public void manualMoveMotor(Percent speed) {
         motor.set(speed.asDouble());
     }
 
