@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -105,6 +106,8 @@ public class RobotContainer {
                     .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+
+        elevator.setDefaultCommand(new StartEndCommand(() -> elevator.setToL1(), () -> elevator.stopMotor()));
 
         Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
         Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
@@ -209,9 +212,9 @@ public class RobotContainer {
         // opController.back().and(opController.rightBumper()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(opLock));
 
         // Extends and retracts the elevator
-        opController.povUp().onTrue(new ElevatorMoveCommand(elevator, 3).until(opController.leftStick()));
-        opController.povLeft().onTrue(new ElevatorMoveCommand(elevator, 2).until(opController.leftStick()));
-        opController.povDown().onTrue(new ElevatorMoveCommand(elevator, 1).until(opController.leftStick()));
+        opController.povUp().toggleOnTrue(new StartEndCommand(() -> elevator.setToL3(), () -> elevator.stopMotor()).until(opController.leftStick()));
+        opController.povLeft().toggleOnTrue(new StartEndCommand(() -> elevator.setToL2(), () -> elevator.stopMotor()).until(opController.leftStick()));
+        opController.povDown().toggleOnTrue(new StartEndCommand(() -> elevator.setToL1(), () -> elevator.stopMotor()).until(opController.leftStick()));
 
         // Resets elevator
         opController.rightStick().onTrue(new ElevatorResetCommand(elevator));
@@ -222,15 +225,14 @@ public class RobotContainer {
         
         // Controls algae remover
 
-        opController.back().toggleOnTrue(new AlgaeMoveCommand(algaeRemover).until(opController.leftStick()));
+        opController.back().and(opController.x()).onTrue(new PathAlignNoScoreCommand(carriage, drivetrain, vision, "left").until(opController.leftStick()));
+        opController.back().and(opController.b()).onTrue(new PathAlignNoScoreCommand(carriage, drivetrain, vision, "right").until(opController.leftStick()));
+        opController.back().and(opController.a()).toggleOnTrue(new StartEndCommand(() -> elevator.setToL2(), () -> elevator.stopMotor()).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
+        opController.back().and(opController.y()).toggleOnTrue(new StartEndCommand(() -> elevator.setToL3(), () -> elevator.stopMotor()).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
 
         // Manually controls the intake and outtake rollers
         
         opRightJoy.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
-
-        // Manually controls the algae remover
-
-        // opLeftJoy.whileTrue(new AlgaeManualMoveCommand(AlgaeRemoverSubsystem, () -> opController.getLeftY()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

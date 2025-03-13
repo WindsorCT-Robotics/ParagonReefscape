@@ -19,8 +19,7 @@ public class PathScoreCommand extends SequentialCommandGroup {
                 ),
                 new ElevatorMoveCommand(elevator, level)
             ),
-            new CoralOuttakeCommand(rollers, level, direction),
-            new ElevatorMoveCommand(elevator, 1 )
+            new CoralOuttakeCommand(rollers, level, direction)
         );
     }
 }
