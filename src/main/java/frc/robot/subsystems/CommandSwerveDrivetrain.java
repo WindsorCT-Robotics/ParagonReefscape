@@ -478,7 +478,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         createOffsets(-0.4, 0.4); // Meters
         
         // Coral Reef
-        int subtract = 6;
+        int subtract = 16;
         for (int id = 0; id < aprilTagPoses.length; id++) {
             // Blue IDs
 
@@ -503,10 +503,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             }
             
             // Reef
-            if (id - subtract >= 6 && id - subtract <= 11) {
-                aprilTagPoses[id - subtract][0] = new Pose2d(createPreAdjustments(preReefAdjust, id, 0) + redAdjustX, createPreAdjustments(preReefAdjust, id, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-                aprilTagPoses[id - subtract][1] = new Pose2d(aprilTagPositions[id][0] + redAdjustX, aprilTagPositions[id][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-                subtract = subtract + 2;
+            if (id >= 6 && id <= 11) {
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preReefAdjust, id + subtract, 0) + redAdjustX, createPreAdjustments(preReefAdjust, id + subtract, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
+                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id + subtract][0] + redAdjustX, aprilTagPositions[id + subtract][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
+                subtract = subtract - 2;
             }
             // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
         }
@@ -576,7 +576,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             @Override
             public void execute() {
-                System.out.println(DriverStation.getAlliance().orElse(Alliance.Blue));
                 if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
                     if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
                         if (getState().Pose.getY() > 4.026) {
@@ -598,11 +597,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         orientation = 0;
                     }
                 }
-
-                System.out.println(DriverStation.getAlliance().orElse(Alliance.Blue));
-                System.out.println(orientation);
-                if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 5) {
-                    setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                
+                if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                    setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
                     .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                 } else {
                     setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
@@ -613,8 +610,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public boolean isValidTarget(Limelight limelight) {
-        aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-        return usedAprilTags.contains((int) aprilTagID);
+        try {
+            aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+            return usedAprilTags.contains((int) aprilTagID);
+        } catch (Exception ex) {
+            return false;
+        }
+        
     }
 
 

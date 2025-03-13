@@ -111,22 +111,24 @@ public class RobotContainer {
         Trigger opLeftJoy = new Trigger(() -> opController.getLeftY() > 0.2 || opController.getLeftY() < -0.2);
         Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
 
-        Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.2 || driverController.getLeftY() < -0.2);
-        Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.2 || driverController.getRightX() < -0.2);
+        Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.1 || driverController.getLeftY() < -0.1);
+        Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.1 || driverController.getRightX() < -0.1);
 
         Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision));
+
+        Trigger opLock = new Trigger(() -> (driverLeftJoy.getAsBoolean() || driverRightJoy.getAsBoolean() || !isValidTarget.getAsBoolean()));
 
         // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // driverController.b().whileTrue(drivetrain.applyRequest(() ->
         //     point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         // ));
 
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        driverController.back().and(driverController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        driverController.back().and(driverController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        // // Run SysId routines when holding back/start and X/Y.
+        // // Note that each routine should be run exactly once in a single log.
+        // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
         // driverController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
@@ -173,8 +175,6 @@ public class RobotContainer {
         .until(opRightTrigger)
         .until(opController.leftBumper())
         .until(opController.rightBumper()));
-        
-        // .alongWith(drivetrain.applyRequest(() -> fieldCentricFacingAngle.withTargetDirection(Rotation2d.fromDegrees(1)).withHeadingPID(30, 0, 2))));
 
         driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
         // Reduces max speed by 2
@@ -188,22 +188,25 @@ public class RobotContainer {
         // Operator Bindings
 
         // Aligns to trough
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
-        // .onlyIf(() -> !driverLeftJoy.getAsBoolean()).onlyIf(() -> driverRightJoy.getAsBoolean()));
-        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
-        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(opLock));
+        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(opLock));
+
+        // opController.back().and(opController.x()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(opLock));
+        // opController.back().and(opController.y()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(opLock));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
-        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
-        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).unless(opLock));
+        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).unless(opLock));
+
+        // opController.back().and(opLeftTrigger).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).unless(opLock));
+        // opController.back().and(opRightTrigger).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).unless(opLock));
         
         // Aligns to branch and scores in L3
-        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
-        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
-        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(driverLeftJoy).unless(driverRightJoy).unless(isValidTarget));
-        // .onlyIf(driverLeftJoy).onlyIf(driverRightJoy));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(opLock));
+
+        // opController.back().and(opController.leftBumper()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).unless(opLock));
+        // opController.back().and(opController.rightBumper()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(opLock));
 
         // Extends and retracts the elevator
         opController.povUp().onTrue(new ElevatorMoveCommand(elevator, 3).until(opController.leftStick()));
@@ -219,9 +222,7 @@ public class RobotContainer {
         
         // Controls algae remover
 
-        opController.povUp().toggleOnTrue(new AlgaeMoveDownCommand(algaeRemover).until(opController.leftStick()).until(opController.povDown()));
-
-        opController.povDown().toggleOnTrue(new AlgaeMoveUpCommand(algaeRemover).until(opController.leftStick()).until(opController.povUp()));
+        opController.back().toggleOnTrue(new AlgaeMoveCommand(algaeRemover).until(opController.leftStick()));
 
         // Manually controls the intake and outtake rollers
         

@@ -3,8 +3,10 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CarriageSubsystem;
 
+public class RepositionCoralCommand extends Command {
     private final CarriageSubsystem rollers;
     private boolean beamBroke;
+    private boolean stop;
 
     public RepositionCoralCommand(CarriageSubsystem rollers) {
         this.rollers = rollers;
@@ -12,6 +14,9 @@ import frc.robot.subsystems.CarriageSubsystem;
 
     @Override
     public void initialize() {
+        if (!rollers.isBeamBroken()) {
+            stop = true;
+        }
         beamBroke = false;
         rollers.moveRollers(true);
     }
@@ -22,9 +27,7 @@ import frc.robot.subsystems.CarriageSubsystem;
             rollers.moveRollers(true);
         } else {
             rollers.moveRollers(false);
-            if (rollers.isBeamBroken()) {
-                beamBroke = true;
-            }
+            beamBroke = true;
         }
     }
 
@@ -35,6 +38,6 @@ import frc.robot.subsystems.CarriageSubsystem;
 
     @Override
     public boolean isFinished() {
-        return beamBroke;
+        return beamBroke && rollers.isBeamBroken() || stop;
     }
 }
