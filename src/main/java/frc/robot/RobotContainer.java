@@ -107,7 +107,7 @@ public class RobotContainer {
             )
         );
 
-        elevator.setDefaultCommand(new StartEndCommand(() -> elevator.setToL1(), () -> elevator.stopMotor()));
+        elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
 
         Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
         Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
@@ -212,9 +212,9 @@ public class RobotContainer {
         // opController.back().and(opController.rightBumper()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(opLock));
 
         // Extends and retracts the elevator
-        opController.povUp().toggleOnTrue(new StartEndCommand(() -> elevator.setToL3(), () -> elevator.stopMotor()).until(opController.leftStick()));
-        opController.povLeft().toggleOnTrue(new StartEndCommand(() -> elevator.setToL2(), () -> elevator.stopMotor()).until(opController.leftStick()));
-        opController.povDown().toggleOnTrue(new StartEndCommand(() -> elevator.setToL1(), () -> elevator.stopMotor()).until(opController.leftStick()));
+        opController.povUp().toggleOnTrue(new ElevatorControlCommand(elevator, 3).until(opController.leftStick()));
+        opController.povLeft().toggleOnTrue(new ElevatorControlCommand(elevator, 2).until(opController.leftStick()));
+        opController.povDown().toggleOnTrue(new ElevatorControlCommand(elevator, 1).until(opController.leftStick()));
 
         // Resets elevator
         opController.rightStick().onTrue(new ElevatorResetCommand(elevator));
@@ -227,8 +227,8 @@ public class RobotContainer {
 
         opController.back().and(opController.x()).onTrue(new PathAlignNoScoreCommand(carriage, drivetrain, vision, "left").until(opController.leftStick()));
         opController.back().and(opController.b()).onTrue(new PathAlignNoScoreCommand(carriage, drivetrain, vision, "right").until(opController.leftStick()));
-        opController.back().and(opController.a()).toggleOnTrue(new StartEndCommand(() -> elevator.setToL2(), () -> elevator.stopMotor()).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
-        opController.back().and(opController.y()).toggleOnTrue(new StartEndCommand(() -> elevator.setToL3(), () -> elevator.stopMotor()).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
+        opController.back().and(opController.a()).toggleOnTrue(new ElevatorControlCommand(elevator, 2).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
+        opController.back().and(opController.y()).toggleOnTrue(new ElevatorControlCommand(elevator, 3).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
 
         // Manually controls the intake and outtake rollers
         
