@@ -169,9 +169,20 @@ public class RobotContainer {
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center").until(driverController.x()));
 
         // Auto direction align to coral stations
-        // driverController.y().toggleOnTrue(drivetrain.applyRequest(() -> new SwerveRequest.FieldCentricFacingAngle().withTargetDirection(Rotation2d.fromDegrees(180)).withHeadingPID(30, 0, 2)));
-        driverController.y().toggleOnTrue(drivetrain.setOrientation(driverController)
+        driverController.y().toggleOnTrue(drivetrain.setOrientation(driverController, vision, false)
         .until(driverRightJoy)
+        .until(driverController.b())
+        .until(opController.x())
+        .until(opController.b())
+        .until(opLeftTrigger)
+        .until(opRightTrigger)
+        .until(opController.leftBumper())
+        .until(opController.rightBumper()));
+
+        //  Auto direction align to reef
+        driverController.b().toggleOnTrue(drivetrain.setOrientation(driverController, vision, true)
+        .until(driverRightJoy)
+        .until(driverController.y())
         .until(opController.x())
         .until(opController.b())
         .until(opLeftTrigger)

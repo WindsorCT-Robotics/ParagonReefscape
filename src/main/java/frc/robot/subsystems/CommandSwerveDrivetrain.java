@@ -6,10 +6,10 @@ import frc.lib.Limelight.LimelightHelpers;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -29,11 +29,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
@@ -203,6 +200,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         rTOFSensor = new TimeOfFlight(R_TOF_CANID);
         lTOFSensor = new TimeOfFlight(L_TOF_CANID);
         configTOFSensors();
+
+        createAlignmentConstants();
     }
 
     /**
@@ -234,6 +233,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         rTOFSensor = new TimeOfFlight(R_TOF_CANID);
         lTOFSensor = new TimeOfFlight(L_TOF_CANID);
         configTOFSensors();
+
+        createAlignmentConstants();
     }
 
     /**
@@ -273,6 +274,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         rTOFSensor = new TimeOfFlight(R_TOF_CANID);
         lTOFSensor = new TimeOfFlight(L_TOF_CANID);
         configTOFSensors();
+
+        createAlignmentConstants();
     }
 
     /**
@@ -435,81 +438,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlignGenerator(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Begin generating path");
-        aprilTagPositions[1][0] = 16.697198;
-        aprilTagPositions[1][1] = 0.65532;
-        aprilTagPositions[1][2] = 126;
-
-        aprilTagPositions[2][0] = 16.697198;
-        aprilTagPositions[2][1] = 7.39648;
-        aprilTagPositions[2][2] = 234;
-
-        aprilTagPositions[12][0] = 0.851154; // X position
-        aprilTagPositions[12][1] = 0.65532; // Y position
-        aprilTagPositions[12][2] = 54; // Angle
-
-        aprilTagPositions[13][0] = 0.851154; // X position
-        aprilTagPositions[13][1] = 7.39648; // Y position
-        aprilTagPositions[13][2] = 306; // Angle
-
-        aprilTagPositions[17][0] = 4.073906; // X position
-        aprilTagPositions[17][1] = 3.306318; // Y position
-        aprilTagPositions[17][2] = 60; // Angle
-
-        aprilTagPositions[18][0] = 3.6576; // X position
-        aprilTagPositions[18][1] = 4.0259; // Y position
-        aprilTagPositions[18][2] = 0; // Angle
-
-        aprilTagPositions[19][0] = 4.073906; // X position
-        aprilTagPositions[19][1] = 4.745482; // Y position
-        aprilTagPositions[19][2] = -60; // Angle
-
-        aprilTagPositions[20][0] = 4.90474; // X position
-        aprilTagPositions[20][1] = 4.745482; // Y position
-        aprilTagPositions[20][2] = -120; // Angle
-
-        aprilTagPositions[21][0] = 5.321046; // X position
-        aprilTagPositions[21][1] = 4.0259; // Y position
-        aprilTagPositions[21][2] = -180; // Angle
-
-        aprilTagPositions[22][0] = 4.90474; // X position
-        aprilTagPositions[22][1] = 3.3063434; // Y position
-        aprilTagPositions[22][2] = 120; // Angle
-        
-        createOffsets(-0.4, 0.4); // Meters
-        
-        // Coral Reef
-        int subtract = 16;
-        for (int id = 0; id < aprilTagPoses.length; id++) {
-            // Blue IDs
-
-            // Coral Stations
-            if (id >= 12 && id <= 13) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preCoralStationAdjust, id, 0), createPreAdjustments(preCoralStationAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-            }
-            
-            // Reef
-            if (id >= 17) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preReefAdjust, id, 0), createPreAdjustments(preReefAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-            }
-            
-            // Red IDs
-            
-            // Coral Stations
-            if (id >= 1 && id <=2) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preCoralStationAdjust, id, 0), createPreAdjustments(preCoralStationAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-            }
-            
-            // Reef
-            if (id >= 6 && id <= 11) {
-                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preReefAdjust, id + subtract, 0) + redAdjustX, createPreAdjustments(preReefAdjust, id + subtract, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
-                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id + subtract][0] + redAdjustX, aprilTagPositions[id + subtract][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
-                subtract = subtract - 2;
-            }
-            // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
-        }
 
         List<Waypoint> waypoints;
         Rotation2d orientation;
@@ -565,7 +493,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
     }
 
-    public Command setOrientation(CommandXboxController driverController) {
+    public Command setOrientation(CommandXboxController driverController, Limelight limelight, boolean isCoralStation) {
         return new Command() {
             double orientation;
             
@@ -576,34 +504,57 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             @Override
             public void execute() {
-                if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
-                    if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
-                        if (getState().Pose.getY() > 4.026) {
-                            orientation = -54;
+                if (!isCoralStation) {
+                    if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
+                        if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
+                            if (getState().Pose.getY() > 4.026) {
+                                orientation = -54;
+                            } else {
+                                orientation = 54;
+                            }
                         } else {
-                            orientation = 54;
+                            orientation = 0;
                         }
                     } else {
-                        orientation = 0;
-                    }
-                } else {
-                    if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
-                        if (getState().Pose.getY() > 4.026) {
-                            orientation = 54;
+                        if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
+                            if (getState().Pose.getY() > 4.026) {
+                                orientation = 54;
+                            } else {
+                                orientation = -54;
+                            }
                         } else {
-                            orientation = -54;
+                            orientation = 0;
                         }
-                    } else {
-                        orientation = 0;
                     }
-                }
-                
-                if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
-                    setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+
+                    if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                        setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    } else {
+                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    }
+
                 } else {
-                    setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+                    aprilTagID = 6.0;
+                    
+                    double targetX = aprilTagPoses[(int) aprilTagID][1].getX();
+                    double targetY = aprilTagPoses[(int) aprilTagID][1].getY();
+                    System.out.println(targetX);
+                    System.out.println(aprilTagID);
+                    if (usedAprilTags.contains((int) aprilTagID)) {
+                        double x = (targetX - getState().Pose.getX());
+                        double y = (targetY - getState().Pose.getY());
+                        orientation = Math.atan2(y, x) * (180 / Math.PI);
+                    }
+                    if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                        setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    } else {
+                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    }
                 }
             }
         };
@@ -653,9 +604,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
         if (mapleSimSwerveDrivetrain != null)
-            DogLog.log("Drive/SimulationPose", mapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
+            DogLog.log("Drive/SimulationPose", MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
     }
 
+    @SuppressWarnings("unchecked")
     private void startSimThread() {
         mapleSimSwerveDrivetrain = new MapleSimSwerveDrivetrain(
             Seconds.of(kSimLoopPeriod),
@@ -689,7 +641,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void resetPoseSimulationToDrive() {
         if (this.mapleSimSwerveDrivetrain != null)
-            mapleSimSwerveDrivetrain.mapleSimDrive.setSimulationWorldPose(getState().Pose);
+            MapleSimSwerveDrivetrain.mapleSimDrive.setSimulationWorldPose(getState().Pose);
         Timer.delay(0.1); // Wait for simulation to update
         super.resetPose(getState().Pose);
     }
@@ -707,5 +659,83 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public boolean getRTOFBeam() {
         return rTOFSensor.getRange() > TOFSensorThreshold; // millimeters
+    }
+
+    public void createAlignmentConstants() {
+        aprilTagPositions[1][0] = 16.697198;
+        aprilTagPositions[1][1] = 0.65532;
+        aprilTagPositions[1][2] = 126;
+
+        aprilTagPositions[2][0] = 16.697198;
+        aprilTagPositions[2][1] = 7.39648;
+        aprilTagPositions[2][2] = 234;
+
+        aprilTagPositions[12][0] = 0.851154; // X position
+        aprilTagPositions[12][1] = 0.65532; // Y position
+        aprilTagPositions[12][2] = 54; // Angle
+
+        aprilTagPositions[13][0] = 0.851154; // X position
+        aprilTagPositions[13][1] = 7.39648; // Y position
+        aprilTagPositions[13][2] = 306; // Angle
+
+        aprilTagPositions[17][0] = 4.073906; // X position
+        aprilTagPositions[17][1] = 3.306318; // Y position
+        aprilTagPositions[17][2] = 60; // Angle
+
+        aprilTagPositions[18][0] = 3.6576; // X position
+        aprilTagPositions[18][1] = 4.0259; // Y position
+        aprilTagPositions[18][2] = 0; // Angle
+
+        aprilTagPositions[19][0] = 4.073906; // X position
+        aprilTagPositions[19][1] = 4.745482; // Y position
+        aprilTagPositions[19][2] = -60; // Angle
+
+        aprilTagPositions[20][0] = 4.90474; // X position
+        aprilTagPositions[20][1] = 4.745482; // Y position
+        aprilTagPositions[20][2] = -120; // Angle
+
+        aprilTagPositions[21][0] = 5.321046; // X position
+        aprilTagPositions[21][1] = 4.0259; // Y position
+        aprilTagPositions[21][2] = -180; // Angle
+
+        aprilTagPositions[22][0] = 4.90474; // X position
+        aprilTagPositions[22][1] = 3.3063434; // Y position
+        aprilTagPositions[22][2] = 120; // Angle
+
+        // Coral Reef
+        int subtract = 16;
+        for (int id = 0; id < aprilTagPoses.length; id++) {
+            // Blue IDs
+
+            // Coral Stations
+            if (id >= 12 && id <= 13) {
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preCoralStationAdjust, id, 0), createPreAdjustments(preCoralStationAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+            }
+            
+            // Reef
+            if (id >= 17) {
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preReefAdjust, id, 0), createPreAdjustments(preReefAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+            }
+            
+            // Red IDs
+            
+            // Coral Stations
+            if (id >= 1 && id <=2) {
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preCoralStationAdjust, id, 0), createPreAdjustments(preCoralStationAdjust, id, 1), Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id][0], aprilTagPositions[id][1], Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+            }
+            
+            // Reef
+            if (id >= 6 && id <= 11) {
+                aprilTagPoses[id][0] = new Pose2d(createPreAdjustments(preReefAdjust, id + subtract, 0) + redAdjustX, createPreAdjustments(preReefAdjust, id + subtract, 1) + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
+                aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id + subtract][0] + redAdjustX, aprilTagPositions[id + subtract][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
+                subtract = subtract - 2;
+            }
+            // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
+        }
+
+        createOffsets(-0.4, 0.4);
     }
 }
