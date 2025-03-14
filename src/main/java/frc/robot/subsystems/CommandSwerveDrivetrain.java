@@ -500,6 +500,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             @Override
             public void initialize() {
                 orientation = 0;
+                SmartDashboard.putBoolean("Angle Align", true);
             }
 
             @Override
@@ -537,15 +538,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
                 } else {
                     aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-                    aprilTagID = 6.0;
-                    
-                    double targetX = aprilTagPoses[(int) aprilTagID][1].getX();
-                    double targetY = aprilTagPoses[(int) aprilTagID][1].getY();
-                    System.out.println(targetX);
-                    System.out.println(aprilTagID);
+
                     if (usedAprilTags.contains((int) aprilTagID)) {
-                        double x = (targetX - getState().Pose.getX());
-                        double y = (targetY - getState().Pose.getY());
+                        double x = (aprilTagPoses[(int) aprilTagID][1].getX() - getState().Pose.getX());
+                        double y = (aprilTagPoses[(int) aprilTagID][1].getY() - getState().Pose.getY());
                         orientation = Math.atan2(y, x) * (180 / Math.PI);
                     }
                     if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
@@ -556,6 +552,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                     }
                 }
+            }
+
+            @Override
+            public void end(boolean interrupted) {
+                SmartDashboard.putBoolean("Angle Align", false);
             }
         };
     }
@@ -702,6 +703,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         aprilTagPositions[22][1] = 3.3063434; // Y position
         aprilTagPositions[22][2] = 120; // Angle
 
+        createOffsets(-0.4, 0.4);
+
         // Coral Reef
         int subtract = 16;
         for (int id = 0; id < aprilTagPoses.length; id++) {
@@ -735,7 +738,5 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             }
             // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
         }
-
-        createOffsets(-0.4, 0.4);
     }
 }
