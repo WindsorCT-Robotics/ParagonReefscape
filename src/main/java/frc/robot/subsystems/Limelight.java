@@ -12,7 +12,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.Limelight.LimelightHelpers;
@@ -33,15 +32,16 @@ public class Limelight extends SubsystemBase {
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(16.54, 8.02));
 
-  /** Creates a new Limelight. */
   public Limelight(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
+    HttpCamera httpCamera = new HttpCamera("limelight", "http://10.5.71.11:5800/");
+    CameraServer.addCamera(httpCamera);
+    httpCamera.setExposureAuto();
   }
 
   @Override
   public void periodic() { // Checking drivetrain data against limelight/apriltag data to confirm accuracy of robot position, and updates the position accordingly.
     if (enable) {
-
       // Double targetDistanceX = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getX();
       // Double targetDistanceY = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getY();
       // Double targetDistanceZ = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getZ();
@@ -58,6 +58,7 @@ public class Limelight extends SubsystemBase {
       SmartDashboard.putBoolean("Limelight Error", distanceError);
       SmartDashboard.putBoolean("Field Error", fieldError);
       SmartDashboard.putBoolean("Invalid Target", invalidError);
+      
       LimelightHelpers.SetRobotOrientation(ll, drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
       Double tx_output = LimelightHelpers.getTX(ll);
@@ -65,19 +66,19 @@ public class Limelight extends SubsystemBase {
       Double ta_output = LimelightHelpers.getTA(ll);
 
       Double targetDistance = LimelightHelpers.getTargetPose3d_CameraSpace(ll).getTranslation().getDistance(new Translation3d()); //Calculates how far away the april tag is
-      Double confidence = 1.0; //- ((targetDistance - 1) / 6);
-      LimelightHelpers.LimelightResults result =
-          LimelightHelpers.getLatestResults(ll); //Gets everything that the camera sees 
+      Double confidence = (targetDistance - 1) / 6;
+
       if (!(tx_output == 0 && ty_output == 0 && ta_output == 0)) { //If result finds a vaild target then continues if statement result.valid
         invalidError = false;
         botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+        SmartDashboard.putNumber("Number Of Apriltags", botpose.tagCount);
         if (field.isPoseWithinArea(botpose.pose)) { 
           fieldError = false;
-          if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.pose.getTranslation()) < 0.5 //Compares the drivetrain aussumed position to the limelight's assumed position
+          if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.pose.getTranslation()) < 0.5 && Math.abs(drivetrain.getState().Pose.getRotation().getDegrees() - botpose.pose.getRotation().getDegrees()) < 3 //Compares the drivetrain aussumed position to the limelight's assumed position
               || trust
-              || result.targets_Fiducials //Fiducials = Apriltags
-              .length > 1) {
+              || botpose.tagCount > 1) {
             distanceError = false;
+            trust = false;
             drivetrain.addVisionMeasurement(
                 botpose.pose,
                 Utils.fpgaToCurrentTime(botpose.timestampSeconds), // Timer.getFPGATimestamp() - (result.latency_capture / 1000.0) - (result.latency_pipeline / 1000.0),
@@ -105,5 +106,9 @@ public class Limelight extends SubsystemBase {
 
   public void trustLL(boolean trust) {
     this.trust = trust;
+  }
+
+  public String getLimelightName() {
+    return ll;
   }
 }

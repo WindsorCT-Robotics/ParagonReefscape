@@ -1,13 +1,16 @@
 {
-  "robotWidth": 0.9,
-  "robotLength": 0.9,
+  "robotWidth": 0.889,
+  "robotLength": 0.8636,
   "holonomicMode": true,
   "pathFolders": [
-    "First Paths",
-    "Second Paths",
-    "Other Paths"
+    "Blue",
+    "Pushing Paths",
+    "Scoring Paths"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "Auto Paths",
+    "Push Paths"
+  ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,
