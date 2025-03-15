@@ -4,6 +4,7 @@
   "holonomicMode": true,
   "pathFolders": [
     "Blue",
+    "Reflected Paths",
     "Pushing Paths",
     "Scoring Paths"
   ],

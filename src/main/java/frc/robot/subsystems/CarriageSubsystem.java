@@ -74,12 +74,12 @@ public class CarriageSubsystem extends SubsystemBase {
         rollerRight.set(speed.asDouble());
     }
 
-    public void moveRollersLeft() {
+    public void moveRollersRight() {
         rollerLeft.set(speedFast.asDouble());
         rollerRight.set(speedSlow.asDouble());
     }
 
-    public void moveRollersRight() {
+    public void moveRollersLeft() {
         rollerLeft.set(speedSlow.asDouble());
         rollerRight.set(speedFast.asDouble());
     }
