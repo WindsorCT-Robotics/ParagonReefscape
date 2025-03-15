@@ -164,6 +164,8 @@ public class RobotContainer {
 
         // driverController.povUp().and(driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(driverController.leftStick())));
         // driverController.povUp().and(driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(driverController.leftStick())));
+        driverController.back().onTrue(new CoralOuttakeCommand(carriage, 1, "left"));
+        driverController.start().onTrue(new CoralOuttakeCommand(carriage, 1, "right"));
 
         // Auto Coral Station Alignment
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center").until(driverController.x()));
