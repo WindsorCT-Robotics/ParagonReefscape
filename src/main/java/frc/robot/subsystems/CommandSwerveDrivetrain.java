@@ -9,7 +9,6 @@ import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -33,12 +32,8 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.Waypoint;
 import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
@@ -46,11 +41,6 @@ import com.pathplanner.lib.config.PIDConstants;
 
 import dev.doglog.DogLog;
 
-import java.io.IOException;
-import org.json.simple.parser.ParseException;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -340,22 +330,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    private List<Waypoint> trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
-        List<Waypoint> waypoints = new ArrayList<Waypoint>();
-        
+    private Pose2d trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
+        Pose2d finalPose = null;
+
         // Checks if the id that is being used is an id that is allowed to be used for positioning
         if (!usedAprilTags.contains((int) aprilTagID)) {
             return null;
         }
 
-        double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
         double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
 
         // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
-            waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
-                new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
+            finalPose = new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation);
         }
 
         if (direction.equalsIgnoreCase("center")) {
@@ -380,15 +367,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
             
-            waypoints = PathPlannerPath.waypointsFromPoses(aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
+            finalPose = aprilTagPoses[(int) aprilTagID][1];
         }
 
         if (direction.equalsIgnoreCase("right")) {
-            waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
-                new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
+            finalPose = new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation);
         }
-        return waypoints;
+        return finalPose;
     }
 
     public double calculateDirectionalTranslation(double currentPose, double distance, double angle, String conditional) {
@@ -439,7 +424,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Command pathToAlignGenerator(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Begin generating path");
 
-        List<Waypoint> waypoints;
+        Pose2d finalPose;
         Rotation2d orientation;
         aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
         System.out.println("Current apriltag is " + aprilTagID);
@@ -448,44 +433,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         if (usedAprilTags.contains((int) aprilTagID)) {
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
-            waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
+            finalPose = trajectory(isCoralStation, aprilTagID, direction, orientation);
         } else {
             System.out.println("No valid apriltag");
             return Commands.none();
         }
 
-        if (waypoints == null) {
-            System.out.println("Waypoints is null");
+        if (finalPose == null) {
+            System.out.println("Pose is null");
             return Commands.none();
         }
 
         PathConstraints constraints = new PathConstraints(1, 1, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
-        // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
-        // Create the path using the waypoints created above
-        PathPlannerPath path = new PathPlannerPath(
-                waypoints,
-                constraints,
-                null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
-                new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
-        );
-        // Prevent the path from being flipped if the coordinates are already correct
-        path.preventFlipping = true;
-        try {
-            System.out.println("Path made and executing");
-            return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
-            setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
-                .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
-            new PPHolonomicDriveController(
-                // PID constants for translation
-                new PIDConstants(3, 0, 0),
-                // PID constants for rotation
-                new PIDConstants(7, 0, 0)
-            ), RobotConfig.fromGUISettings(), () -> false, this);
-        } catch (IOException | ParseException ex) {
-            System.out.println("No Command due to try-catch");
-            return Commands.none();
-        }
+        
+        System.out.println("Path made and executing");
+        
+        return AutoBuilder.pathfindToPose(finalPose, constraints);
     }
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
