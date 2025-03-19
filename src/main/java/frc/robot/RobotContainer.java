@@ -111,7 +111,7 @@ public class RobotContainer {
         );
 
         elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
-        carriage.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.1));
+        algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.1));
 
         Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
         Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);

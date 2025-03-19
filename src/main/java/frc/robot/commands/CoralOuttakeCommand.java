@@ -19,12 +19,8 @@ public class CoralOuttakeCommand extends Command {
         if (level == 1) {
             if (direction.equalsIgnoreCase("right")) {
                 rollers.moveRollersRight();
-            }
-            if (direction.equalsIgnoreCase("left")) {
+            } else {
                 rollers.moveRollersLeft();
-            }
-            if (direction.equalsIgnoreCase("center")) {
-                rollers.moveRollers(false);
             }
         } else {
             rollers.moveRollers(false);

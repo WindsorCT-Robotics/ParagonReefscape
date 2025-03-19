@@ -35,7 +35,8 @@ public class CarriageSubsystem extends SubsystemBase {
     public CarriageSubsystem() {
         speed = new Percent(0.25);
         speedFast = new Percent(0.24);
-        speedSlow = new Percent(0.08);
+        speedSlow = new Percent(0.08
+        );
         rollerLeft = new SparkMax(ROLLER_LEFT_MOTOR_CANID, MotorType.kBrushless);
         rollerRight = new SparkMax(ROLLER_RIGHT_MOTOR_CANID, MotorType.kBrushless);
         rollerLeftConfig = new SparkMaxConfig();
@@ -47,8 +48,17 @@ public class CarriageSubsystem extends SubsystemBase {
         rollerLeftConfig.idleMode(IdleMode.kBrake);
         rollerRightConfig.idleMode(IdleMode.kBrake);
 
+
+
+
+
+
+
+
         rollerLeft.configure(rollerLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         rollerRight.configure(rollerRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+         
+
         beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
     }
 

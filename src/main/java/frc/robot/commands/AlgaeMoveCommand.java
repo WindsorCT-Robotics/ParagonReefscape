@@ -11,6 +11,9 @@ public class AlgaeMoveCommand extends Command {
 
     public AlgaeMoveCommand(AlgaeRemoverSubsystem motor, boolean reverse, double speed) {
         this.motor = motor;
+        this.speed = speed;
+        this.reverse = reverse;
+        addRequirements(motor);
     }
 
     @Override
