@@ -17,7 +17,7 @@ public class CoralOuttakeCommand extends Command {
     @Override
     public void initialize() {
         if (level == 1) {
-            if (direction.equalsIgnoreCase("left")) {
+            if (direction.equalsIgnoreCase("right")) {
                 rollers.moveRollersRight();
             } else {
                 rollers.moveRollersLeft();
