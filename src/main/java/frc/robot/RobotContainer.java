@@ -69,7 +69,7 @@ public class RobotContainer {
 
         RegisterNamedComands();
 
-        autoChooser = AutoBuilder.buildAutoChooser("Inner Barge Optimal Path L2");
+        autoChooser = AutoBuilder.buildAutoChooser("Left Inner Barge Optimal Path L2");
         SmartDashboard.putData("Autos", autoChooser);
 
         configureBindings();
@@ -169,7 +169,7 @@ public class RobotContainer {
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center").until(driverController.x()));
 
         // Auto direction align to coral stations
-        driverController.y().toggleOnTrue(drivetrain.setOrientation(driverController, vision, false)
+        driverController.y().toggleOnTrue(drivetrain.setOrientation(driverController, vision, true)
         .until(driverRightJoy)
         .until(driverController.b())
         .until(opController.x())
@@ -180,7 +180,7 @@ public class RobotContainer {
         .until(opController.rightBumper()));
 
         //  Auto direction align to reef
-        driverController.b().toggleOnTrue(drivetrain.setOrientation(driverController, vision, true)
+        driverController.b().toggleOnTrue(drivetrain.setOrientation(driverController, vision, false)
         .until(driverRightJoy)
         .until(driverController.y())
         .until(opController.x())

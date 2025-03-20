@@ -30,23 +30,15 @@ public class ElevatorControlCommand extends Command {
 
     @Override
     public void execute() {
-        if (!reached) {
-            if (this.level == 3) {
-                reached = elevator.isAtL3();
-            } else if (this.level == 2) {
-                reached = elevator.isAtL2();
-            } else {
-                reached = elevator.isAtL1();
-            }
-            if (reached) {
-                elevator.stopMotor();
-            }
-        }
     }
 
     @Override
     public void end(boolean interrupted) {
-        elevator.stopMotor();
+        if (level == 1) {
+            elevator.stopMotor();
+        } else {
+            elevator.holdPosition();
+        }
     }
 
     @Override

@@ -76,6 +76,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Pose2d[][] aprilTagPoses = new Pose2d[23][2];
     double[][] aprilTagPositions = new double[23][3];
     private static final Set<Integer> usedAprilTags = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
+    private final double[] reefDirections = {0, 60, 120, 180, -60, -120};
 
     private final double redAdjustX = 8.569452;
     private final double redAdjustY = 0.0;
@@ -505,7 +506,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             @Override
             public void execute() {
-                if (!isCoralStation) {
+                if (isCoralStation) {
                     if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
                         if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
                             if (getState().Pose.getY() > 4.026) {
@@ -537,13 +538,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     }
 
                 } else {
-                    aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+                    int closestDirection = 0;
+                    int direction = 0;
 
-                    if (usedAprilTags.contains((int) aprilTagID)) {
-                        double x = (aprilTagPoses[(int) aprilTagID][1].getX() - getState().Pose.getX());
-                        double y = (aprilTagPoses[(int) aprilTagID][1].getY() - getState().Pose.getY());
-                        orientation = Math.atan2(y, x) * (180 / Math.PI);
-                    }
+                    // if ((Math.abs(reefDirections[direction]) - 5 < Math.abs(getState().Pose.getRotation().getDegrees())) && (Math.abs(reefDirections[direction]) + 5 > Math.abs(getState().Pose.getRotation().getDegrees()))) {
+                        for (direction = 0; direction < reefDirections.length; direction++) {
+                            if (Math.abs(reefDirections[direction] - getState().Pose.getRotation().getDegrees()) < Math.abs(reefDirections[closestDirection])) {
+                                closestDirection = direction;
+                                System.out.println(closestDirection + "hry");
+                            }
+                        }
+                    // }
+
+                    // System.out.println(reefDirections[closestDirection]);
+                    orientation = reefDirections[closestDirection];
+
                     if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
                         setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
                         .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
@@ -551,6 +560,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
                         .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                     }
+                    // aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+
+                    // if (usedAprilTags.contains((int) aprilTagID)) {
+                    //     double x = (aprilTagPoses[(int) aprilTagID][1].getX() - getState().Pose.getX());
+                    //     double y = (aprilTagPoses[(int) aprilTagID][1].getY() - getState().Pose.getY());
+                    //     orientation = Math.atan2(y, x) * (180 / Math.PI);
+                    // }
+                    // if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                    //     setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                    //     .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    // } else {
+                    //     setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                    //     .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    // }
                 }
             }
 

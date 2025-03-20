@@ -32,7 +32,7 @@ public class ElevatorMoveCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        elevator.stopMotor();
+        elevator.holdPosition();
     }
 
     @Override

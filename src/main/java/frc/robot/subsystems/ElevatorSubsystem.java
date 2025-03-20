@@ -25,8 +25,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private static final double L1 = 0.0;
-    private static final double L2 = 14.0;
-    private static final double L3 = 45.0;
+    private static final double L2 = 2.8;
+    private static final double L3 = 9;
+
+    private final double gravityVoltage = 1.1;
 
     public ElevatorSubsystem() {
         elevMotor = new SparkMax(MOTOR_CANID, MotorType.kBrushless);
@@ -38,11 +40,13 @@ public class ElevatorSubsystem extends SubsystemBase {
         closedLoopController = elevMotor.getClosedLoopController();
         encoder = elevMotor.getEncoder();
 
+        elevMotor.setVoltage(gravityVoltage);
+
         elevMotorConfig.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             // Set PID values for position control. We don't need to pass a closed
             // loop slot, as it will default to slot 0.
-            .p(0.45) // 0.003
+            .p(0.4) // 0.003
             .i(0)
             .d(0)
             .outputRange(-1, 1)
@@ -56,9 +60,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevMotorConfig.closedLoop.maxMotion
             // Set MAXMotion parameters for position control. We don't need to pass
             // a closed loop slot, as it will default to slot 0.
-            .maxVelocity(5600)
-            .maxAcceleration(5600)
-            .allowedClosedLoopError(0.5)
+            .maxVelocity(1000)
+            .maxAcceleration(3000)
+            .allowedClosedLoopError(0.05)
             // Set MAXMotion parameters for velocity control in slot 1
             .maxAcceleration(500, ClosedLoopSlot.kSlot1)
             .maxVelocity(6000, ClosedLoopSlot.kSlot1)
@@ -79,6 +83,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("Reverse Limit Switch", elevMotor.getReverseLimitSwitch().isPressed());
     }
 
+    public void holdPosition() {
+        elevMotor.setVoltage(gravityVoltage);
+    }
+
     public boolean isAtL3() {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.5);
     }
@@ -93,17 +101,17 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void setToL3(){
         closedLoopController.setReference(L3, ControlType.kMAXMotionPositionControl,
-          ClosedLoopSlot.kSlot0);    
+          ClosedLoopSlot.kSlot0, gravityVoltage + 0.25);
     }
 
     public void setToL2(){
         closedLoopController.setReference(L2, ControlType.kMAXMotionPositionControl,
-          ClosedLoopSlot.kSlot0);    
+          ClosedLoopSlot.kSlot0, gravityVoltage);
     }
 
     public void setToL1(){
         closedLoopController.setReference(L1, ControlType.kMAXMotionPositionControl,
-          ClosedLoopSlot.kSlot0);    
+          ClosedLoopSlot.kSlot0, gravityVoltage);
     }
 
     public void moveMotor() {
