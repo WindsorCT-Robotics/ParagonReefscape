@@ -181,7 +181,6 @@ public class RobotContainer {
 
         //  Auto direction align to reef
         driverController.b().toggleOnTrue(drivetrain.setOrientation(driverController, vision, false)
-        .until(driverRightJoy)
         .until(driverController.y())
         .until(opController.x())
         .until(opController.b())

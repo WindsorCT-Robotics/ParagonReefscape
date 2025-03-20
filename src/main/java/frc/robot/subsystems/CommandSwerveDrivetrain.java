@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
+import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
@@ -59,6 +60,9 @@ import java.util.function.Supplier;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
     private double aprilTagID;
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
@@ -539,27 +543,34 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
                 } else {
                     int closestDirection = 0;
-                    int direction = 0;
+                    double smallestDifference = Double.MAX_VALUE;
 
-                    // if ((Math.abs(reefDirections[direction]) - 5 < Math.abs(getState().Pose.getRotation().getDegrees())) && (Math.abs(reefDirections[direction]) + 5 > Math.abs(getState().Pose.getRotation().getDegrees()))) {
-                        for (direction = 0; direction < reefDirections.length; direction++) {
-                            if (Math.abs(reefDirections[direction] - getState().Pose.getRotation().getDegrees()) < Math.abs(reefDirections[closestDirection])) {
-                                closestDirection = direction;
-                                System.out.println(closestDirection + "hry");
-                            }
+                    for (int direction = 0; direction < reefDirections.length; direction++) {
+                        // Normalize the difference to be within -180 to +180 degrees
+                        double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees();
+                        difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                    
+                        if (Math.abs(difference) < smallestDifference) {
+                            closestDirection = direction;
+                            smallestDifference = Math.abs(difference);
                         }
-                    // }
-
-                    // System.out.println(reefDirections[closestDirection]);
-                    orientation = reefDirections[closestDirection];
-
-                    if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
-                        setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
-                    } else {
-                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                     }
+
+                    orientation = reefDirections[closestDirection];
+                    if (!(Math.abs(driverController.getRightX()) > 0.2)) {
+                        if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                            setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        } else {
+                            setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        }
+                    } else {
+                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate));// Drive counterclockwise with negative X (left)
+                    }
+                    
                     // aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
 
                     // if (usedAprilTags.contains((int) aprilTagID)) {
