@@ -464,7 +464,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return Commands.none();
         }
 
-        PathConstraints constraints = new PathConstraints(1, 1, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        PathConstraints constraints = new PathConstraints(1.25, 1.25, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(

@@ -24,7 +24,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final SparkClosedLoopController closedLoopController;
     private final RelativeEncoder encoder;
 
-    private static final double L1 = 0.0;
+    private static final double L1 = 0;
     private static final double L2 = 2.8;
     private static final double L3 = 9;
 
@@ -40,13 +40,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         closedLoopController = elevMotor.getClosedLoopController();
         encoder = elevMotor.getEncoder();
 
-        elevMotor.setVoltage(gravityVoltage);
-
         elevMotorConfig.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             // Set PID values for position control. We don't need to pass a closed
             // loop slot, as it will default to slot 0.
-            .p(0.4) // 0.003
+            .p(0.8) // 0.003
             .i(0)
             .d(0)
             .outputRange(-1, 1)
@@ -60,9 +58,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevMotorConfig.closedLoop.maxMotion
             // Set MAXMotion parameters for position control. We don't need to pass
             // a closed loop slot, as it will default to slot 0.
-            .maxVelocity(1000)
-            .maxAcceleration(3000)
-            .allowedClosedLoopError(0.05)
+            .maxVelocity(5600)
+            .maxAcceleration(1800)
+            .allowedClosedLoopError(0.1)
             // Set MAXMotion parameters for velocity control in slot 1
             .maxAcceleration(500, ClosedLoopSlot.kSlot1)
             .maxVelocity(6000, ClosedLoopSlot.kSlot1)
@@ -71,9 +69,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevMotorConfig.idleMode(IdleMode.kBrake);
         elevMotorConfig.inverted(true);
         elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-
-        
     }
 
     @Override
@@ -88,15 +83,15 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public boolean isAtL3() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.5);
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.1);
     }
 
     public boolean isAtL2() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L2) <= 0.5);
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L2) <= 0.1);
     }
 
     public boolean isAtL1() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L1) <= 0.5);
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L1) <= 0.1);
     }
 
     public void setToL3(){
@@ -111,11 +106,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void setToL1(){
         closedLoopController.setReference(L1, ControlType.kMAXMotionPositionControl,
-          ClosedLoopSlot.kSlot0, gravityVoltage);
+          ClosedLoopSlot.kSlot0);
     }
 
     public void moveMotor() {
-        elevMotor.set(-0.2);
+        elevMotor.set(-0.04);
     }
 
     public boolean getLowerLimit() {

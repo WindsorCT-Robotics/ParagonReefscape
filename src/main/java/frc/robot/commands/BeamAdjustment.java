@@ -21,9 +21,9 @@ public class BeamAdjustment extends Command {
     public void initialize() {
         double velocityY;
         if (this.direction.equals("left")) {
-            velocityY = 0.6;
+            velocityY = 1;
         } else {
-            velocityY = -0.6;
+            velocityY = -1;
         }
         drivetrain.setControl(new SwerveRequest.RobotCentric().withVelocityY(velocityY));
     }

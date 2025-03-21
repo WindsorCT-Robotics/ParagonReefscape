@@ -70,11 +70,12 @@ public class Limelight extends SubsystemBase {
 
       if (!(tx_output == 0 && ty_output == 0 && ta_output == 0)) { //If result finds a vaild target then continues if statement result.valid
         invalidError = false;
-        botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+        // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+        botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
         SmartDashboard.putNumber("Number Of Apriltags", botpose.tagCount);
         if (field.isPoseWithinArea(botpose.pose)) { 
           fieldError = false;
-          if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.pose.getTranslation()) < 0.5 && Math.abs(drivetrain.getState().Pose.getRotation().getDegrees() - botpose.pose.getRotation().getDegrees()) < 3 //Compares the drivetrain aussumed position to the limelight's assumed position
+          if (drivetrain.getState().Pose.getTranslation().getDistance(botpose.pose.getTranslation()) < 0.1 && Math.abs(drivetrain.getState().Pose.getRotation().getDegrees() - botpose.pose.getRotation().getDegrees()) < 3 //Compares the drivetrain aussumed position to the limelight's assumed position
               || trust
               || botpose.tagCount > 1) {
             distanceError = false;
