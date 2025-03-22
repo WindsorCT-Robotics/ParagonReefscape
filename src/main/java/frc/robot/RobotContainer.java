@@ -18,13 +18,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.commands.*;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.CarriageSubsystem;
@@ -34,6 +33,7 @@ public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
     private AlgaeRemoverSubsystem algaeRemover;
+    public LEDSubsystem led;
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -63,6 +63,7 @@ public class RobotContainer {
     Pose2d odomStart = new Pose2d(0, 0, new Rotation2d(1, 0));
     
     public RobotContainer() {
+        led = new LEDSubsystem();
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
         algaeRemover = new AlgaeRemoverSubsystem();
@@ -88,6 +89,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("RightL2ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 2));
         NamedCommands.registerCommand("LeftL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 1));
         NamedCommands.registerCommand("RightL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 1));
+
+        NamedCommands.registerCommand("AlgaePick", new AlgaeAutoMoveCommand(algaeRemover));
 
         NamedCommands.registerCommand("L1", new ElevatorMoveCommand(elevator, 1));
         NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2));
@@ -117,7 +120,7 @@ public class RobotContainer {
         Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.1 || driverController.getLeftY() < -0.1);
         Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.1 || driverController.getRightX() < -0.1);
 
-        Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision));
+        Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision, opController));
 
         Trigger opLock = new Trigger(() -> (driverLeftJoy.getAsBoolean() || driverRightJoy.getAsBoolean() || !isValidTarget.getAsBoolean()));
 
@@ -144,8 +147,8 @@ public class RobotContainer {
         // Intake
         driverController.leftBumper().onTrue(new CoralIntakeCommand(carriage).until(driverController.x()));
 
-        // Outtake
-        driverController.rightStick().onTrue(new CoralOuttakeCommand(carriage, 2, "e").until(driverController.x()));
+        
+        driverController.rightStick().whileTrue(new RumbleCommand(drivetrain, vision, driverController, opController, 1, 1).until(driverController.x()));
 
         // Relative Drive Forward
         driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2).withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2)));
@@ -154,16 +157,6 @@ public class RobotContainer {
         driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
         driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
         driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
-
-        // // Auto Score
-        // driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(driverController.leftStick()));
-        // driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(driverController.leftStick()));
-
-        // driverController.povDown().and(driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(driverController.leftStick())));
-        // driverController.povDown().and(driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(driverController.leftStick())));
-
-        // driverController.povUp().and(driverController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(driverController.leftStick())));
-        // driverController.povUp().and(driverController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(driverController.leftStick())));
 
         // Auto Coral Station Alignment
         driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center").until(driverController.x()));
@@ -201,22 +194,31 @@ public class RobotContainer {
         // Operator Bindings
 
         // Aligns to trough
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(opLock));
-        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(opLock));
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
+        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()));
+
+        opController.x().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
+        opController.b().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
 
         // opController.back().and(opController.x()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(opLock));
         // opController.back().and(opController.y()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(opLock));
 
         // Aligns to branch and scores in L2
-        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).unless(opLock));
-        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).unless(opLock));
+        opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
+        opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
+
+        opRightTrigger.onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
+        opLeftTrigger.onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
 
         // opController.back().and(opLeftTrigger).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()).unless(opLock));
         // opController.back().and(opRightTrigger).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()).unless(opLock));
         
         // Aligns to branch and scores in L3
-        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).unless(opLock));
-        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(opLock));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
+        
+        opController.leftBumper().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
+        opController.rightBumper().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
 
         // opController.back().and(opController.leftBumper()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()).unless(opLock));
         // opController.back().and(opController.rightBumper()).onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()).unless(opLock));
@@ -229,7 +231,6 @@ public class RobotContainer {
         // Resets elevator
         opController.rightStick().onTrue(new ElevatorResetCommand(elevator));
 
-        // Rolls intake/outtake until x is pressed or sensor is tripped
         // opController.rightBumper().onTrue(new BeamOuttakeCommand(carriage).until(opController.leftStick()));
         // opController.leftBumper().onTrue(new BeamIntakeCommand(carriage).until(opController.leftStick()));
         
@@ -242,7 +243,7 @@ public class RobotContainer {
 
         // Manually controls the intake and outtake rollers
         
-        opRightJoy.whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
+        opRightJoy.and(opController.start()).whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

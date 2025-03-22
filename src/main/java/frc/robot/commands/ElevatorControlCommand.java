@@ -7,12 +7,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class ElevatorControlCommand extends Command {
     private final ElevatorSubsystem elevator;
     private final int level;
-    private boolean reached;
 
     public ElevatorControlCommand(ElevatorSubsystem elevator, int level) {
         this.elevator = elevator;
         this.level = level;
-        this.reached = false;
         addRequirements(elevator);
     }
 

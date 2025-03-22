@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
@@ -28,6 +29,10 @@ public class Robot extends TimedRobot {
   private VisionSim visionSim;
   private PhotonCamera camera;
   private String cameraName = "Main";
+
+  private int r;
+  private int g;
+  private int b;
 
   private final RobotContainer m_robotContainer;
 
@@ -46,13 +51,17 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
+
+    
   }
 
   @Override
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.led.checkAprilTags(m_robotContainer.vision);
+  }
 
   @Override
   public void disabledExit() {}
@@ -67,13 +76,32 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    for (double t = 0.0; t <= 1.0; t += 0.01) {
+      // Map t (0 to 1) to a specific range of colors in the rainbow
+      int r = (int) (255 * (1 - Math.abs(t * 6 - 3) - Math.abs(t * 6 - 4)));
+      int g = (int) (255 * (1 - Math.abs(t * 6 - 2) - Math.abs(t * 6 - 3)));
+      int b = (int) (255 * (1 - Math.abs(t * 6 - 1) - Math.abs(t * 6 - 2)));
+
+      // Print the RGB value of the current color
+      System.out.println("RGB: " + r + ", " + g + ", " + b);
+      try {
+        Thread.sleep((long) 100.0);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      m_robotContainer.led.setLedColorAll(r, g, b);
+    }
+  }
 
   @Override
   public void autonomousExit() {}
 
   @Override
   public void teleopInit() {
+    m_robotContainer.led.setLedColorAll(0, 0, 0);
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
@@ -91,7 +119,31 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    for (double t = 0.0; t <= 1.0; t += 0.01) {
+        // Map t (0 to 1) to a smooth rainbow gradient
+        int r = (int) (Math.abs(Math.sin(t * Math.PI * 2)) * 255);
+        int g = (int) (Math.abs(Math.sin((t + 1.0 / 3.0) * Math.PI * 2)) * 255);
+        int b = (int) (Math.abs(Math.sin((t + 2.0 / 3.0) * Math.PI * 2)) * 255);
+
+        // Print the RGB value of the current color
+        System.out.println("RGB: " + r + ", " + g + ", " + b);
+        
+        // Sleep for a short period to visualize the effect
+        try {
+            Thread.sleep(50);  // Adjust sleep time for desired speed of transition
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Set the LED color
+        m_robotContainer.led.setLedColorAll(r, g, b);
+        SmartDashboard.putNumber("R", r);
+        SmartDashboard.putNumber("G", g);
+        SmartDashboard.putNumber("B", b);
+    }
+  }
+
 
   @Override
   public void testExit() {}

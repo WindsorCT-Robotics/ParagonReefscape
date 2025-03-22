@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LEDSubsystem extends SubsystemBase {
     private static int ledPort = 0;
-    private static int ledLength = 170;
+    private static int ledLength = 2;
     private AddressableLED led;
     private AddressableLEDBuffer ledBuffer;
 
@@ -16,8 +16,6 @@ public class LEDSubsystem extends SubsystemBase {
         ledBuffer = new AddressableLEDBuffer(ledLength);
         led.setLength(ledBuffer.getLength());
         led.start();
-
-        setLedColor(0, 0, 255);
     }
 
     @Override
@@ -25,10 +23,15 @@ public class LEDSubsystem extends SubsystemBase {
         SmartDashboard.putBoolean("LED Color", convertColor());
     }
 
-    public void setLedColor(int red, int green, int blue) {
+    public void setLedColorAll(int red, int green, int blue) {
         for (var i = 0; i < ledBuffer.getLength(); i++) {
             ledBuffer.setRGB(i, red, green, blue);
         }
+        led.setData(ledBuffer);
+    }
+
+    public void setLedColor(int red, int green, int blue, int ledIndex) {
+        ledBuffer.setRGB(ledIndex, red, green, blue);
         led.setData(ledBuffer);
     }
 
@@ -39,4 +42,14 @@ public class LEDSubsystem extends SubsystemBase {
         return false;
     }
 
+    public void checkAprilTags(Limelight limelight) {
+        if (limelight.getTagCount() == 1) {
+            setLedColor(0, 255, 0, 0);
+            setLedColor(255, 0, 0, 1);
+        } else if (limelight.getTagCount() > 1) {
+            setLedColorAll(0, 255, 0);
+        } else {
+            setLedColorAll(255, 0, 0);
+        }
+    }
 }

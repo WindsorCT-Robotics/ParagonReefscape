@@ -3,14 +3,12 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
-import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -37,6 +35,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
@@ -353,13 +352,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return null;
         }
 
-        double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
+        // double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
         double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
 
         // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
+                getState().Pose,
+                // new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
         }
 
@@ -385,12 +385,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
             
-            waypoints = PathPlannerPath.waypointsFromPoses(aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
+            waypoints = PathPlannerPath.waypointsFromPoses(getState().Pose, aprilTagPoses[(int) aprilTagID][1]);
         }
 
         if (direction.equalsIgnoreCase("right")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
+                getState().Pose,
+                // new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
         }
         return waypoints;
@@ -454,6 +455,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (usedAprilTags.contains((int) aprilTagID)) {
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
+            // waypoints.add(0, PathPlannerPath.waypointsFromPoses(getState().Pose).get(0));
         } else {
             System.out.println("No valid apriltag");
             return Commands.none();
@@ -464,17 +466,29 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return Commands.none();
         }
 
-        PathConstraints constraints = new PathConstraints(1.25, 1.25, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+
+        PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(
                 waypoints,
                 constraints,
-                null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+                new IdealStartingState(Math.sqrt(Math.pow(getState().Speeds.vxMetersPerSecond, 2) + Math.pow(getState().Speeds.vyMetersPerSecond, 2)), Rotation2d.fromDegrees(getState().Pose.getRotation().getDegrees())), // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
                 new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
         );
+
+        // PathConstraints constraints = new PathConstraints(1.25, 1.25, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        // // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
+        // // Create the path using the waypoints created above
+        // PathPlannerPath path = new PathPlannerPath(
+        //         waypoints,
+        //         constraints,
+        //         null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+        //         new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
+        // );
         // Prevent the path from being flipped if the coordinates are already correct
         path.preventFlipping = true;
+        System.out.println(aprilTagID);
         try {
             System.out.println("Path made and executing");
             return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
@@ -495,6 +509,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Calling Deferred Command");
+        aprilTagID = 17.0;
         return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
     }
 
@@ -520,6 +535,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                             }
                         } else {
                             orientation = 0;
+                       
                         }
                     } else {
                         if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
@@ -595,14 +611,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         };
     }
 
-    public boolean isValidTarget(Limelight limelight) {
+    public boolean isValidTarget(Limelight limelight, CommandXboxController op) {
         try {
             aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
             return usedAprilTags.contains((int) aprilTagID);
         } catch (Exception ex) {
             return false;
         }
-        
     }
 
 
