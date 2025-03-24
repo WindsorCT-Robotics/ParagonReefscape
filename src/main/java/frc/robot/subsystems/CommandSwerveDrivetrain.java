@@ -3,8 +3,10 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
+import frc.robot.commands.NotificationCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.utils.Elastic;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -444,6 +447,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlignGenerator(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Begin generating path");
+        
+        new NotificationCommand(0, "hry", "hey");
 
         List<Waypoint> waypoints;
         Rotation2d orientation;
@@ -455,16 +460,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (usedAprilTags.contains((int) aprilTagID)) {
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
+            Commands.deferredProxy(() -> new NotificationCommand(0, "Info Notification", "Pathing to april tag" + (int) aprilTagID));
             // waypoints.add(0, PathPlannerPath.waypointsFromPoses(getState().Pose).get(0));
         } else {
             System.out.println("No valid apriltag");
-            return Commands.none();
+            return Commands.deferredProxy(()-> new NotificationCommand(1, "Warning Notification", "No valid april tag detected"));
         }
 
         if (waypoints == null) {
             System.out.println("Waypoints is null");
             return Commands.none();
         }
+
+        // new NotificationCommand(1, "Warning Notification", "No valid april tag detected");
 
 
         PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
@@ -509,7 +517,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Calling Deferred Command");
-        aprilTagID = 17.0;
         return new DeferredCommand(() -> pathToAlignGenerator(limelight, isCoralStation, direction), Set.of(this, limelight));
     }
 
@@ -611,11 +618,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         };
     }
 
-    public boolean isValidTarget(Limelight limelight, CommandXboxController op) {
+    public boolean isValidTarget(Limelight limelight) {
         try {
             aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
             return usedAprilTags.contains((int) aprilTagID);
         } catch (Exception ex) {
+            new NotificationCommand(0, "INFO NOTIFICATION", "No april tag detected.");
             return false;
         }
     }
@@ -623,6 +631,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void periodic() {
+        // System.out.println("Periodic");
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
@@ -630,6 +639,29 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
          * Otherwise, only check and apply the operator perspective if the DS is disabled.
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
+
+        double batteryVoltage = RobotController.getBatteryVoltage();
+        double temp_threshold = 0.0;
+        boolean highTemp = false;
+
+        if (batteryVoltage < 7.0) {
+            Commands.deferredProxy(() -> new NotificationCommand(1, "Warning Notification", "Low Battery Voltage: " + batteryVoltage));
+        }
+
+        for (int module = 0; module < getModules().length; module++) {
+            if (getModule(module).getDriveMotor().getDeviceTemp().getValueAsDouble() > temp_threshold) {
+                highTemp = true;
+
+            }
+
+            if (getModule(module).getSteerMotor().getDeviceTemp().getValueAsDouble() > temp_threshold) {
+                highTemp = true;
+            }
+        }
+
+        if (highTemp) {
+            Commands.deferredProxy(()-> new NotificationCommand(1, "Warning Notification", "Module(s) exceed " + temp_threshold + " fahrenheit"));
+        }
         
         SmartDashboard.putNumber("Drivetrain X", getState().Pose.getTranslation().getX());
         SmartDashboard.putNumber("Drivetrain Y", getState().Pose.getTranslation().getY());

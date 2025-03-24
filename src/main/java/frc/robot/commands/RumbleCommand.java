@@ -47,7 +47,7 @@ public class RumbleCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        if (drivetrain.isValidTarget(limelight, op)) {
+        if (drivetrain.isValidTarget(limelight)) {
             isFinished = true;
         } else {
             isFinished = false;

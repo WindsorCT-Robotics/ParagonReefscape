@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.NotifierCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
@@ -120,9 +121,12 @@ public class RobotContainer {
         Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.1 || driverController.getLeftY() < -0.1);
         Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.1 || driverController.getRightX() < -0.1);
 
-        Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision, opController));
+        Trigger driverLeftJoyLock = new Trigger(() -> driverController.getLeftY() > 0.5 || driverController.getLeftY() < -0.5);
+        Trigger driverRightJoyLock = new Trigger(() -> driverController.getRightX() > 0.5 || driverController.getRightX() < -0.5);
 
-        Trigger opLock = new Trigger(() -> (driverLeftJoy.getAsBoolean() || driverRightJoy.getAsBoolean() || !isValidTarget.getAsBoolean()));
+        Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision));
+
+        Trigger opLock = new Trigger(() -> (driverLeftJoyLock.getAsBoolean() || driverRightJoyLock.getAsBoolean() || !isValidTarget.getAsBoolean()));
 
         // driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // driverController.b().whileTrue(drivetrain.applyRequest(() ->
@@ -194,8 +198,8 @@ public class RobotContainer {
         // Operator Bindings
 
         // Aligns to trough
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()));
-        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()));
+        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1).until(opController.leftStick()).unless(opLock));
+        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1).until(opController.leftStick()).unless(opLock));
 
         opController.x().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
         opController.b().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
@@ -244,6 +248,8 @@ public class RobotContainer {
         // Manually controls the intake and outtake rollers
         
         opRightJoy.and(opController.start()).whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
+
+        opController.leftStick().onTrue(new NotificationCommand(0, "Info Notification", "Command(s) have been cancelled"));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
