@@ -3,10 +3,10 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
+import frc.robot.Robot;
 import frc.robot.commands.NotificationCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.utils.Elastic;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -66,6 +67,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     private double aprilTagID;
+
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -93,7 +95,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final double rightAngle = -90.0;
 
     private final double branchOffset = 0.1651;
-    // end on the fly
 
     private Field2d field = new Field2d();
 
@@ -200,6 +201,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
         configureAutoBuilder();
         SmartDashboard.putData(field);
 
@@ -233,6 +235,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
         configureAutoBuilder();
         SmartDashboard.putData(field);
 
@@ -274,6 +277,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
         configureAutoBuilder();
         SmartDashboard.putData(field);
 
@@ -447,8 +451,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathToAlignGenerator(Limelight limelight, boolean isCoralStation, String direction) {
         System.out.println("Begin generating path");
-        
-        new NotificationCommand(0, "hry", "hey");
 
         List<Waypoint> waypoints;
         Rotation2d orientation;
@@ -460,11 +462,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (usedAprilTags.contains((int) aprilTagID)) {
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
-            Commands.deferredProxy(() -> new NotificationCommand(0, "Info Notification", "Pathing to april tag" + (int) aprilTagID));
+            // Commands.deferredProxy(() -> new NotificationCommand(notification, 0, "Info Notification", "Pathing to april tag" + (int) aprilTagID));
             // waypoints.add(0, PathPlannerPath.waypointsFromPoses(getState().Pose).get(0));
         } else {
             System.out.println("No valid apriltag");
-            return Commands.deferredProxy(()-> new NotificationCommand(1, "Warning Notification", "No valid april tag detected"));
+
+            return Commands.none();
+            // return Commands.deferredProxy(() -> new NotificationCommand(notification, 1, "Warning Notification", "No valid april tag detected"));
         }
 
         if (waypoints == null) {
@@ -623,7 +627,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
             return usedAprilTags.contains((int) aprilTagID);
         } catch (Exception ex) {
-            new NotificationCommand(0, "INFO NOTIFICATION", "No april tag detected.");
             return false;
         }
     }
@@ -641,28 +644,29 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
          */
 
         double batteryVoltage = RobotController.getBatteryVoltage();
-        double temp_threshold = 0.0;
-        boolean highTemp = false;
+        // double temp_threshold = 0.0;
+        // boolean highTemp = true;
 
         if (batteryVoltage < 7.0) {
-            Commands.deferredProxy(() -> new NotificationCommand(1, "Warning Notification", "Low Battery Voltage: " + batteryVoltage));
+            NotificationsSubsystem.createNotification(1, "Warning Notification", "Low Battery Voltage: " + batteryVoltage);
+            // Commands.deferredProxy(() -> new NotificationCommand(notification, 1, "Warning Notification", "Low Battery Voltage: " + batteryVoltage));
         }
 
-        for (int module = 0; module < getModules().length; module++) {
-            if (getModule(module).getDriveMotor().getDeviceTemp().getValueAsDouble() > temp_threshold) {
-                highTemp = true;
+        // for (int module = 0; module < getModules().length; module++) {
+        //     if (getModule(module).getDriveMotor().getDeviceTemp().getValueAsDouble() > temp_threshold) {
+        //         highTemp = true;
 
-            }
+        //     }
 
-            if (getModule(module).getSteerMotor().getDeviceTemp().getValueAsDouble() > temp_threshold) {
-                highTemp = true;
-            }
-        }
+        //     if (getModule(module).getSteerMotor().getDeviceTemp().getValueAsDouble() > temp_threshold) {
+        //         highTemp = true;
+        //     }
+        // }
 
-        if (highTemp) {
-            Commands.deferredProxy(()-> new NotificationCommand(1, "Warning Notification", "Module(s) exceed " + temp_threshold + " fahrenheit"));
-        }
-        
+        // if (highTemp) {
+        //     NotificationsSubsystem.createNotification(1, "Warning Notification", "Module(s) exceed " + temp_threshold + " fahrenheit");
+        // }
+
         SmartDashboard.putNumber("Drivetrain X", getState().Pose.getTranslation().getX());
         SmartDashboard.putNumber("Drivetrain Y", getState().Pose.getTranslation().getY());
         SmartDashboard.putNumber("Drivetrain Current Direction", getState().Pose.getRotation().getDegrees());
