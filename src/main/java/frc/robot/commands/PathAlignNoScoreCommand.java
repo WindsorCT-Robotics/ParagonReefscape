@@ -13,7 +13,7 @@ public class PathAlignNoScoreCommand extends ParallelCommandGroup {
             new RepositionCoralCommand(rollers),
             new SequentialCommandGroup(
                 drivetrain.pathToAlign(limelight, false, direction),
-                new BeamAdjustment(drivetrain, direction)
+                new BeamAdjustment(drivetrain, direction, 1)
             )
         );
     }

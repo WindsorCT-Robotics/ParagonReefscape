@@ -10,10 +10,12 @@ public class BeamAdjustment extends Command {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final String direction;
+    private final double speed;
 
-    public BeamAdjustment(CommandSwerveDrivetrain drivetrain, String direction) {
+    public BeamAdjustment(CommandSwerveDrivetrain drivetrain, String direction, double speed) {
         this.drivetrain = drivetrain;
         this.direction = direction;
+        this.speed = speed;
         addRequirements(this.drivetrain);
     }
 
@@ -21,9 +23,9 @@ public class BeamAdjustment extends Command {
     public void initialize() {
         double velocityY;
         if (this.direction.equals("left")) {
-            velocityY = 1;
+            velocityY = speed;
         } else {
-            velocityY = -1;
+            velocityY = -speed;
         }
         drivetrain.setControl(new SwerveRequest.RobotCentric().withVelocityY(velocityY));
     }

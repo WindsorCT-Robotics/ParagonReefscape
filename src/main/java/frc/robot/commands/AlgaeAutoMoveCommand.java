@@ -18,7 +18,7 @@ public class AlgaeAutoMoveCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor(false);
+        motor.moveMotor(true, 0.2);
     }
 
     @Override

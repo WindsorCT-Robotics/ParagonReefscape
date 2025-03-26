@@ -6,9 +6,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public class AlgaeMoveCommand extends Command {
     private final AlgaeRemoverSubsystem motor;
+    private final boolean reverse;
+    private final double speed;
 
-    public AlgaeMoveCommand(AlgaeRemoverSubsystem motor) {
+
+    public AlgaeMoveCommand(AlgaeRemoverSubsystem motor, boolean reverse, double speed) {
         this.motor = motor;
+        this.reverse = reverse;
+        this.speed = speed;
+        addRequirements(motor);
     }
 
     @Override
@@ -18,13 +24,14 @@ public class AlgaeMoveCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor(false);
+        motor.moveMotor(reverse, speed);
     }
 
     @Override
     public void end(boolean interrupted) {
         motor.stopMotor();
     }
+    
 
     @Override
     public boolean isFinished() {

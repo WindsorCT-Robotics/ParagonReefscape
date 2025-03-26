@@ -8,7 +8,7 @@ public class ScoreNoElevatorCommand extends SequentialCommandGroup {
 
     public ScoreNoElevatorCommand(CarriageSubsystem rollers, CommandSwerveDrivetrain drivetrain, String direction) {
         addCommands(
-            new BeamAdjustment(drivetrain, direction),
+            new BeamAdjustment(drivetrain, direction, 1),
             new CoralOuttakeCommand(rollers, 1, direction)
         );
     }

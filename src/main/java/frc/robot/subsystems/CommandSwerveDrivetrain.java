@@ -70,7 +70,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final TimeOfFlight lTOFSensor;
     private final TimeOfFlight rTOFSensor;
 
-    private final double TOFSensorThreshold = 320;
+    private final double TOFSensorThreshold = 400;
 
     private static final int L_TOF_CANID = 19;
     private static final int R_TOF_CANID = 18;
@@ -467,7 +467,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
 
-        PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        PathConstraints constraints = new PathConstraints(2, 2, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(

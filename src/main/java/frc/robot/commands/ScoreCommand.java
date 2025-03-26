@@ -12,7 +12,7 @@ public class ScoreCommand extends SequentialCommandGroup {
         addCommands(
             new ParallelCommandGroup(
                 new ElevatorMoveCommand(elevator, level),
-                new BeamAdjustment(drivetrain, direction)
+                new BeamAdjustment(drivetrain, direction, 1)
             ),
             new CoralOuttakeCommand(rollers, level, direction)
         );

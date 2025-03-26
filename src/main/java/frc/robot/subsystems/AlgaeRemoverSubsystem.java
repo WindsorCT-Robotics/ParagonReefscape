@@ -11,7 +11,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase.PersistMode;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
     private static final int ALGAE_MOTOR_CANID = 17;
@@ -39,11 +38,11 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         
     }
 
-    public void moveMotor(boolean reverse) {
+    public void moveMotor(boolean reverse, double speed) {
         if (!reverse) {
-            motor.set(speed.asDouble());
+            motor.set(speed);
         } else {
-            motor.set(-speed.asDouble());
+            motor.set(-speed);
         }
         
     }

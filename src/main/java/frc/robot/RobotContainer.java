@@ -99,7 +99,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
+        // and Y is defined as to the le ft according to WPILib convention.
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
 
@@ -111,6 +111,8 @@ public class RobotContainer {
         );
 
         elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
+
+        algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, false, 0.2));
 
         Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
         Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
@@ -207,6 +209,9 @@ public class RobotContainer {
         opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
         opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
 
+        opRightTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2).until(opController.leftStick()));
+        opLeftTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2).until(opController.leftStick()));
+
         opRightTrigger.onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
         opLeftTrigger.onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
 
@@ -216,6 +221,9 @@ public class RobotContainer {
         // Aligns to branch and scores in L3
         opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
         opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
+
+        opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3).until(opController.leftStick()));
+        opController.rightBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3).until(opController.leftStick()));
         
         opController.leftBumper().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
         opController.rightBumper().onTrue(new RumbleAllCommand(drivetrain, vision, driverController, opController, 0.02).until(opController.leftStick()));
@@ -238,8 +246,8 @@ public class RobotContainer {
 
         opController.back().and(opController.x()).onTrue(new PathAlignNoScoreCommand(carriage, drivetrain, vision, "left").until(opController.leftStick()));
         opController.back().and(opController.b()).onTrue(new PathAlignNoScoreCommand(carriage, drivetrain, vision, "right").until(opController.leftStick()));
-        opController.back().and(opController.a()).toggleOnTrue(new ElevatorControlCommand(elevator, 2).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
-        opController.back().and(opController.y()).toggleOnTrue(new ElevatorControlCommand(elevator, 3).alongWith(new AlgaeMoveCommand(algaeRemover)).until(opController.leftStick()));
+        opController.back().and(opController.a()).toggleOnTrue(new ElevatorControlCommand(elevator, 2).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.2)).until(opController.leftStick()));
+        opController.back().and(opController.y()).toggleOnTrue(new ElevatorControlCommand(elevator, 3).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.2)).until(opController.leftStick()));
 
         // Manually controls the intake and outtake rollers
         
