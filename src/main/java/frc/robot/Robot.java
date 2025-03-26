@@ -83,8 +83,6 @@ public class Robot extends TimedRobot {
       int g = (int) (255 * (1 - Math.abs(t * 6 - 2) - Math.abs(t * 6 - 3)));
       int b = (int) (255 * (1 - Math.abs(t * 6 - 1) - Math.abs(t * 6 - 2)));
 
-      // Print the RGB value of the current color
-      System.out.println("RGB: " + r + ", " + g + ", " + b);
       try {
         Thread.sleep((long) 100.0);
       } catch (InterruptedException e) {
@@ -125,9 +123,6 @@ public class Robot extends TimedRobot {
         int r = (int) (Math.abs(Math.sin(t * Math.PI * 2)) * 255);
         int g = (int) (Math.abs(Math.sin((t + 1.0 / 3.0) * Math.PI * 2)) * 255);
         int b = (int) (Math.abs(Math.sin((t + 2.0 / 3.0) * Math.PI * 2)) * 255);
-
-        // Print the RGB value of the current color
-        System.out.println("RGB: " + r + ", " + g + ", " + b);
         
         // Sleep for a short period to visualize the effect
         try {
