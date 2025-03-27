@@ -77,20 +77,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    for (double t = 0.0; t <= 1.0; t += 0.01) {
-      // Map t (0 to 1) to a specific range of colors in the rainbow
-      int r = (int) (255 * (1 - Math.abs(t * 6 - 3) - Math.abs(t * 6 - 4)));
-      int g = (int) (255 * (1 - Math.abs(t * 6 - 2) - Math.abs(t * 6 - 3)));
-      int b = (int) (255 * (1 - Math.abs(t * 6 - 1) - Math.abs(t * 6 - 2)));
+    // for (double t = 0.0; t <= 1.0; t += 0.01) {
+    //   // Map t (0 to 1) to a specific range of colors in the rainbow
+    //   int r = (int) (255 * (1 - Math.abs(t * 6 - 3) - Math.abs(t * 6 - 4)));
+    //   int g = (int) (255 * (1 - Math.abs(t * 6 - 2) - Math.abs(t * 6 - 3)));
+    //   int b = (int) (255 * (1 - Math.abs(t * 6 - 1) - Math.abs(t * 6 - 2)));
 
-      try {
-        Thread.sleep((long) 100.0);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+    //   try {
+    //     Thread.sleep((long) 100.0);
+    //   } catch (InterruptedException e) {
+    //     e.printStackTrace();
+    //   }
 
-      m_robotContainer.led.setLedColorAll(r, g, b);
-    }
+    //   m_robotContainer.led.setLedColorAll(r, g, b);
+    // }
   }
 
   @Override

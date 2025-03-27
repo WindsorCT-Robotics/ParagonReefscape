@@ -9,32 +9,28 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class PathScoreAlgaeCommand extends SequentialCommandGroup {
 
-    public PathScoreAlgaeCommand(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain, Limelight limelight, String direction, int level) {
-        if (direction.equals("left")) {
+    public PathScoreAlgaeCommand(CarriageSubsystem rollers, ElevatorSubsystem elevator, CommandSwerveDrivetrain drivetrain, Limelight limelight, String direction, Double level) {
+        if (level == 2.0) {
             addCommands(
                 new ParallelCommandGroup(
-                    new RepositionCoralCommand(rollers),
-                    new SequentialCommandGroup(
-                        drivetrain.pathToAlign(limelight, false, direction),
-                        new BeamAdjustment(drivetrain, direction, 1)
-                    ),
-                    new ElevatorMoveCommand(elevator, level)
+                    // new RepositionCoralCommand(rollers),
+                    drivetrain.pathToAlign(limelight, false, direction),
+                    new ElevatorMoveCommand(elevator, 1.0)
                 ),
-                new CoralOuttakeCommand(rollers, level, direction),
-                new BeamAdjustment(drivetrain, "right", 2)
+                new BeamAdjustment(drivetrain, direction, 1),
+                new ElevatorMoveCommand(elevator, level),
+                new CoralOuttakeCommand(rollers, level, direction)
             );
         } else {
             addCommands(
                 new ParallelCommandGroup(
-                    new RepositionCoralCommand(rollers),
-                    new SequentialCommandGroup(
-                        drivetrain.pathToAlign(limelight, false, direction),
-                        new BeamAdjustment(drivetrain, direction, 1)
-                    ),
-                    new ElevatorMoveCommand(elevator, level)
+                    // new RepositionCoralCommand(rollers),
+                    drivetrain.pathToAlign(limelight, false, direction),
+                    new ElevatorMoveCommand(elevator, 2.5)
                 ),
-                new CoralOuttakeCommand(rollers, level, direction),
-                new BeamAdjustment(drivetrain, "left", 2)
+                new BeamAdjustment(drivetrain, direction, 1),
+                new ElevatorMoveCommand(elevator, 3.0),
+                new CoralOuttakeCommand(rollers, level, direction)
             );
         }
     }

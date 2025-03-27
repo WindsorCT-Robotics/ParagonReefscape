@@ -26,6 +26,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private static final double L1 = 0;
     private static final double L2 = 2.8;
+    private static final double L2_5 = 6.25;
     private static final double L3 = 9;
 
     private final double gravityVoltage = 1.3;
@@ -87,6 +88,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.1);
     }
 
+    public boolean isAtL2_5() {
+        return (Math.abs(elevMotor.getEncoder().getPosition() - L2_5) <= 0.1);
+    }
+
     public boolean isAtL2() {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L2) <= 0.1);
     }
@@ -98,6 +103,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void setToL3(){
         closedLoopController.setReference(L3, ControlType.kMAXMotionPositionControl,
           ClosedLoopSlot.kSlot0, gravityVoltage + 0.25);
+    }
+
+    public void setToL2_5(){
+        closedLoopController.setReference(L2_5, ControlType.kMAXMotionPositionControl,
+          ClosedLoopSlot.kSlot0, gravityVoltage);
     }
 
     public void setToL2(){

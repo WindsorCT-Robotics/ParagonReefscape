@@ -3,8 +3,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
-import frc.robot.Robot;
-import frc.robot.commands.NotificationCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
@@ -480,7 +478,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // new NotificationCommand(1, "Warning Notification", "No valid april tag detected");
 
 
-        PathConstraints constraints = new PathConstraints(2, 2, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(
@@ -572,15 +570,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 } else {
                     int closestDirection = 0;
                     double smallestDifference = Double.MAX_VALUE;
-
-                    for (int direction = 0; direction < reefDirections.length; direction++) {
-                        // Normalize the difference to be within -180 to +180 degrees
-                        double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees();
-                        difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
-                    
-                        if (Math.abs(difference) < smallestDifference) {
-                            closestDirection = direction;
-                            smallestDifference = Math.abs(difference);
+                    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                        for (int direction = 0; direction < reefDirections.length; direction++) {
+                            // Normalize the difference to be within -180 to +180 degrees
+                            double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees();
+                            difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                        
+                            if (Math.abs(difference) < smallestDifference) {
+                                closestDirection = direction;
+                                smallestDifference = Math.abs(difference);
+                            }
+                        }
+                    } else {
+                        for (int direction = 0; direction < reefDirections.length; direction++) {
+                            // Normalize the difference to be within -180 to +180 degrees
+                            double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees() + 180;
+                            difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                        
+                            if (Math.abs(difference) < smallestDifference) {
+                                closestDirection = direction;
+                                smallestDifference = Math.abs(difference);
+                            }
                         }
                     }
 
@@ -635,7 +645,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @Override
     public void periodic() {
-        // System.out.println("Periodic");
+
+        SmartDashboard.putNumber("Yaw", getPigeon2().getYaw().getValueAsDouble());
+        
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.

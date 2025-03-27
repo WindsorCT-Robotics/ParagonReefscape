@@ -6,9 +6,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public class ElevatorControlCommand extends Command {
     private final ElevatorSubsystem elevator;
-    private final int level;
+    private final double level;
 
-    public ElevatorControlCommand(ElevatorSubsystem elevator, int level) {
+    public ElevatorControlCommand(ElevatorSubsystem elevator, double level) {
         this.elevator = elevator;
         this.level = level;
         addRequirements(elevator);
@@ -19,6 +19,8 @@ public class ElevatorControlCommand extends Command {
         System.out.println(level);
         if (this.level == 3) {
             elevator.setToL3();
+        } else if (this.level == 2.5) {
+            elevator.setToL2_5();
         } else if (this.level == 2) {
             elevator.setToL2();
         } else {
