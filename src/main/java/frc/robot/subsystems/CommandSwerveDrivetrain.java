@@ -353,6 +353,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private List<Waypoint> trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
         List<Waypoint> waypoints = new ArrayList<Waypoint>();
+        Pose2d startingPose = new Pose2d(getState().Pose.getTranslation(), new Rotation2d(getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond));
         
         // Checks if the id that is being used is an id that is allowed to be used for positioning
         if (!usedAprilTags.contains((int) aprilTagID)) {
@@ -365,7 +366,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                getState().Pose,
+                startingPose,
                 // new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
         }
@@ -392,12 +393,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
             
-            waypoints = PathPlannerPath.waypointsFromPoses(getState().Pose, aprilTagPoses[(int) aprilTagID][1]);
+            waypoints = PathPlannerPath.waypointsFromPoses(startingPose, aprilTagPoses[(int) aprilTagID][1]);
         }
 
         if (direction.equalsIgnoreCase("right")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                getState().Pose,
+                startingPose,
                 // new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
         }
