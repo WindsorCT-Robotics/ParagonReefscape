@@ -13,7 +13,7 @@ public class PathScoreAlgaeCommand extends SequentialCommandGroup {
         if (level == 2.0) {
             addCommands(
                 new ParallelCommandGroup(
-                    // new RepositionCoralCommand(rollers),
+                    new RepositionCoralCommand(rollers),
                     drivetrain.pathToAlign(limelight, false, direction),
                     new ElevatorMoveCommand(elevator, 1.0)
                 ),
@@ -24,7 +24,7 @@ public class PathScoreAlgaeCommand extends SequentialCommandGroup {
         } else {
             addCommands(
                 new ParallelCommandGroup(
-                    // new RepositionCoralCommand(rollers),
+                    new RepositionCoralCommand(rollers),
                     drivetrain.pathToAlign(limelight, false, direction),
                     new ElevatorMoveCommand(elevator, 2.5)
                 ),

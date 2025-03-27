@@ -11,7 +11,57 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Start Coral Score Inner Barge"
+                  "pathName": "Inner Barge Right to 22 Right"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RightScoreCommand"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "22 Right to Coral Station Right"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeBeamCommand"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Coral Station Right to 22 Left"
                 }
               },
               {
@@ -36,32 +86,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Start Algae Pick Inner Barge"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "AlgaePick"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Algae Pick Pick-up Coral Inner Barge"
+                  "pathName": "22 Left to Coral Station Right"
                 }
               },
               {
@@ -86,13 +111,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "2rd Coral Score"
+                  "pathName": "Coral Station Right to 18 Right"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L3"
+                  "name": "L2"
                 }
               }
             ]
@@ -102,56 +127,6 @@
           "type": "named",
           "data": {
             "name": "RightScoreCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "End Pick-up Coral"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L1"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeBeamCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "3rd Coral Score"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L3"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "LeftScoreCommand"
           }
         },
         {

@@ -93,10 +93,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("LeftL1ScoreCommand", new ScoreCommand(notification, carriage, elevator, drivetrain, "left", 1.0));
         NamedCommands.registerCommand("RightL1ScoreCommand", new ScoreCommand(notification, carriage, elevator, drivetrain, "right", 1.0));
 
-        NamedCommands.registerCommand("AlgaePick", new AlgaeAutoMoveCommand(algaeRemover));
+        NamedCommands.registerCommand("AlgaePick", new AlgaeMoveCommand(algaeRemover, true, 0.7));
 
         NamedCommands.registerCommand("L1", new ElevatorMoveCommand(elevator, 1.0));
         NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2.0));
+        NamedCommands.registerCommand("L2_5", new ElevatorMoveCommand(elevator, 2.5));
         NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3.0));
     }
 
@@ -115,7 +116,7 @@ public class RobotContainer {
 
         elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
 
-        algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.7));
+        algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.1));
 
         Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
         Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
@@ -200,7 +201,7 @@ public class RobotContainer {
             .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate / 1.5))); // Drive counterclockwise with negative X (left));
 
 
-
+        driverController.start().onTrue(new RepositionCoralCommand(carriage));
         // Operator Bindings
 
         // Aligns to trough
@@ -253,15 +254,15 @@ public class RobotContainer {
         
         // Controls algae remover
 
-        opController.back().and(opController.x()).onTrue(new PathAlignNoScoreCommand(notification, carriage, drivetrain, vision, "left").until(opController.leftStick()).unless(opController.back()));
-        opController.back().and(opController.b()).onTrue(new PathAlignNoScoreCommand(notification, carriage, drivetrain, vision, "right").until(opController.leftStick()).unless(opController.back()));
-        opController.back().and(opController.a()).toggleOnTrue(new ElevatorControlCommand(elevator, 2).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.2)).until(opController.leftStick()).unless(opController.back()));
-        opController.back().and(opController.y()).toggleOnTrue(new ElevatorControlCommand(elevator, 3).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.2)).until(opController.leftStick()).unless(opController.back()));
+        // opController.back().and(opController.x()).onTrue(new PathAlignNoScoreCommand(notification, carriage, drivetrain, vision, "left").until(opController.leftStick()).unless(opController.back()));
+        // opController.back().and(opController.b()).onTrue(new PathAlignNoScoreCommand(notification, carriage, drivetrain, vision, "right").until(opController.leftStick()).unless(opController.back()));
+        // opController.back().and(opController.a()).toggleOnTrue(new ElevatorControlCommand(elevator, 2).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.2)).until(opController.leftStick()).unless(opController.back()));
+        // opController.back().and(opController.y()).toggleOnTrue(new ElevatorControlCommand(elevator, 3).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.2)).until(opController.leftStick()).unless(opController.back()));
 
-        opController.back().and(opController.leftBumper()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).until(opController.leftStick()));
-        opController.back().and(opController.rightBumper()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()));
-        opController.back().and(opLeftTrigger).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2.0).until(opController.leftStick()));
-        opController.back().and(opRightTrigger).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).until(opController.leftStick()));
+        // opController.back().and(opController.leftBumper()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).until(opController.leftStick()));
+        // opController.back().and(opController.rightBumper()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()));
+        // opController.back().and(opLeftTrigger).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2.0).until(opController.leftStick()));
+        // opController.back().and(opRightTrigger).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).until(opController.leftStick()));
 
         // Manually controls the intake and outtake rollers
         

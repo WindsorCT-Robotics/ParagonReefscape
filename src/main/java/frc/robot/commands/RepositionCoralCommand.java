@@ -1,6 +1,5 @@
 package frc.robot.commands;
 
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Units.Percent;
@@ -31,7 +30,7 @@ public class RepositionCoralCommand extends Command {
                 rollers.manualMoveRollers(new Percent(-0.25));
             }
         } else {
-            rollers.manualMoveRollers(new Percent(0.1));
+            rollers.manualMoveRollers(new Percent(0.25));
             if (!beamBroke) {
                 startTime = Timer.getFPGATimestamp();
             }
@@ -47,7 +46,7 @@ public class RepositionCoralCommand extends Command {
     @Override
     public boolean isFinished() {
         double elapsedTime = Timer.getFPGATimestamp() - startTime;
-        System.out.println(elapsedTime);
+        // System.out.println(elapsedTime);
         return beamBroke && rollers.isBeamBroken() && (elapsedTime > 0.05) || stop;
     }
 }
