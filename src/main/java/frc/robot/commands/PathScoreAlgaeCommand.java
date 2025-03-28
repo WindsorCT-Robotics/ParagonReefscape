@@ -17,7 +17,7 @@ public class PathScoreAlgaeCommand extends SequentialCommandGroup {
                     drivetrain.pathToAlign(limelight, false, direction),
                     new ElevatorMoveCommand(elevator, 1.0)
                 ),
-                new BeamAdjustment(drivetrain, direction, 1),
+                new BeamAdjustment(drivetrain, direction),
                 new ElevatorMoveCommand(elevator, level),
                 new CoralOuttakeCommand(rollers, level, direction)
             );
@@ -28,7 +28,7 @@ public class PathScoreAlgaeCommand extends SequentialCommandGroup {
                     drivetrain.pathToAlign(limelight, false, direction),
                     new ElevatorMoveCommand(elevator, 2.5)
                 ),
-                new BeamAdjustment(drivetrain, direction, 1),
+                new BeamAdjustment(drivetrain, direction),
                 new ElevatorMoveCommand(elevator, 3.0),
                 new CoralOuttakeCommand(rollers, level, direction)
             );

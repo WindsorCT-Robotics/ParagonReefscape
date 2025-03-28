@@ -72,7 +72,6 @@ public class Limelight extends SubsystemBase {
         invalidError = false;
         botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
         // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
-        SmartDashboard.putNumber("Limelight Yaw", botpose.pose.getRotation().getDegrees());
         SmartDashboard.putNumber("Number Of Apriltags", botpose.tagCount);
         if (field.isPoseWithinArea(botpose.pose)) { 
           fieldError = false;

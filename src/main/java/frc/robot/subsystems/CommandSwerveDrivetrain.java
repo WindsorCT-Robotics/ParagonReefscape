@@ -351,14 +351,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private List<Waypoint> trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
         List<Waypoint> waypoints = new ArrayList<Waypoint>();
-        Pose2d startingPose = new Pose2d(getState().Pose.getTranslation(), new Rotation2d(getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond));
-        
+        // Pose2d startingPose = new Pose2d(getState().Pose.getTranslation(), new Rotation2d(getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond));
+        Pose2d startingPose = getState().Pose;
+
         // Checks if the id that is being used is an id that is allowed to be used for positioning
         if (!usedAprilTags.contains((int) aprilTagID)) {
             return null;
         }
 
-        // double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
+        double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
         double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
 
         // Reef Alignment
@@ -391,7 +392,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
             
-            waypoints = PathPlannerPath.waypointsFromPoses(startingPose, aprilTagPoses[(int) aprilTagID][1]);
+            waypoints = PathPlannerPath.waypointsFromPoses(startingPose, aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
         }
 
         if (direction.equalsIgnoreCase("right")) {
@@ -478,7 +479,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // new NotificationCommand(1, "Warning Notification", "No valid april tag detected");
 
 
-        PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        PathConstraints constraints = new PathConstraints(1.5, 1.5, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(

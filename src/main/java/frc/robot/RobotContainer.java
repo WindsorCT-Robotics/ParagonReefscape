@@ -268,7 +268,7 @@ public class RobotContainer {
         
         opRightJoy.and(opController.start()).whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
 
-        opController.leftStick().onTrue(new NotificationCommand(0, "Info Notification", "Command(s) have been cancelled"));
+        // opController.leftStick().onTrue(new NotificationCommand(0, "Info Notification", "Command(s) have been cancelled"));
 
 
         drivetrain.registerTelemetry(logger::telemeterize);
