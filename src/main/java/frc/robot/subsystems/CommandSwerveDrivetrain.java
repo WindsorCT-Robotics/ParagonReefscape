@@ -351,9 +351,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private List<Waypoint> trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
         List<Waypoint> waypoints = new ArrayList<Waypoint>();
-        // Pose2d startingPose = new Pose2d(getState().Pose.getTranslation(), new Rotation2d(getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond));
-        Pose2d startingPose = getState().Pose;
-
+        
         // Checks if the id that is being used is an id that is allowed to be used for positioning
         if (!usedAprilTags.contains((int) aprilTagID)) {
             return null;
@@ -365,8 +363,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                startingPose,
-                // new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
+                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
         }
 
@@ -392,13 +389,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
             
-            waypoints = PathPlannerPath.waypointsFromPoses(startingPose, aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
+            waypoints = PathPlannerPath.waypointsFromPoses(aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
         }
 
         if (direction.equalsIgnoreCase("right")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                startingPose,
-                // new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
+                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
         }
         return waypoints;
@@ -462,13 +458,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (usedAprilTags.contains((int) aprilTagID)) {
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
-            // Commands.deferredProxy(() -> new NotificationCommand(notification, 0, "Info Notification", "Pathing to april tag" + (int) aprilTagID));
-            // waypoints.add(0, PathPlannerPath.waypointsFromPoses(getState().Pose).get(0));
         } else {
             System.out.println("No valid apriltag");
-
             return Commands.none();
-            // return Commands.deferredProxy(() -> new NotificationCommand(notification, 1, "Warning Notification", "No valid april tag detected"));
         }
 
         if (waypoints == null) {
@@ -476,31 +468,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return Commands.none();
         }
 
-        // new NotificationCommand(1, "Warning Notification", "No valid april tag detected");
-
-
-        PathConstraints constraints = new PathConstraints(1.5, 1.5, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        PathConstraints constraints = new PathConstraints(1, 1, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(
                 waypoints,
                 constraints,
-                new IdealStartingState(Math.sqrt(Math.pow(getState().Speeds.vxMetersPerSecond, 2) + Math.pow(getState().Speeds.vyMetersPerSecond, 2)), Rotation2d.fromDegrees(getState().Pose.getRotation().getDegrees())), // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+                null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
                 new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
         );
-
-        // PathConstraints constraints = new PathConstraints(1.25, 1.25, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
-        // // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
-        // // Create the path using the waypoints created above
-        // PathPlannerPath path = new PathPlannerPath(
-        //         waypoints,
-        //         constraints,
-        //         null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
-        //         new GoalEndState(0.0, orientation) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
-        // );
         // Prevent the path from being flipped if the coordinates are already correct
         path.preventFlipping = true;
-        System.out.println(aprilTagID);
         try {
             System.out.println("Path made and executing");
             return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
@@ -802,7 +780,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         aprilTagPositions[22][1] = 3.301244602; // Y position
         aprilTagPositions[22][2] = 120; // Angle
 
-        createOffsets(-0.4, 0.4);
+        createOffsets(-0.2, 0.4);
 
         // Coral Reef
         int subtract = 16;
