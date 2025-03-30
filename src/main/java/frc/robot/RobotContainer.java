@@ -263,6 +263,10 @@ public class RobotContainer {
         opController.rightStick().and(opController.start()).onTrue(new CoralOuttakeCommand(carriage, 2.0, "center"));
         // opController.leftStick().onTrue(new NotificationCommand(0, "Info Notification", "Command(s) have been cancelled"));
 
+        // manual score testing for pits?
+        opController.x().and(opController.start()).onTrue(new ScoreCommand(notification, carriage, elevator, drivetrain, "left", 2.0));
+        opController.b().and(opController.start()).onTrue(new ScoreCommand(notification, carriage, elevator, drivetrain, "left", 2.0));
+
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
