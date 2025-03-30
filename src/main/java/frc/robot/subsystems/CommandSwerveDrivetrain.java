@@ -200,6 +200,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
+        getPigeon2().getConfigurator().setYaw(0.0);
+
         configureAutoBuilder();
         SmartDashboard.putData(field);
 
@@ -233,6 +235,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        getPigeon2().getConfigurator().setYaw(0.0);
 
         configureAutoBuilder();
         SmartDashboard.putData(field);
@@ -275,6 +279,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        getPigeon2().getConfigurator().setYaw(0.0);
 
         configureAutoBuilder();
         SmartDashboard.putData(field);
@@ -780,7 +786,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         aprilTagPositions[22][1] = 3.301244602; // Y position
         aprilTagPositions[22][2] = 120; // Angle
 
-        createOffsets(-0.2, 0.4);
+        createOffsets(-0.4, 0.4);
 
         // Coral Reef
         int subtract = 16;

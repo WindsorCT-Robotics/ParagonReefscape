@@ -10,7 +10,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 
-public class MoveDrivetrain extends Command {
+public class MoveDrivetrainCommand extends Command {
     private final double speed;
     private final CommandSwerveDrivetrain drivetrain;
     private final double angle;
@@ -18,7 +18,7 @@ public class MoveDrivetrain extends Command {
     private double xVel = 0;
     private double yVel = 0;
 
-    public MoveDrivetrain(CommandSwerveDrivetrain drivetrain, double speed, double angle, boolean relative) {
+    public MoveDrivetrainCommand(CommandSwerveDrivetrain drivetrain, double speed, double angle, boolean relative) {
         this.speed = speed;
         this.drivetrain = drivetrain;
         this.angle = angle;
@@ -34,15 +34,15 @@ public class MoveDrivetrain extends Command {
     @Override
     public void execute() {
         if (relative) {
-            drivetrain.applyRequest(() -> new SwerveRequest.RobotCentricFacingAngle().withVelocityX(xVel).withVelocityY(yVel));
+            drivetrain.setControl(new SwerveRequest.RobotCentric().withVelocityX(xVel).withVelocityY(yVel));
         } else {
-            drivetrain.applyRequest(() -> new SwerveRequest.FieldCentric().withVelocityX(xVel).withVelocityY(yVel));
+            drivetrain.setControl(new SwerveRequest.FieldCentric().withVelocityX(xVel).withVelocityY(yVel));
         }
     }
 
     @Override
     public void end(boolean interrupted) {
-        drivetrain.applyRequest(() -> new SwerveRequest.Idle());
+        drivetrain.setControl(new SwerveRequest.Idle());
     }
 
     @Override

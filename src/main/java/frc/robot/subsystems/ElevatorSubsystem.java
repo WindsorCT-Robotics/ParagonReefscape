@@ -69,7 +69,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         elevMotorConfig.idleMode(IdleMode.kBrake);
         elevMotorConfig.inverted(true);
-        elevMotorConfig.smartCurrentLimit(60);
+        // elevMotorConfig.smartCurrentLimit(60);
         elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
     

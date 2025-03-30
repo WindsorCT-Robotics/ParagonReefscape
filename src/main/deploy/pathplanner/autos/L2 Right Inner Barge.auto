@@ -49,9 +49,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -99,9 +112,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {

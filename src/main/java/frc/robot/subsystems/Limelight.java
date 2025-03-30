@@ -57,9 +57,10 @@ public class Limelight extends SubsystemBase {
       SmartDashboard.putBoolean("Limelight Error", distanceError);
       SmartDashboard.putBoolean("Field Error", fieldError);
       SmartDashboard.putBoolean("Invalid Target", invalidError);
+      SmartDashboard.putNumber("Pigeon 2 Gyro", drivetrain.getPigeon2().getYaw().getValueAsDouble());
       
-      LimelightHelpers.SetRobotOrientation(ll, drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
-      // LimelightHelpers.SetRobotOrientation(ll, drivetrain.getPigeon2().getYaw().getValueAsDouble(), 0, 0, 0, 0, 0);
+      // LimelightHelpers.SetRobotOrientation(ll, drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+      LimelightHelpers.SetRobotOrientation(ll, drivetrain.getPigeon2().getYaw().getValueAsDouble(), 0, 0, 0, 0, 0);
 
       Double tx_output = LimelightHelpers.getTX(ll);
       Double ty_output = LimelightHelpers.getTY(ll);
@@ -70,8 +71,8 @@ public class Limelight extends SubsystemBase {
 
       if (!(tx_output == 0 && ty_output == 0 && ta_output == 0)) { //If result finds a vaild target then continues if statement result.valid
         invalidError = false;
-        botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
-        // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
+        // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+        botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
         SmartDashboard.putNumber("Number Of Apriltags", botpose.tagCount);
         if (field.isPoseWithinArea(botpose.pose)) { 
           fieldError = false;
@@ -115,8 +116,8 @@ public class Limelight extends SubsystemBase {
 
   public int getTagCount() {
     try {
-      botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
-      // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
+      // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+      botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
       return botpose.tagCount;
     } catch (Exception e){
       return 0;
