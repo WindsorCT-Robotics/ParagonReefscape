@@ -109,6 +109,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2.0));
         NamedCommands.registerCommand("L2_5", new ElevatorMoveCommand(elevator, 2.5));
         NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3.0));
+
+        NamedCommands.registerCommand("MoveBackward", new MoveDrivetrain(drivetrain, 0.1, 0, true));
     }
 
     private void configureBindings() {
@@ -247,8 +249,8 @@ public class RobotContainer {
         // opController.leftBumper().onTrue(new PathScoreCommand(notification, carriage, elevator, drivetrain, vision, "left", 3.0).until(opController.leftStick()).unless(opLock));
         // opController.rightBumper().onTrue(new PathScoreCommand(notification, carriage, elevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
 
-        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3.0).dead.until(opController.leftStick()).unless(opLock));
-        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
+        opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover,false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover,false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
         opController.rightBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
