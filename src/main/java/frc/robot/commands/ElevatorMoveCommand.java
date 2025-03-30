@@ -34,7 +34,11 @@ public class ElevatorMoveCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        elevator.holdPosition();
+        if (level == 1) {
+            elevator.stopMotor();
+        } else {
+            elevator.holdPosition();
+        }
     }
 
     @Override
