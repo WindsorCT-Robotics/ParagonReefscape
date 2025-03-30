@@ -29,6 +29,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
 
         motorConfig.inverted(false);
         motorConfig.idleMode(IdleMode.kBrake);
+        motorConfig.smartCurrentLimit(50);
         
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }

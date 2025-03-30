@@ -47,6 +47,9 @@ public class CarriageSubsystem extends SubsystemBase {
         rollerLeftConfig.idleMode(IdleMode.kBrake);
         rollerRightConfig.idleMode(IdleMode.kBrake);
 
+        rollerLeftConfig.smartCurrentLimit(50);
+        rollerRightConfig.smartCurrentLimit(50);
+
         rollerLeft.configure(rollerLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         rollerRight.configure(rollerRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
