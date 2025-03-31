@@ -360,14 +360,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (!usedAprilTags.contains((int) aprilTagID)) {
             return null;
         }
-
-        double[] prePose = {aprilTagPoses[(int) aprilTagID][0].getX(), aprilTagPoses[(int) aprilTagID][0].getY()};
+        Pose2d currentPose = getState().Pose;
         double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
 
         // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation), 
+                currentPose,
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
         }
 
@@ -392,13 +391,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
-            
-            waypoints = PathPlannerPath.waypointsFromPoses(aprilTagPoses[(int) aprilTagID][0], aprilTagPoses[(int) aprilTagID][1]);
+            waypoints = PathPlannerPath.waypointsFromPoses(currentPose, aprilTagPoses[(int) aprilTagID][1]);
         }
 
         if (direction.equalsIgnoreCase("right")) {
             waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(calculateDirectionalTranslation(prePose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(prePose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation), 
+                currentPose,
                 new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
         }
         return waypoints;
@@ -472,7 +470,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return Commands.none();
         }
 
-        PathConstraints constraints = new PathConstraints(1, 1, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
+        PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
         // PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0); // You can also use unlimited constraints, only limited by motor torque and nominal battery voltage
         // Create the path using the waypoints created above
         PathPlannerPath path = new PathPlannerPath(
@@ -491,7 +489,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
             new PPHolonomicDriveController(
                 // PID constants for translation
-                new PIDConstants(3, 0, 0),
+                new PIDConstants(10, 0, 0),
                 // PID constants for rotation
                 new PIDConstants(7, 0, 0)
             ), RobotConfig.fromGUISettings(), () -> false, this);
@@ -744,7 +742,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         aprilTagPositions[22][1] = 3.301244602; // Y position
         aprilTagPositions[22][2] = 120; // Angle
 
-        createOffsets(-0.4, 0.4);
+        createOffsets(-0.45, 0.4);
 
         // Coral Reef
         int subtract = 16;
