@@ -120,4 +120,8 @@ public class Robot extends TimedRobot {
     DogLog.log("Simulation/CoralPoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
     DogLog.log("Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
   }
+
+  public RobotContainer getRobotContainer() {
+    return m_robotContainer;
+  }
 }
