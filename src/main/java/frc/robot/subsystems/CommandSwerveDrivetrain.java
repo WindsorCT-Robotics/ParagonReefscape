@@ -58,6 +58,9 @@ import java.util.function.Supplier;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
     private double aprilTagID;
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
@@ -75,6 +78,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Pose2d[][] aprilTagPoses = new Pose2d[23][2];
     double[][] aprilTagPositions = new double[23][3];
     private static final Set<Integer> usedAprilTags = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
+    private final double[] reefDirections = {0, 60, 120, 180, -60, -120};
 
     private final double redAdjustX = 8.569452;
     private final double redAdjustY = 0.0;
@@ -545,19 +549,45 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     }
 
                 } else {
-                    aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
-
-                    if (usedAprilTags.contains((int) aprilTagID)) {
-                        double x = (aprilTagPoses[(int) aprilTagID][1].getX() - getState().Pose.getX());
-                        double y = (aprilTagPoses[(int) aprilTagID][1].getY() - getState().Pose.getY());
-                        orientation = Math.atan2(y, x) * (180 / Math.PI);
-                    }
-                    if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
-                        setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                    int closestDirection = 0;
+                    double smallestDifference = Double.MAX_VALUE;
+                    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                        for (int direction = 0; direction < reefDirections.length; direction++) {
+                            // Normalize the difference to be within -180 to +180 degrees
+                            double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees();
+                            difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                        
+                            if (Math.abs(difference) < smallestDifference) {
+                                closestDirection = direction;
+                                smallestDifference = Math.abs(difference);
+                            }
+                        }
                     } else {
-                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        for (int direction = 0; direction < reefDirections.length; direction++) {
+                            // Normalize the difference to be within -180 to +180 degrees
+                            double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees() + 180;
+                            difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                        
+                            if (Math.abs(difference) < smallestDifference) {
+                                closestDirection = direction;
+                                smallestDifference = Math.abs(difference);
+                            }
+                        }
+                    }
+
+                    orientation = reefDirections[closestDirection];
+                    if (!(Math.abs(driverController.getRightX()) > 0.2)) {
+                        if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                            setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        } else {
+                            setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        }
+                    } else {
+                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate));// Drive counterclockwise with negative X (left)
                     }
                 }
             }
