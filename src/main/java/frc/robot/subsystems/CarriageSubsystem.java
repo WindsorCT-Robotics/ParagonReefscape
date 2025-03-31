@@ -34,9 +34,8 @@ public class CarriageSubsystem extends SubsystemBase {
 
     public CarriageSubsystem() {
         speed = new Percent(0.25);
-        speedFast = new Percent(0.24);
-        speedSlow = new Percent(0.08
-        );
+        speedFast = new Percent(0.27);
+        speedSlow = new Percent(0.07);
         rollerLeft = new SparkMax(ROLLER_LEFT_MOTOR_CANID, MotorType.kBrushless);
         rollerRight = new SparkMax(ROLLER_RIGHT_MOTOR_CANID, MotorType.kBrushless);
         rollerLeftConfig = new SparkMaxConfig();
@@ -48,35 +47,27 @@ public class CarriageSubsystem extends SubsystemBase {
         rollerLeftConfig.idleMode(IdleMode.kBrake);
         rollerRightConfig.idleMode(IdleMode.kBrake);
 
-
-
-
-
-
-
+        rollerLeftConfig.smartCurrentLimit(50);
+        rollerRightConfig.smartCurrentLimit(50);
 
         rollerLeft.configure(rollerLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         rollerRight.configure(rollerRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-         
-
         beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("Outtake Beam Breaker", beamBreaker.get());
-        
     }
 
     public void moveRollers(boolean reverse) {
         if (!reverse) {
             rollerLeft.set(speed.asDouble());
             rollerRight.set(speed.asDouble());
-        } else{
+        } else {
             rollerLeft.set(-speed.asDouble());
             rollerRight.set(-speed.asDouble());
         }
-        
     }
 
     public void manualMoveRollers(Percent speed) {
