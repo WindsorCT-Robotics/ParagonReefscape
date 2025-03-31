@@ -95,9 +95,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("LeftL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "left", 1));
         NamedCommands.registerCommand("RightL1ScoreCommand", new ScoreCommand(carriage, elevator, drivetrain, "right", 1));
 
-        NamedCommands.registerCommand("L1", new ElevatorMoveCommand(elevator, 1));
-        NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2));
-        NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3));
+        NamedCommands.registerCommand("L1", new ElevatorMoveCommand(elevator, 1.0));
+        NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2.0));
+        NamedCommands.registerCommand("L2_5", new ElevatorMoveCommand(elevator, 2.5));
+        NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3.0));
     }
 
     private void configureBindings() {
