@@ -619,6 +619,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
          * Otherwise, only check and apply the operator perspective if the DS is disabled.
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
+        SmartDashboard.putNumber("Yaw", getPigeon2().getYaw().getValueAsDouble());
         
         SmartDashboard.putNumber("Drivetrain X", getState().Pose.getTranslation().getX());
         SmartDashboard.putNumber("Drivetrain Y", getState().Pose.getTranslation().getY());
