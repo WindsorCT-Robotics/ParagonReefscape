@@ -64,6 +64,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double aprilTagID;
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
+    @SuppressWarnings("unused")
     private double m_lastSimTime;
 
     private final TimeOfFlight lTOFSensor;
