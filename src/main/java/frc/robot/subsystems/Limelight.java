@@ -58,6 +58,8 @@ public class Limelight extends SubsystemBase {
       SmartDashboard.putBoolean("Limelight Error", distanceError);
       SmartDashboard.putBoolean("Field Error", fieldError);
       SmartDashboard.putBoolean("Invalid Target", invalidError);
+
+      SmartDashboard.putNumber("Pigeon 2 Gyro", drivetrain.getPigeon2().getYaw().getValueAsDouble());
       
       LimelightHelpers.SetRobotOrientation(ll, drivetrain.getPigeon2().getYaw().getValueAsDouble(), 0, 0, 0, 0, 0);
 

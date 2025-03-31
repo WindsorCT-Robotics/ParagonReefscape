@@ -518,7 +518,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             @Override
             public void execute() {
-                if (!isCoralStation) {
+                if (isCoralStation) {
                     if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
                         if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
                             if (getState().Pose.getY() > 4.026) {
@@ -528,6 +528,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                             }
                         } else {
                             orientation = 0;
+                       
                         }
                     } else {
                         if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
