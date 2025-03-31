@@ -702,44 +702,44 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void createAlignmentConstants() {
-        aprilTagPositions[1][0] = 16.697198;
-        aprilTagPositions[1][1] = 0.65532;
-        aprilTagPositions[1][2] = 126;
+        aprilTagPositions[1][0] = 16.68732537; // X position
+        aprilTagPositions[1][1] = 0.6281432563; // Y position
+        aprilTagPositions[1][2] = 126; // Angle
 
-        aprilTagPositions[2][0] = 16.697198;
-        aprilTagPositions[2][1] = 7.39648;
-        aprilTagPositions[2][2] = 234;
+        aprilTagPositions[2][0] = 16.68732537; // X position
+        aprilTagPositions[2][1] = 7.414274829; // Y position
+        aprilTagPositions[2][2] = 234; // Angle
 
-        aprilTagPositions[12][0] = 0.851154; // X position
-        aprilTagPositions[12][1] = 0.65532; // Y position
+        aprilTagPositions[12][0] = 0.8613157226; // X position
+        aprilTagPositions[12][1] = 0.6281432563; // Y position
         aprilTagPositions[12][2] = 54; // Angle
 
-        aprilTagPositions[13][0] = 0.851154; // X position
-        aprilTagPositions[13][1] = 7.39648; // Y position
+        aprilTagPositions[13][0] = 0.8613157226; // X position
+        aprilTagPositions[13][1] = 7.414274829; // Y position
         aprilTagPositions[13][2] = 306; // Angle
 
-        aprilTagPositions[17][0] = 4.073906; // X position
-        aprilTagPositions[17][1] = 3.306318; // Y position
+        aprilTagPositions[17][0] = 4.073914148; // X position
+        aprilTagPositions[17][1] = 3.301244602; // Y position
         aprilTagPositions[17][2] = 60; // Angle
 
-        aprilTagPositions[18][0] = 3.6576; // X position
-        aprilTagPositions[18][1] = 4.0259; // Y position
+        aprilTagPositions[18][0] = 3.657607315; // X position
+        aprilTagPositions[18][1] = 4.020828042; // Y position
         aprilTagPositions[18][2] = 0; // Angle
 
-        aprilTagPositions[19][0] = 4.073906; // X position
-        aprilTagPositions[19][1] = 4.745482; // Y position
+        aprilTagPositions[19][0] = 4.073914148; // X position
+        aprilTagPositions[19][1] = 4.740411481; // Y position
         aprilTagPositions[19][2] = -60; // Angle
 
-        aprilTagPositions[20][0] = 4.90474; // X position
-        aprilTagPositions[20][1] = 4.745482; // Y position
+        aprilTagPositions[20][0] = 4.904749809; // X position
+        aprilTagPositions[20][1] = 4.740411481; // Y position
         aprilTagPositions[20][2] = -120; // Angle
 
-        aprilTagPositions[21][0] = 5.321046; // X position
-        aprilTagPositions[21][1] = 4.0259; // Y position
+        aprilTagPositions[21][0] = 5.321056642; // X position
+        aprilTagPositions[21][1] = 4.020828042; // Y position
         aprilTagPositions[21][2] = -180; // Angle
 
-        aprilTagPositions[22][0] = 4.90474; // X position
-        aprilTagPositions[22][1] = 3.3063434; // Y position
+        aprilTagPositions[22][0] = 4.904749809; // X position
+        aprilTagPositions[22][1] = 3.301244602; // Y position
         aprilTagPositions[22][2] = 120; // Angle
 
         createOffsets(-0.4, 0.4);
