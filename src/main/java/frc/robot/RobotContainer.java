@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.commands.*;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.CarriageSubsystem;
@@ -34,6 +35,7 @@ public class RobotContainer {
     private ElevatorSubsystem elevator;
     private CarriageSubsystem carriage;
     private AlgaeRemoverSubsystem algaeRemover;
+    public LEDSubsystem led;
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -66,6 +68,7 @@ public class RobotContainer {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
         algaeRemover = new AlgaeRemoverSubsystem();
+        led = new LEDSubsystem();
 
         RegisterNamedComands();
 

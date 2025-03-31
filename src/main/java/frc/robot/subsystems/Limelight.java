@@ -111,4 +111,14 @@ public class Limelight extends SubsystemBase {
   public String getLimelightName() {
     return ll;
   }
+
+  public int getTagCount() {
+    try {
+      // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
+      botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
+      return botpose.tagCount;
+    } catch (Exception e){
+      return 0;
+    }
+  }
 }

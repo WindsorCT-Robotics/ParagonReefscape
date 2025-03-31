@@ -52,7 +52,9 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.led.checkAprilTags(m_robotContainer.vision);
+  }
 
   @Override
   public void disabledExit() {}
