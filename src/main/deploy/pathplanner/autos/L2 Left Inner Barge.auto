@@ -11,13 +11,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Start Coral Score Inner Barge"
+                  "pathName": "Inner Barge Left to 20 Left"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L3"
+                  "name": "L2"
                 }
               }
             ]
@@ -36,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Start Pick-up Coral"
+                  "pathName": "20 Left to Coral Station Left"
                 }
               },
               {
@@ -49,9 +49,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -61,13 +74,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "2nd Coral Score"
+                  "pathName": "Coral Station Left to 20 Right"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L3"
+                  "name": "L2"
                 }
               }
             ]
@@ -86,7 +99,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "End Pick-up Coral"
+                  "pathName": "20 Right to Coral Station Left"
                 }
               },
               {
@@ -99,9 +112,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -111,13 +137,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "ID 18 End Coral Score"
+                  "pathName": "Coral Station Left to 18 Left"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L3"
+                  "name": "L2"
                 }
               }
             ]

@@ -11,57 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Start Coral Score Inner Barge"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L2"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "LeftScoreCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Start Pick-up Coral"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L1"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeBeamCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "2nd Coral Score"
+                  "pathName": "Inner Barge Right to 22 Right"
                 }
               },
               {
@@ -86,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "End Pick-up Coral"
+                  "pathName": "22 Right to Coral Station Right"
                 }
               },
               {
@@ -99,9 +49,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -111,7 +74,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "ID 18 End Coral Score"
+                  "pathName": "Coral Station Right to 22 Left"
                 }
               },
               {
@@ -127,6 +90,69 @@
           "type": "named",
           "data": {
             "name": "LeftScoreCommand"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "22 Left to Coral Station Right"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Coral Station Right to 18 Right"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RightScoreCommand"
           }
         },
         {

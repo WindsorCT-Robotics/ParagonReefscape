@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Push"
+            "pathName": null
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Back"
+            "pathName": null
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Start Inner Barge Push Score"
+            "pathName": null
           }
         },
         {

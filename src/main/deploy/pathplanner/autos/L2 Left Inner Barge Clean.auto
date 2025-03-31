@@ -11,57 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Reflect Start Coral Score Inner Barge"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L2"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "RightScoreCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Reflect Start Pick-up Coral"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L1"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeBeamCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Reflect 2nd Coral Score"
+                  "pathName": "Score ML Barge Branch I"
                 }
               },
               {
@@ -86,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Reflect End Pick-up Coral"
+                  "pathName": "Coral Station LM Branch I"
                 }
               },
               {
@@ -99,9 +49,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -111,7 +74,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Reflect ID 18 End Coral Score"
+                  "pathName": "Score Coral Station LM Branch J"
                 }
               },
               {
@@ -130,9 +93,47 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Coral Station LM Branch J"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Score Coral Station LM Branch A"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "L1"
+            "name": "LeftScoreCommand"
           }
         }
       ]

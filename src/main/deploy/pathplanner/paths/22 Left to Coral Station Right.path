@@ -3,37 +3,42 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.0,
-        "y": 7.6
+        "x": 4.974,
+        "y": 2.845
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.13964462603801,
-        "y": 7.194252869198549
+        "x": 4.07627480695974,
+        "y": 2.0792181709784363
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.245,
-        "y": 4.98
+        "x": 1.135,
+        "y": 0.869
       },
       "prevControl": {
-        "x": 5.649306167584852,
-        "y": 5.685204612966352
+        "x": 1.4733200106163575,
+        "y": 1.0660176338390188
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 65.482
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.5,
+    "maxVelocity": 4.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -41,14 +46,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -119.99999999999999
+    "velocity": 0.0,
+    "rotation": 54.0
   },
   "reversed": false,
-  "folder": "Scoring Paths",
+  "folder": "Reflected Paths",
   "idealStartingState": {
     "velocity": 0.0,
-    "rotation": 180.0
+    "rotation": 118.887
   },
   "useDefaultConstraints": false
 }
