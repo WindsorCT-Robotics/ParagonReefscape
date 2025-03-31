@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase.PersistMode;
+
 public class AlgaeRemoverSubsystem extends SubsystemBase {
     private static final int ALGAE_MOTOR_CANID = 17;
 
@@ -18,13 +19,13 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
     private SparkMaxConfig motorConfig;
     private RelativeEncoder motorEncoder;
 
-
     public AlgaeRemoverSubsystem() {
         motor = new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless);
         motorConfig = new SparkMaxConfig();
 
         motorConfig.inverted(false);
         motorConfig.idleMode(IdleMode.kBrake);
+        motorConfig.smartCurrentLimit(50);
         
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
