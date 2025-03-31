@@ -195,13 +195,22 @@ public class RobotContainer {
         driverController.start().and(driverController.back()).onTrue(new InstantCommand(() -> drivetrain.getPigeon2().setYaw(0.0)));
 
         // Operator Bindings
+
         // Trough score
         opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
         opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
+        // Manual
+        opController.x().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 1.0));
+        opController.b().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 1.0));
+
         // L2 score
         opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
         opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+
+        // Manual
+        opRightTrigger.onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // Lower algae remove + score L2
         opRightTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
@@ -210,6 +219,10 @@ public class RobotContainer {
         // L3 score
         opController.leftBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
         opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+
+        // Manual
+        opController.leftBumper().onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // Upper algae remove + score L3
         opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
@@ -233,10 +246,7 @@ public class RobotContainer {
         // Manually controls the intake and outtake rollers
         opRightJoy.and(opController.start()).whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
         opController.rightStick().and(opController.start()).onTrue(new CoralOuttakeCommand(carriage, 2.0, "center"));
-
-        // manual score testing for pits - no path, just beam align, elevator, and score
-        opController.x().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0));
-        opController.b().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0));
+        opController.back().and(opController.start()).onTrue(new CoralOuttakeCommand(carriage, 2.0, "center"));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
