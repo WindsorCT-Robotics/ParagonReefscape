@@ -245,7 +245,6 @@ public class RobotContainer {
 
         // Manually controls the intake and outtake rollers
         opRightJoy.and(opController.start()).whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
-        opController.rightStick().and(opController.start()).onTrue(new CoralOuttakeCommand(carriage, 2.0, "center"));
         opController.back().and(opController.start()).onTrue(new CoralOuttakeCommand(carriage, 2.0, "center"));
 
         drivetrain.registerTelemetry(logger::telemeterize);
