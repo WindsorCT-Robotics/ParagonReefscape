@@ -19,11 +19,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
     private SparkMaxConfig motorConfig;
     private RelativeEncoder motorEncoder;
 
-    private Percent speed;
-
-
     public AlgaeRemoverSubsystem() {
-        speed = new Percent(0.2);
         motor = new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless);
         motorConfig = new SparkMaxConfig();
 

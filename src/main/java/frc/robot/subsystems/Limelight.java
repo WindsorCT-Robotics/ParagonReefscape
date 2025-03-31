@@ -31,7 +31,6 @@ public class Limelight extends SubsystemBase {
   private PoseEstimate botpose;
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(16.54, 8.02));
-
   public Limelight(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
     HttpCamera httpCamera = new HttpCamera("limelight", "http://10.5.71.11:5800/");

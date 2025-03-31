@@ -29,11 +29,7 @@ public class Robot extends TimedRobot {
   private VisionSim visionSim;
   private PhotonCamera camera;
   private String cameraName = "Main";
-
-  private int r;
-  private int g;
-  private int b;
-
+  
   private final RobotContainer m_robotContainer;
 
   StructArrayPublisher<Pose3d> CoralPoses = NetworkTableInstance.getDefault()
