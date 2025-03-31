@@ -19,7 +19,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "Score ML Barge Branch I"
+                              "pathName": "Score MR Barge Branch F"
                             }
                           },
                           {
@@ -40,7 +40,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "LeftScoreCommand"
+                        "name": "RightScoreCommand"
                       }
                     }
                   ]
@@ -62,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Coral Station LM Branch I"
+                  "pathName": "Coral Station RM Branch F"
                 }
               },
               {
@@ -87,7 +87,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Score Coral Station LM Branch J"
+                  "pathName": "Score Coral Station RM Branch E"
                 }
               },
               {
@@ -102,7 +102,7 @@
         {
           "type": "named",
           "data": {
-            "name": "RightScoreCommand"
+            "name": "LeftScoreCommand"
           }
         },
         {
@@ -112,7 +112,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Coral Station LM Branch J"
+                  "pathName": "Coral Station RM Branch E"
                 }
               },
               {
@@ -145,7 +145,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "Score Coral Station LM Branch A"
+                              "pathName": "Score Coral Station RM Branch B"
                             }
                           },
                           {
@@ -166,7 +166,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "LeftScoreCommand"
+                        "name": "RightScoreCommand"
                       }
                     }
                   ]
