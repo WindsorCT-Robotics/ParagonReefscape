@@ -66,7 +66,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final TimeOfFlight lTOFSensor;
     private final TimeOfFlight rTOFSensor;
 
-    private final double TOFSensorThreshold = 320;
+    private final double TOFSensorThreshold = 400;
 
     private static final int L_TOF_CANID = 19;
     private static final int R_TOF_CANID = 18;
