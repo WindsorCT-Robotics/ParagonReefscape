@@ -5,10 +5,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public class CoralOuttakeCommand extends Command {
     private final CarriageSubsystem rollers;
-    private final int level;
+    private final double level;
     private final String direction;
 
-    public CoralOuttakeCommand(CarriageSubsystem rollers, int level, String direction) {
+    public CoralOuttakeCommand(CarriageSubsystem rollers, double level, String direction) {
         this.rollers = rollers;
         this.level = level;
         this.direction = direction;
