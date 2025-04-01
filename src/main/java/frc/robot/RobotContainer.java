@@ -209,8 +209,8 @@ public class RobotContainer {
         opLeftTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // Manual
-        opRightTrigger.onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-        opLeftTrigger.onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opRightTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // Lower algae remove + score L2
         opRightTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
@@ -221,8 +221,8 @@ public class RobotContainer {
         opController.rightBumper().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // Manual
-        opController.leftBumper().onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-        opController.rightBumper().onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.leftBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // Upper algae remove + score L3
         opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
