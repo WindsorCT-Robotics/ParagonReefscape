@@ -25,11 +25,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private static final double L1 = 0;
-    private static final double L2 = 2.8;
-    private static final double L2_5 = 6.25;
-    private static final double L3 = 9;
+    private static final double L2 = 9;
+    private static final double L2_5 = 21;
+    private static final double L3 = 27.5;
 
-    private final double gravityVoltage = 1.3;
+    private final double gravityVoltage = 0.4;
 
     public ElevatorSubsystem() {
         elevMotor = new SparkMax(MOTOR_CANID, MotorType.kBrushless);
@@ -45,7 +45,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             // Set PID values for position control. We don't need to pass a closed
             // loop slot, as it will default to slot 0.
-            .p(0.9) // 0.003
+            .p(0.3) // 0.003
             .i(0)
             .d(0)
             .outputRange(-1, 1)
@@ -60,7 +60,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             // Set MAXMotion parameters for position control. We don't need to pass
             // a closed loop slot, as it will default to slot 0.
             .maxVelocity(5600)
-            .maxAcceleration(1700)
+            .maxAcceleration(5600)
             .allowedClosedLoopError(0.1)
             // Set MAXMotion parameters for velocity control in slot 1
             .maxAcceleration(500, ClosedLoopSlot.kSlot1)
