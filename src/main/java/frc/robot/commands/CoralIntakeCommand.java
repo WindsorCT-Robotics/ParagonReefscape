@@ -9,11 +9,12 @@ public class CoralIntakeCommand extends Command {
 
     public CoralIntakeCommand(CarriageSubsystem rollers) {
         this.rollers = rollers;
+        addRequirements(rollers);
     }
 
     @Override
     public void initialize() {
-        
+
     }
 
     @Override

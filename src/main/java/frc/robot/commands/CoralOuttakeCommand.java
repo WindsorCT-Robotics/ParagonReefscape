@@ -12,6 +12,7 @@ public class CoralOuttakeCommand extends Command {
         this.rollers = rollers;
         this.level = level;
         this.direction = direction;
+        addRequirements(rollers);
     }
 
     @Override

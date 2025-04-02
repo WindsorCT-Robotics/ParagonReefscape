@@ -105,7 +105,12 @@ public class RobotContainer {
         NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3.0));
 
         NamedCommands.registerCommand("MoveForwardRelative", new MoveDrivetrainCommand(drivetrain, 0.2, 0, true));
+        NamedCommands.registerCommand("MoveForwardRelative 0.4", new MoveDrivetrainCommand(drivetrain, 0.4, 0, true));
+
+
+
         NamedCommands.registerCommand("MoveBackwardsRelative", new MoveDrivetrainCommand(drivetrain, 0.2, 180, true));
+        NamedCommands.registerCommand("MoveBackwardsRelative 0.4", new MoveDrivetrainCommand(drivetrain, 0.4, 180, true));
     }
 
     private void configureBindings() {

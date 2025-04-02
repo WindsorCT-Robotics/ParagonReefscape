@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.115,
-        "y": 0.955
+        "x": 7.17,
+        "y": 2.606
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.753304088577983,
-        "y": 2.1021528727020917
+        "x": 6.514976518678118,
+        "y": 2.567176215212431
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.226,
-        "y": 3.834
+        "x": 4.978,
+        "y": 2.823
       },
       "prevControl": {
-        "x": 2.226,
-        "y": 3.834
+        "x": 6.073892571738689,
+        "y": 2.4535950951585677
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,22 +30,11 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "pointTowardsZones": [
-    {
-      "fieldPosition": {
-        "x": 3.5076,
-        "y": 3.574
-      },
-      "rotationOffset": 0.0,
-      "minWaypointRelativePos": 0.25,
-      "maxWaypointRelativePos": 0.6,
-      "name": "April Tag"
-    }
-  ],
+  "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -53,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 119.99999999999999
   },
   "reversed": false,
   "folder": "Right Cleaned Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": false
 }

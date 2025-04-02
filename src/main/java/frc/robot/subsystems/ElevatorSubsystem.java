@@ -25,9 +25,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final RelativeEncoder encoder;
 
     private static final double L1 = 0;
-    private static final double L2 = 9;
+    private static final double L2 = 8.5;
     private static final double L2_5 = 21;
-    private static final double L3 = 27.5;
+    private static final double L3 = 27;
 
     private final double gravityVoltage = 0.4;
 

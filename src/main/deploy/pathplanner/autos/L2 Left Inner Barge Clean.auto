@@ -112,6 +112,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "IntakeBeamCommand"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.753304088577983,
-        "y": 2.1021528727020917
+        "x": 1.7027852522924731,
+        "y": 1.7640169943749473
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.226,
-        "y": 3.834
+        "x": 5.264,
+        "y": 2.988
       },
       "prevControl": {
-        "x": 2.226,
-        "y": 3.834
+        "x": 5.264,
+        "y": 0.988
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,12 +33,12 @@
   "pointTowardsZones": [
     {
       "fieldPosition": {
-        "x": 3.5076,
-        "y": 3.574
+        "x": 4.074,
+        "y": 4.74
       },
       "rotationOffset": 0.0,
       "minWaypointRelativePos": 0.25,
-      "maxWaypointRelativePos": 0.6,
+      "maxWaypointRelativePos": 0.7,
       "name": "April Tag"
     }
   ],
@@ -53,7 +53,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 119.99999999999999
   },
   "reversed": false,
   "folder": "Right Cleaned Paths",

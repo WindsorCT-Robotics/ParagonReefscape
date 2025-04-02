@@ -19,7 +19,7 @@
                           {
                             "type": "path",
                             "data": {
-                              "pathName": "Score MR Barge Branch F"
+                              "pathName": "Score MR Barge Branch E"
                             }
                           },
                           {
@@ -40,7 +40,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "RightScoreCommand"
+                        "name": "LeftScoreCommand"
                       }
                     }
                   ]
@@ -56,13 +56,13 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Coral Station RM Branch F"
+                  "pathName": "Coral Station RM Branch E"
                 }
               },
               {
@@ -70,14 +70,33 @@
                 "data": {
                   "name": "L1"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
               }
             ]
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -87,7 +106,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Score Coral Station RM Branch E"
+                  "pathName": "Score Coral Station RM Branch F"
                 }
               },
               {
@@ -102,17 +121,17 @@
         {
           "type": "named",
           "data": {
-            "name": "LeftScoreCommand"
+            "name": "RightScoreCommand"
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Coral Station RM Branch E"
+                  "pathName": "Coral Station RM Branch F"
                 }
               },
               {
@@ -120,14 +139,33 @@
                 "data": {
                   "name": "L1"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
               }
             ]
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "IntakeBeamCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MoveBackwardsRelative"
+                }
+              }
+            ]
           }
         },
         {
@@ -179,6 +217,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "MoveBackwardsRelative 0.4"
           }
         }
       ]
