@@ -4,17 +4,18 @@
   "holonomicMode": true,
   "pathFolders": [
     "Blue",
-    "Left Cleaned Paths",
-    "Right Cleaned Paths",
+    "Center Paths",
+    "Left Paths",
     "Reflected Paths",
+    "Right Paths",
     "Scoring Paths"
   ],
   "autoFolders": [
     "Auto Paths",
     "Push Paths"
   ],
-  "defaultMaxVel": 3.0,
-  "defaultMaxAccel": 3.0,
+  "defaultMaxVel": 4.0,
+  "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,
