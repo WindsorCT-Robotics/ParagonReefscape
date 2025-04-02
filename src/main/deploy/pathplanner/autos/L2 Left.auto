@@ -240,6 +240,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Auto Paths",
+  "folder": "",
   "choreoAuto": false
 }
