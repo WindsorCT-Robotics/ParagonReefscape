@@ -76,6 +76,12 @@
                 "data": {
                   "name": "IntakeBeamCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AlgaePick"
+                }
               }
             ]
           }
@@ -100,28 +106,54 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "Coral Station RM - Branch F"
+                  "commands": [
+                    {
+                      "type": "parallel",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "Coral Station RM - Branch F"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "L2_5"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L3"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "RightScoreCommand"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L3"
+                  "name": "AlgaePick"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "RightScoreCommand"
           }
         },
         {
@@ -144,6 +176,12 @@
                 "type": "named",
                 "data": {
                   "name": "IntakeBeamCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AlgaePick"
                 }
               }
             ]
@@ -240,6 +278,12 @@
                 "data": {
                   "name": "IntakeBeamCommand"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AlgaePick"
+                }
               }
             ]
           }
@@ -264,34 +308,60 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "Coral Station RM - Branch A"
+                  "commands": [
+                    {
+                      "type": "parallel",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "path",
+                            "data": {
+                              "pathName": "Coral Station RM - Branch A"
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "L2_5"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L3"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "LeftScoreCommand"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L3"
+                  "name": "AlgaePick"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "LeftScoreCommand"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "",
+  "folder": null,
   "choreoAuto": false
 }
