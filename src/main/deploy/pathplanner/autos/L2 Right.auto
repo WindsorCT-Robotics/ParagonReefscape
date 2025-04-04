@@ -240,6 +240,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "",
+  "folder": null,
   "choreoAuto": false
 }
