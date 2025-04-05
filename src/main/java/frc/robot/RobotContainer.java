@@ -203,12 +203,8 @@ public class RobotContainer {
         // Operator Bindings
 
         // Trough score
-        opController.x().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "left", 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-        opController.b().onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-
-        // Manual
-        opController.x().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)));
-        opController.b().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)));
+        opController.x().onTrue(new CoralOuttakeCommand(carriage, 1.0, "left").deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.b().onTrue(new CoralOuttakeCommand(carriage, 1.0, "right").deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
 
         // L2 score
         opRightTrigger.onTrue(new PathScoreCommand(carriage, elevator, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
