@@ -7,6 +7,9 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.SparkMax;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -85,6 +88,7 @@ public class CarriageSubsystem extends SubsystemBase {
         rollerRight.set(speedFast.asDouble());
     }
 
+    @AutoLogOutput(key = "Sensor/OuttakeBeam")
     public boolean isBeamBroken() {
         return !beamBreaker.get();
     }

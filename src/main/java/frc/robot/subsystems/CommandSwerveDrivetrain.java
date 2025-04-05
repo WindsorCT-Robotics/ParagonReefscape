@@ -47,6 +47,7 @@ import dev.doglog.DogLog;
 
 import java.io.IOException;
 import org.json.simple.parser.ParseException;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -599,6 +600,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         };
     }
 
+    @AutoLogOutput(key = "Vision/ValidTarget")
     public boolean isValidTarget(Limelight limelight) {
         try {
             aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
@@ -693,10 +695,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         lTOFSensor.setRangeOfInterest( 6, 6, 9, 9);
     }
 
+    @AutoLogOutput(key = "Sensor/TOF Left")
     public boolean getLTOFBeam() {
         return lTOFSensor.getRange() > TOFSensorThreshold; // millimeters
     }
 
+    @AutoLogOutput(key = "Sensor/TOF Right")
     public boolean getRTOFBeam() {
         return rTOFSensor.getRange() > TOFSensorThreshold; // millimeters
     }
@@ -777,5 +781,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             }
             // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
         }
+    }
+
+    @AutoLogOutput(key = "Gyro/Yaw")
+    public double getPigeon2Yaw() {
+        return getPigeon2().getYaw().getValueAsDouble();
+    }
+
+    @AutoLogOutput(key = "Drivetrain/Position2D")
+    public Pose2d getDrivetrainPose2d() {
+        return getState().Pose;
     }
 }

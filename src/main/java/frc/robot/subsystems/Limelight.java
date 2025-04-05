@@ -4,11 +4,14 @@
 
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import com.ctre.phoenix6.Utils;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -114,6 +117,7 @@ public class Limelight extends SubsystemBase {
     return ll;
   }
 
+  @AutoLogOutput(key = "Vision/TagCount")
   public int getTagCount() {
     try {
       // botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue(ll);
@@ -122,5 +126,10 @@ public class Limelight extends SubsystemBase {
     } catch (Exception e){
       return 0;
     }
+  }
+
+  @AutoLogOutput(key = "Vision/Position3D")
+  public Pose2d getCameraPrediction() {
+    return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll).pose;
   }
 }

@@ -6,6 +6,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
@@ -15,6 +18,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -63,7 +67,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     /* Path follower */
-    private final SendableChooser<Command> autoChooser;
+    private final LoggedDashboardChooser autoChooser;
 
     public final Limelight vision = new Limelight(drivetrain);
 
@@ -77,8 +81,8 @@ public class RobotContainer {
 
         RegisterNamedComands();
 
-        autoChooser = AutoBuilder.buildAutoChooser("L2 Left Inner Barge");
-        SmartDashboard.putData("Autos", autoChooser);
+        autoChooser = new LoggedDashboardChooser<Command>("L3 Left", AutoBuilder.buildAutoChooser());
+        SmartDashboard.putData("Autos", (Sendable) autoChooser);
 
         configureBindings();
     }
@@ -129,13 +133,20 @@ public class RobotContainer {
 
         elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
         algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.4));
+        
+        // Triggers
+        Trigger driverLeftTrigger = new Trigger(() -> driverController.leftTrigger(0.2).getAsBoolean());
+        Trigger driverRightTrigger = new Trigger(() -> driverController.rightTrigger(0.2).getAsBoolean());
 
-        Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
-        Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
-        Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
 
         Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.1 || driverController.getLeftY() < -0.1);
         Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.1 || driverController.getRightX() < -0.1);
+
+
+        // Operator Triggers
+        Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
+        Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
+        Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
 
         Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision));
 
@@ -254,6 +265,70 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
-        return autoChooser.getSelected();
+        return (Command) autoChooser.getSendableChooser().getSelected();
+    }
+
+    public void logControllers() {
+        // Driver Triggers
+
+        // Joysticks
+        Logger.recordOutput("DriverController/LeftJoystick/X", driverController.getLeftX());
+        Logger.recordOutput("DriverController/LeftJoystick/Y", driverController.getLeftY());
+        Logger.recordOutput("DriverController/LeftJoystick/isPressed", driverController.leftStick());
+        Logger.recordOutput("DriverController/RightJoystick/X", driverController.getRightX());
+        Logger.recordOutput("DriverController/RightJoystick/Y", driverController.getRightY());
+        Logger.recordOutput("DriverController/RightJoystick/isPressed", driverController.rightStick());
+
+        // Buttons
+        Logger.recordOutput("DriverController/Button/A", driverController.a().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/B", driverController.b().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/X", driverController.x().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/Y", driverController.y().getAsBoolean());
+
+        Logger.recordOutput("DriverController/Button/Start", driverController.start().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/Back", driverController.back().getAsBoolean());
+
+        Logger.recordOutput("DriverController/Button/POV/Up", driverController.povUp().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/POV/Down", driverController.povDown().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/POV/Left", driverController.povLeft().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/POV/Right", driverController.povRight().getAsBoolean());
+
+        Logger.recordOutput("DriverController/Button/Bumper/Left", driverController.leftBumper().getAsBoolean());
+        Logger.recordOutput("DriverController/Button/Bumper/Right", driverController.rightBumper().getAsBoolean());
+
+        // Triggers
+        Logger.recordOutput("DriverController/LeftTrigger", driverController.leftTrigger());
+        Logger.recordOutput("DriverController/RightTrigger", driverController.rightTrigger());
+
+        // Operator Triggers
+
+        // Joysticks
+        Logger.recordOutput("OperatorController/LeftJoystick/X", opController.getLeftX());
+        Logger.recordOutput("OperatorController/LeftJoystick/Y", opController.getLeftY());
+        Logger.recordOutput("OperatorController/LeftJoystick/isPressed", opController.leftStick());
+        Logger.recordOutput("OperatorController/RightJoystick/X", opController.getRightX());
+        Logger.recordOutput("OperatorController/RightJoystick/Y", opController.getRightY());
+        Logger.recordOutput("OperatorController/RightJoystick/isPressed", opController.rightStick());
+
+        // Buttons
+        Logger.recordOutput("OperatorController/Button/A", opController.a().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/B", opController.b().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/X", opController.x().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/Y", opController.y().getAsBoolean());
+
+        Logger.recordOutput("OperatorController/Button/Start", opController.start().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/Back", opController.back().getAsBoolean());
+
+        Logger.recordOutput("OperatorController/Button/POV/Up", opController.povUp().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/POV/Down", opController.povDown().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/POV/Left", opController.povLeft().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/POV/Right", opController.povRight().getAsBoolean());
+
+        Logger.recordOutput("OperatorController/Button/Bumper/Left", opController.leftBumper().getAsBoolean());
+        Logger.recordOutput("OperatorController/Button/Bumper/Right", opController.rightBumper().getAsBoolean());
+
+        // Triggers
+        Logger.recordOutput("OperatorController/LeftTrigger", opController.leftTrigger());
+        Logger.recordOutput("OperatorController/RightTrigger", opController.rightTrigger());
     }
 }

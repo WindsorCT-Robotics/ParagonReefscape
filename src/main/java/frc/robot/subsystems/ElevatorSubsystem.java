@@ -7,6 +7,9 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.ResetMode;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -85,18 +88,22 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevMotor.setVoltage(gravityVoltage);
     }
 
+    @AutoLogOutput(key = "Elevator/L3")
     public boolean isAtL3() {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.1);
     }
 
+    @AutoLogOutput(key = "Elevator/L2.5")
     public boolean isAtL2_5() {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L2_5) <= 0.1);
     }
 
+    @AutoLogOutput(key = "Elevator/L2")
     public boolean isAtL2() {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L2) <= 0.1);
     }
 
+    @AutoLogOutput(key = "Elevator/L1")
     public boolean isAtL1() {
         return (Math.abs(elevMotor.getEncoder().getPosition() - L1) <= 0.1);
     }
@@ -125,8 +132,14 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevMotor.set(-0.04);
     }
 
+    @AutoLogOutput(key = "Elevator/ReverseLimit")
     public boolean getLowerLimit() {
         return elevMotor.getReverseLimitSwitch().isPressed();
+    }
+
+    @AutoLogOutput(key = "Elevator/ForwardLimit")
+    public double getElevEncoderPosition() {
+        return elevMotor.getEncoder().getPosition();
     }
 
     public void resetRelativeEncoder() {

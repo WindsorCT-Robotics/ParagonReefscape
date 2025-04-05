@@ -5,6 +5,9 @@ import frc.robot.Units.Percent;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.spark.SparkMax;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -48,14 +51,15 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         motor.set(speed.asDouble());
     }
 
+    @AutoLogOutput(key = "Motor/ElevatorPosition")
     public double getMotorPosition() {
         return motorEncoder.getPosition();
     }
-
+    
     public void resetRollerEncoder() {
         motorEncoder.setPosition(0);
     }
-    
+
     public void stopMotor() {
         motor.stopMotor();
     }
