@@ -6,6 +6,7 @@ import frc.lib.Limelight.LimelightHelpers;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
+import frc.robot.VisionSim;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -454,7 +455,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         List<Waypoint> waypoints;
         Rotation2d orientation;
-        aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        if (Utils.isSimulation()) {
+            aprilTagID = VisionSim.getBestAprilTagSim();
+        } else {
+            aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        }
         System.out.println("Current apriltag is " + aprilTagID);
         
         // Create a list of waypoints from poses. Each pose represents one waypoint.
@@ -710,7 +715,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /* Run simulation at a faster rate so PID gains behave more reasonably */
     m_simNotifier = new Notifier(mapleSimSwerveDrivetrain::update);
     m_simNotifier.startPeriodic(kSimLoopPeriod);
-
     }
 
     // public boolean isLBeamBroken() {
