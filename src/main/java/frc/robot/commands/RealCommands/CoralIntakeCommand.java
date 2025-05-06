@@ -1,8 +1,7 @@
-package frc.robot.commands;
-
-import frc.robot.subsystems.CarriageSubsystem;
+package frc.robot.commands.RealCommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.Carriage.CarriageSubsystem;
 
 public class CoralIntakeCommand extends Command {
     private final CarriageSubsystem rollers;

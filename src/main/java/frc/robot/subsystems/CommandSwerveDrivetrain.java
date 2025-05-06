@@ -48,6 +48,7 @@ import dev.doglog.DogLog;
 import java.io.IOException;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

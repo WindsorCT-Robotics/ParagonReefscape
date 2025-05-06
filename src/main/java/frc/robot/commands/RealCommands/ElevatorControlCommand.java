@@ -1,14 +1,14 @@
-package frc.robot.commands;
+package frc.robot.commands.RealCommands;
 
 import frc.robot.subsystems.ElevatorSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class ElevatorMoveCommand extends Command {
+public class ElevatorControlCommand extends Command {
     private final ElevatorSubsystem elevator;
     private final double level;
 
-    public ElevatorMoveCommand(ElevatorSubsystem elevator, Double level) {
+    public ElevatorControlCommand(ElevatorSubsystem elevator, double level) {
         this.elevator = elevator;
         this.level = level;
         addRequirements(elevator);
@@ -16,6 +16,7 @@ public class ElevatorMoveCommand extends Command {
 
     @Override
     public void initialize() {
+        System.out.println(level);
         if (this.level == 3) {
             elevator.setToL3();
         } else if (this.level == 2.5) {
@@ -28,9 +29,7 @@ public class ElevatorMoveCommand extends Command {
     }
 
     @Override
-    public void execute() {
-
-    }
+    public void execute() { }
 
     @Override
     public void end(boolean interrupted) {
@@ -43,14 +42,6 @@ public class ElevatorMoveCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        if (this.level == 3) {
-            return elevator.isAtL3();
-        } else if (this.level == 2.5) {
-            return elevator.isAtL2_5();
-        } else if (this.level == 2) {
-            return elevator.isAtL2();
-        } else {
-            return elevator.isAtL1();
-        }
+        return false;
     }
 }

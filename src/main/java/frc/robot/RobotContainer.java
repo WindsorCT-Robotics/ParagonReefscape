@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
@@ -30,12 +31,32 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.commands.*;
+import frc.robot.commands.RealCommands.AlgaeMoveCommand;
+import frc.robot.commands.RealCommands.CoralIntakeCommand;
+import frc.robot.commands.RealCommands.CoralOuttakeCommand;
+import frc.robot.commands.RealCommands.ElevatorControlCommand;
+import frc.robot.commands.RealCommands.ElevatorMoveCommand;
+import frc.robot.commands.RealCommands.ElevatorResetCommand;
+import frc.robot.commands.RealCommands.ManualMoveRollersCommand;
+import frc.robot.commands.RealCommands.MoveDrivetrainCommand;
+import frc.robot.commands.RealCommands.PathScoreAlgaeCommand;
+import frc.robot.commands.RealCommands.PathScoreCommand;
+import frc.robot.commands.RealCommands.RepositionCoralCommand;
+import frc.robot.commands.RealCommands.ResetSimPoseToDriveCommand;
+import frc.robot.commands.RealCommands.ScoreCommand;
+import frc.robot.commands.RealCommands.ScoreNoElevatorCommand;
+import frc.robot.commands.SimCommands.SimCoralIntakeCommand;
+import frc.robot.commands.SimCommands.SimCoralOuttakeCommand;
+import frc.robot.commands.SimCommands.SimPathScoreCommand;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
-import frc.robot.subsystems.CarriageSubsystem;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.Carriage.CarriageSubsystem;
+import frc.robot.subsystems.Carriage.CarriageSubsystemSim;
+import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 
 public class RobotContainer {
     private ElevatorSubsystem elevator;
+    private CarriageSubsystemSim simCarriage;
     private CarriageSubsystem carriage;
     private AlgaeRemoverSubsystem algaeRemover;
     public LEDSubsystem led;
@@ -67,7 +88,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     /* Path follower */
-    private final LoggedDashboardChooser autoChooser;
+    private final SendableChooser<Command> autoChooser;
 
     public final Limelight vision = new Limelight(drivetrain);
 
@@ -79,12 +100,21 @@ public class RobotContainer {
         algaeRemover = new AlgaeRemoverSubsystem();
         led = new LEDSubsystem();
 
+        if (Utils.isSimulation()) {
+            simCarriage = new CarriageSubsystemSim(MapleSimSwerveDrivetrain.mapleSimDrive);
+        }
         RegisterNamedComands();
 
-        autoChooser = new LoggedDashboardChooser<Command>("L3 Left", AutoBuilder.buildAutoChooser());
-        SmartDashboard.putData("Autos", (Sendable) autoChooser);
+        autoChooser = AutoBuilder.buildAutoChooser("L3 Left");
 
-        configureBindings();
+        SmartDashboard.putData("Autos", autoChooser);
+
+        if (Robot.isSimulation()) {
+            simConfigureBindings();
+        } else {
+            configureBindings();
+        }
+        
     }
 
     private void RegisterNamedComands()
@@ -117,7 +147,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("MoveBackwardsRelative", new MoveDrivetrainCommand(drivetrain, 0.2, 180, true));
         NamedCommands.registerCommand("MoveBackwardsRelative 0.4", new MoveDrivetrainCommand(drivetrain, 0.4, 180, true));
     }
-
+    
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -263,9 +293,154 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
+    private void simConfigureBindings() {
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
+        drivetrain.setDefaultCommand(
+            // Drivetrain will execute this command periodically
+
+            drivetrain.applyRequest(() ->
+                drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
+
+        elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
+        algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.4));
+        
+        // Triggers
+        Trigger driverLeftTrigger = new Trigger(() -> driverController.leftTrigger(0.2).getAsBoolean());
+        Trigger driverRightTrigger = new Trigger(() -> driverController.rightTrigger(0.2).getAsBoolean());
+
+
+        Trigger driverLeftJoy = new Trigger(() -> driverController.getLeftY() > 0.1 || driverController.getLeftY() < -0.1);
+        Trigger driverRightJoy = new Trigger(() -> driverController.getRightX() > 0.1 || driverController.getRightX() < -0.1);
+
+
+        // Operator Triggers
+        Trigger opLeftTrigger = new Trigger(() -> opController.getLeftTriggerAxis() > 0.2 || opController.getLeftTriggerAxis() < -0.2);
+        Trigger opRightTrigger = new Trigger(() -> opController.getRightTriggerAxis() > 0.2 || opController.getRightTriggerAxis() < -0.2);
+        Trigger opRightJoy = new Trigger(() -> opController.getRightY() > 0.2 || opController.getRightY() < -0.2);
+
+        Trigger isValidTarget = new Trigger(() -> drivetrain.isValidTarget(vision));
+
+        Trigger opLock = new Trigger(() -> (driverLeftJoy.getAsBoolean() || driverRightJoy.getAsBoolean() || !isValidTarget.getAsBoolean()));
+
+        // // Run SysId routines when holding back/start and X/Y.
+        // // Note that each routine should be run exactly once in a single log.
+        // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+        
+        // Driver Bindings
+        // Intake
+        driverController.leftBumper().onTrue(new SimCoralIntakeCommand(simCarriage).until(driverController.x()));
+
+        // Relative Drive Forward
+        driverController.a().whileTrue(drivetrain.applyRequest(() -> new SwerveRequest.RobotCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2).withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2)));
+        
+        // Auto Reef Alignment
+        driverController.leftStick().onTrue(drivetrain.pathToAlign(vision, false, "center"));
+        driverController.b().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "right"));
+        driverController.x().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, false, "left"));
+
+        // Auto Coral Station Alignment
+        driverController.y().and(driverController.leftStick()).onTrue(drivetrain.pathToAlign(vision, true, "center").until(driverController.x()));
+
+        // Auto direction align to coral stations
+        driverController.y().toggleOnTrue(drivetrain.setOrientation(driverController, vision, true)
+        .until(driverRightJoy)
+        .until(driverController.b())
+        .until(opController.x())
+        .until(opController.b())
+        .until(opLeftTrigger)
+        .until(opRightTrigger)
+        .until(opController.leftBumper())
+        .until(opController.rightBumper()));
+
+        //  Auto direction align to reef
+        driverController.b().toggleOnTrue(drivetrain.setOrientation(driverController, vision, false)
+        .until(driverController.y())
+        .until(opController.x())
+        .until(opController.b())
+        .until(opLeftTrigger)
+        .until(opRightTrigger)
+        .until(opController.leftBumper())
+        .until(opController.rightBumper()));
+
+        // reset sim pose
+        driverController.povRight().onTrue(new ResetSimPoseToDriveCommand(drivetrain));
+
+        // Reduces max speed by a factor of 2
+        driverController.rightBumper().whileTrue(drivetrain.applyRequest(() ->
+        drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed / 2) // Drive forward with negative Y (forward)
+            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed / 2) // Drive left with negative X (left)
+            .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate / 1.5))); // Drive counterclockwise with negative X (left));
+
+        // reposition coral in carriage
+        driverController.start().onTrue(new RepositionCoralCommand(carriage));
+
+        // reset pigeon 2 yaw to 0
+        driverController.start().and(driverController.back()).onTrue(new InstantCommand(() -> drivetrain.getPigeon2().setYaw(0.0)));
+
+        // Operator Bindings
+
+        // Trough score
+        opController.x().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.b().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+
+        // L2 score
+        opRightTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+
+        // Manual
+        opRightTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
+        opLeftTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
+
+        // Lower algae remove + score L2
+        opRightTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
+
+        // L3 score
+        opController.leftBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+
+        // Manual
+        opController.leftBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
+        opController.rightBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
+
+        // Upper algae remove + score L3
+        opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
+
+        // Extends and retracts the elevator
+        opController.povUp().toggleOnTrue(new ElevatorControlCommand(elevator, 3).until(opController.leftStick()));
+        opController.povRight().toggleOnTrue(new ElevatorControlCommand(elevator, 2.5).until(opController.leftStick()));
+        opController.povLeft().toggleOnTrue(new ElevatorControlCommand(elevator, 2).until(opController.leftStick()));
+        opController.povDown().toggleOnTrue(new ElevatorControlCommand(elevator, 1).until(opController.leftStick()));
+
+        // Resets elevator
+        opController.rightStick().onTrue(new ElevatorResetCommand(elevator));
+
+        // Turn on algae remover and move elevator for lower algae
+        opController.back().and(opController.a()).toggleOnTrue(new ElevatorControlCommand(elevator, 1.0).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()));
+        
+        // Turn on algae remover and move elevator for upper algae
+        opController.back().and(opController.y()).toggleOnTrue(new ElevatorControlCommand(elevator, 2.5).alongWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()));
+
+        // Manually controls the intake and outtake rollers
+        opRightJoy.and(opController.start()).whileTrue(new ManualMoveRollersCommand(carriage, () -> -opController.getLeftY()));
+        opController.back().and(opController.start()).onTrue(new CoralOuttakeCommand(carriage, 2.0, "center"));
+
+        drivetrain.registerTelemetry(logger::telemeterize);
+    }
+
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
-        return (Command) autoChooser.getSendableChooser().getSelected();
+        return autoChooser.getSelected();
     }
 
     public void logControllers() {

@@ -20,7 +20,6 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
 
     private SparkMax motor;
     private SparkMaxConfig motorConfig;
-    private RelativeEncoder motorEncoder;
 
     public AlgaeRemoverSubsystem() {
         motor = new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless);
@@ -49,15 +48,6 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
 
     public void manualMoveMotor(Percent speed) {
         motor.set(speed.asDouble());
-    }
-
-    @AutoLogOutput(key = "Motor/ElevatorPosition")
-    public double getMotorPosition() {
-        return motorEncoder.getPosition();
-    }
-    
-    public void resetRollerEncoder() {
-        motorEncoder.setPosition(0);
     }
 
     public void stopMotor() {

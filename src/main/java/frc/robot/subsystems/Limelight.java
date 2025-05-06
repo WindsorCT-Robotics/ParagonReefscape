@@ -130,6 +130,11 @@ public class Limelight extends SubsystemBase {
 
   @AutoLogOutput(key = "Vision/Position3D")
   public Pose2d getCameraPrediction() {
-    return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll).pose;
+    try {
+      return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll).pose;
+    } catch (Exception e) {
+      return new Pose2d();
+    }
+    
   }
 }

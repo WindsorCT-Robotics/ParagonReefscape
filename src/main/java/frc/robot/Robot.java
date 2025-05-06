@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
@@ -36,14 +37,6 @@ public class Robot extends LoggedRobot {
 
   private final RobotContainer m_robotContainer;
 
-  StructArrayPublisher<Pose3d> CoralPoses = NetworkTableInstance.getDefault()
-      .getStructArrayTopic("Coral", Pose3d.struct)
-      .publish();
-    
-    StructArrayPublisher<Pose3d> AlgaePoses = NetworkTableInstance.getDefault()
-      .getStructArrayTopic("Algae", Pose3d.struct)
-      .publish();
-
   public Robot() {
     Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
 
@@ -51,10 +44,11 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
     } else {
-        setUseTiming(false); // Run as fast as possible
-        String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
-        Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+        setUseTiming(true); // Run as fast as possible
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        // String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+        // Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+        // Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
     }
 
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
@@ -65,9 +59,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    if (isReal()) {
-      m_robotContainer.logControllers();
-    }
+    m_robotContainer.logControllers();
   }
 
   @Override
@@ -139,8 +131,8 @@ public class Robot extends LoggedRobot {
   public void simulationPeriodic() {
     SimulatedArena.getInstance().simulationPeriodic();
     visionSim.simulationPeriodic(MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
-    DogLog.log("Simulation/CoralPoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-    DogLog.log("Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    Logger.recordOutput("Simulation/CoralPoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+    Logger.recordOutput("Simulation/AlgaePoses", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
   }
 
   public RobotContainer getRobotContainer() {

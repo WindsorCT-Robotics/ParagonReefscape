@@ -1,9 +1,9 @@
-package frc.robot.commands;
+package frc.robot.commands.RealCommands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Units.Percent;
-import frc.robot.subsystems.CarriageSubsystem;
+import frc.robot.subsystems.Carriage.CarriageSubsystem;
 
 public class RepositionCoralCommand extends Command {
     private final CarriageSubsystem rollers;
