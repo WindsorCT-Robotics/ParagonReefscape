@@ -30,7 +30,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
-import frc.robot.commands.*;
 import frc.robot.commands.RealCommands.AlgaeMoveCommand;
 import frc.robot.commands.RealCommands.CoralIntakeCommand;
 import frc.robot.commands.RealCommands.CoralOuttakeCommand;
@@ -389,32 +388,32 @@ public class RobotContainer {
         // Operator Bindings
 
         // Trough score
-        opController.x().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-        opController.b().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.x().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).until(opController.leftStick()));
+        opController.b().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).until(opController.leftStick()));
 
         // L2 score
-        opRightTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-        opLeftTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opRightTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 2.0).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 2.0).until(opController.leftStick()).unless(opLock));
 
         // Manual
-        opRightTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
-        opLeftTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
+        opRightTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).until(opController.leftStick()));
+        opLeftTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 2.0).until(opController.leftStick()));
 
         // Lower algae remove + score L2
-        opRightTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
-        opLeftTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
+        opRightTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 2.0).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2.0).until(opController.leftStick()).unless(opLock));
 
         // L3 score
-        opController.leftBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
-        opController.rightBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()).unless(opLock));
+        opController.leftBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 3.0).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
 
         // Manual
-        opController.leftBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
-        opController.rightBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, false, 0.4)).until(opController.leftStick()));
+        opController.leftBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).until(opController.leftStick()));
+        opController.rightBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 3.0).until(opController.leftStick()));
 
         // Upper algae remove + score L3
-        opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
-        opController.rightBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).deadlineWith(new AlgaeMoveCommand(algaeRemover, true, 0.7)).until(opController.leftStick()).unless(opLock));
+        opController.leftBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 3.0).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
 
         // Extends and retracts the elevator
         opController.povUp().toggleOnTrue(new ElevatorControlCommand(elevator, 3).until(opController.leftStick()));

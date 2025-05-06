@@ -6,17 +6,31 @@ import frc.robot.subsystems.Carriage.CarriageSubsystemSim;
 public class SimCoralOuttakeCommand extends Command {
     private final CarriageSubsystemSim rollers;
     private final double level;
+    private final double L1 = 0.5;
+    private final double L2 = 0.81;
+    private final double L3 = 1.21;
 
     public SimCoralOuttakeCommand(CarriageSubsystemSim rollers, double level) {
         this.rollers = rollers;
         this.level = level;
-        addRequirements(rollers);
     }
 
     @Override
     public void initialize() {
         System.out.println("Scoring...");
-        rollers.scoreCoral(2, level);
+
+        double height = 0;
+
+        if (level == 1){
+            height = L1;
+        } else if (level == 2) {
+            height = L2;
+        } else if (level == 3) {
+            height = L3;
+        } else {
+            height = 10;
+        }
+        rollers.scoreCoral(3, height);
     }
 
     @Override

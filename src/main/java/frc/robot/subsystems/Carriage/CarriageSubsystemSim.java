@@ -57,12 +57,13 @@ public class CarriageSubsystemSim extends SubsystemBase {
 
     public void scoreCoral(double velocity, double height) {
         if (intakeSimulation.obtainGamePieceFromIntake()) {
+            System.out.println("h");
             SimulatedArena.getInstance()
             .addGamePieceProjectile(new ReefscapeCoralOnFly(
             // Obtain robot position from drive simulation
             MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getTranslation(),
             // The scoring mechanism is installed at (0.46, 0) (meters) on the robot
-            new Translation2d(0.35, 0),
+            new Translation2d(0.4, 0),
             // Obtain robot speed from drive simulation
             MapleSimSwerveDrivetrain.mapleSimDrive.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
             // Obtain robot facing from drive simulation
@@ -70,9 +71,11 @@ public class CarriageSubsystemSim extends SubsystemBase {
             // The height at which the coral is ejected
             Meters.of(height),
             // The initial speed of the coral
-            MetersPerSecond.of(2),
+            MetersPerSecond.of(velocity),
             // The coral is ejected at a 35-degree slope
             Degrees.of(-35)));
+        } else {
+            System.out.println("No coral");
         }
     }
 }

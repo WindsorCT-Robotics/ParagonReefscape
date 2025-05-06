@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
+import frc.robot.VisionSim;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.simulation.VisionSystemSim;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -454,7 +456,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         List<Waypoint> waypoints;
         Rotation2d orientation;
-        aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        if (Utils.isSimulation()) {
+            aprilTagID = VisionSim.getBestAprilTagSim();
+        } else {
+            aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+        }
         System.out.println("Current apriltag is " + aprilTagID);
         
         // Create a list of waypoints from poses. Each pose represents one waypoint.
@@ -604,7 +610,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @AutoLogOutput(key = "Vision/ValidTarget")
     public boolean isValidTarget(Limelight limelight) {
         try {
-            aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+            if (Utils.isSimulation()) {
+                aprilTagID = VisionSim.getBestAprilTagSim();
+            } else {
+                aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+            }
             return usedAprilTags.contains((int) aprilTagID);
         } catch (Exception ex) {
             return false;
