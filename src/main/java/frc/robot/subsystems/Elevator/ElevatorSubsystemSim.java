@@ -4,41 +4,32 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.ResetMode;
 
-import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkClosedLoopController;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystemSim extends SubsystemBase {
-    private static final int MOTOR_CANID = 14;
 
-    private final SparkMaxSim elevMotorSim;
-    private final SparkMax elevMotor;
+    private final static SparkMax elevMotor = ElevatorSubsystem.getElevatorMotor();
+    private final static SparkMaxSim elevMotorSim = new SparkMaxSim(elevMotor, DCMotor.getKrakenX60(1));
+    
     private final SparkMaxConfig elevMotorConfig;
-    private final SparkClosedLoopController closedLoopController;
-    private final RelativeEncoder encoder;
 
     // private static final double L1 = 0;
     // private static final double L2 = 8.5;
@@ -51,14 +42,13 @@ public class ElevatorSubsystemSim extends SubsystemBase {
     private final LoggedMechanismRoot2d elevatorRoot;
     private final LoggedMechanismLigament2d elevatorLigament;
 
-    private final ElevatorSim elevatorSim;
-
     private final TrapezoidProfile.Constraints elevatorConstraints = new Constraints(10, 4);
 
-    private TrapezoidProfile.State L1 = new TrapezoidProfile.State(Units.metersToInches(0), 0.0);
-    private TrapezoidProfile.State L2_5 = new TrapezoidProfile.State(Units.metersToInches(0.8), 0.0);
-    private TrapezoidProfile.State L2 = new TrapezoidProfile.State(Units.metersToInches(0.6), 0.0);
-    private TrapezoidProfile.State L3 = new TrapezoidProfile.State(Units.metersToInches(1), 0.0);
+    // 60 of position is equal to 1 meter
+    private TrapezoidProfile.State L1 = new TrapezoidProfile.State(0, 0.0);
+    private TrapezoidProfile.State L2 = new TrapezoidProfile.State(9.906, 0.0);
+    private TrapezoidProfile.State L2_5 = new TrapezoidProfile.State(28, 0.0);
+    private TrapezoidProfile.State L3 = new TrapezoidProfile.State(34.4805, 0.0);
 
     private TrapezoidProfile.State current = new TrapezoidProfile.State(0.0, 0.0);
 
@@ -73,20 +63,14 @@ public class ElevatorSubsystemSim extends SubsystemBase {
         goal = L1;
         profile = new TrapezoidProfile(elevatorConstraints);
 
-        elevatorSim = new ElevatorSim(0, 0.001, DCMotor.getKrakenX60(1), 0, 2, false, 0, 0.05, 1);
-
         visualizedElevator = new LoggedMechanism2d(Units.inchesToMeters(0), Units.inchesToMeters(0));
         elevatorRoot = visualizedElevator.getRoot("Elevator", Units.inchesToMeters(0), Units.inchesToMeters(0));
         elevatorLigament = elevatorRoot.append(new LoggedMechanismLigament2d("Elevator", Units.inchesToMeters(50), 90));
 
-        elevMotor = ElevatorSubsystem.getElevatorMotor();
         elevMotorConfig = new SparkMaxConfig();
 
         elevMotorConfig.limitSwitch.forwardLimitSwitchType(Type.kNormallyOpen);
         elevMotorConfig.limitSwitch.reverseLimitSwitchType(Type.kNormallyOpen);
-
-        closedLoopController = elevMotor.getClosedLoopController();
-        encoder = elevMotor.getEncoder();
 
         elevMotorConfig.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -118,8 +102,6 @@ public class ElevatorSubsystemSim extends SubsystemBase {
         elevMotorConfig.inverted(true);
         // elevMotorConfig.smartCurrentLimit(60);
         elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-        elevMotorSim = new SparkMaxSim(elevMotor, DCMotor.getKrakenX60(1));
     }
     
 
@@ -132,13 +114,10 @@ public class ElevatorSubsystemSim extends SubsystemBase {
             velocity = 0;
         }
 
-        elevatorSim.update(0.02);
-
         elevMotorSim.iterate(velocity, 12, 1);
-        elevatorLigament.setLength(elevMotorSim.getPosition());
+        Logger.recordOutput("Height", elevMotorSim.getPosition());
 
-        System.out.println(elevMotorSim.getRelativeEncoderSim().getPosition());
-        Logger.recordOutput("Mechanism", visualizedElevator);
+        // Logger.recordOutput("Mechanism", visualizedElevator);
         current = next;
     }
 
@@ -208,7 +187,7 @@ public class ElevatorSubsystemSim extends SubsystemBase {
         elevMotor.stopMotor();
     }
 
-    // public void getHeight() {
-    //     elevMotorSim.setPosition(L1);
-    // }
+    public static double getHeight() {
+        return elevMotorSim.getPosition();
+    }
 }

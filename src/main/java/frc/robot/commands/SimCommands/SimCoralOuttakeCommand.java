@@ -8,7 +8,7 @@ public class SimCoralOuttakeCommand extends Command {
     private final double level;
     private final double L1 = 0.5;
     private final double L2 = 0.81;
-    private final double L3 = 1.21;
+    private final double L3 = 1.25;
 
     public SimCoralOuttakeCommand(CarriageSubsystemSim rollers, double level) {
         this.rollers = rollers;
@@ -30,7 +30,7 @@ public class SimCoralOuttakeCommand extends Command {
         } else {
             height = 10;
         }
-        rollers.scoreCoral(3, height);
+        rollers.scoreCoral(4, height);
     }
 
     @Override

@@ -73,7 +73,7 @@ public class CarriageSubsystemSim extends SubsystemBase {
             // The initial speed of the coral
             MetersPerSecond.of(velocity),
             // The coral is ejected at a 35-degree slope
-            Degrees.of(-35)));
+            Degrees.of(-10)));
         } else {
             System.out.println("No coral");
         }

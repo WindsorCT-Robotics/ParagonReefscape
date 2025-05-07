@@ -44,6 +44,7 @@ import frc.robot.commands.RealCommands.ResetSimPoseToDriveCommand;
 import frc.robot.commands.RealCommands.ScoreCommand;
 import frc.robot.commands.RealCommands.ScoreNoElevatorCommand;
 import frc.robot.commands.SimCommands.SimElevatorCommand;
+import frc.robot.commands.SimCommands.SimElevatorToggleCommand;
 import frc.robot.commands.SimCommands.SimCoralIntakeCommand;
 import frc.robot.commands.SimCommands.SimCoralOuttakeCommand;
 import frc.robot.commands.SimCommands.SimPathScoreCommand;
@@ -307,8 +308,7 @@ public class RobotContainer {
             )
         );
 
-        elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
-        algaeRemover.setDefaultCommand(new AlgaeMoveCommand(algaeRemover, true, 0.4));
+        simElevator.setDefaultCommand(new SimElevatorCommand(simElevator, 1));
         
         // Triggers
         Trigger driverLeftTrigger = new Trigger(() -> driverController.leftTrigger(0.2).getAsBoolean());
@@ -394,8 +394,8 @@ public class RobotContainer {
         opController.b().onTrue(new SimCoralOuttakeCommand(simCarriage, 1.0).until(opController.leftStick()));
 
         // L2 score
-        opRightTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 2.0).until(opController.leftStick()).unless(opLock));
-        opLeftTrigger.onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 2.0).until(opController.leftStick()).unless(opLock));
+        opRightTrigger.onTrue(new SimPathScoreCommand(simCarriage, simElevator, drivetrain, vision, "right", 2.0).until(opController.leftStick()).unless(opLock));
+        opLeftTrigger.onTrue(new SimPathScoreCommand(simCarriage, simElevator, drivetrain, vision, "left", 2.0).until(opController.leftStick()).unless(opLock));
 
         // Manual
         opRightTrigger.and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "right", 2.0).until(opController.leftStick()));
@@ -406,8 +406,8 @@ public class RobotContainer {
         opLeftTrigger.and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "left", 2.0).until(opController.leftStick()).unless(opLock));
 
         // L3 score
-        opController.leftBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "left", 3.0).until(opController.leftStick()).unless(opLock));
-        opController.rightBumper().onTrue(new SimPathScoreCommand(simCarriage, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
+        opController.leftBumper().onTrue(new SimPathScoreCommand(simCarriage, simElevator, drivetrain, vision, "left", 3.0).until(opController.leftStick()).unless(opLock));
+        opController.rightBumper().onTrue(new SimPathScoreCommand(simCarriage, simElevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
 
         // Manual
         opController.leftBumper().and(opController.start()).onTrue(new ScoreCommand(carriage, elevator, drivetrain, "left", 3.0).until(opController.leftStick()));
@@ -419,10 +419,10 @@ public class RobotContainer {
 
         // Extends and retracts the elevator
 
-        opController.povUp().onTrue(new SimElevatorCommand(simElevator, 3.0));
-        opController.povRight().onTrue(new SimElevatorCommand(simElevator, 2.5));
-        opController.povLeft().onTrue(new SimElevatorCommand(simElevator, 2.0));
-        opController.povDown().onTrue(new SimElevatorCommand(simElevator, 1.0));
+        opController.povUp().toggleOnTrue(new SimElevatorToggleCommand(simElevator, 3.0));
+        opController.povRight().toggleOnTrue(new SimElevatorToggleCommand(simElevator, 2.5));
+        opController.povLeft().toggleOnTrue(new SimElevatorToggleCommand(simElevator, 2.0));
+        opController.povDown().toggleOnTrue(new SimElevatorToggleCommand(simElevator, 1.0));
 
         // Resets elevator
         opController.rightStick().onTrue(new ElevatorResetCommand(elevator));

@@ -45,7 +45,7 @@ public class VisionSim {
     private VisionSystemSim visionSim;
     private final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     private final double camPitch = Units.degreesToRadians(0.0);
-    private final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
+    private final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.2, 0.0, 0.3), new Rotation3d(0, -camPitch, 0));
 
     public VisionSim(PhotonCamera cam_in) {
         // ----- Simulation

@@ -667,12 +667,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         mapleSimSwerveDrivetrain = new MapleSimSwerveDrivetrain(
             Seconds.of(kSimLoopPeriod),
             // TODO: modify the following constants according to your robot
-            Pounds.of(115), // robot weight
-            Inches.of(30), // bumper length
-            Inches.of(30), // bumper width
+            Kilogram.of(53.977), // robot weight
+            Meters.of(0.864), // bumper length
+            Meters.of(0.864), // bumper width
             DCMotor.getKrakenX60Foc(1), // drive motor type
             DCMotor.getKrakenX60Foc(1), // steer motor type
-            1.2, // wheel COF
+            1, // wheel COF
             getModuleLocations(),
             getPigeon2(),
             getModules(),
@@ -807,4 +807,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Pose2d getDrivetrainPose2d() {
         return getState().Pose;
     }
+
+
 }

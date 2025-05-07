@@ -3,11 +3,11 @@ package frc.robot.commands.SimCommands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Elevator.ElevatorSubsystemSim;
 
-public class SimElevatorCommand extends Command {
+public class SimElevatorToggleCommand extends Command {
     private final ElevatorSubsystemSim elevator;
     private final double level;
 
-    public SimElevatorCommand(ElevatorSubsystemSim elevator, double level) {
+    public SimElevatorToggleCommand(ElevatorSubsystemSim elevator, double level) {
         this.elevator = elevator;
         this.level = level;
         addRequirements(elevator);
@@ -47,6 +47,6 @@ public class SimElevatorCommand extends Command {
         // } else {
         //     return elevator.isAtL3();
         // }
-        return true;
+        return false;
     }
 }
