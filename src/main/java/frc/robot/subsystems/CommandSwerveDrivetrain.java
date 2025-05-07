@@ -331,42 +331,76 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     @SuppressWarnings("unused")
     private void configureAutoBuilder() {
-        try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
-                this::resetPose,         // Consumer for seeding pose against auto
-                () -> getState().Speeds, // Supplier of current robot speeds
-                // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(speeds)
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(10, 0, 0),
-                    // PID constants for rotation
-                    new PIDConstants(7, 0, 0)
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this // Subsystem for requirements
-            );
-        } catch (Exception ex) {
-            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+        if (Utils.isSimulation()) {
+            try {
+                var config = RobotConfig.fromGUISettings();
+                AutoBuilder.configure(
+                    () -> MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose(),   // Supplier of current robot pose
+                    this::resetPose,         // Consumer for seeding pose against auto
+                    () -> MapleSimSwerveDrivetrain.mapleSimDrive.getDriveTrainSimulatedChassisSpeedsRobotRelative(), // Supplier of current robot speeds
+                    // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                    (speeds, feedforwards) -> setControl(
+                        m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                    ),
+                    new PPHolonomicDriveController(
+                        // PID constants for translation
+                        new PIDConstants(10, 0, 0),
+                        // PID constants for rotation
+                        new PIDConstants(7, 0, 0)
+                    ),
+                    config,
+                    // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                    () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                    this // Subsystem for requirements
+                );
+            } catch (Exception ex) {
+                DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+            } 
+        } else {
+            try {
+                var config = RobotConfig.fromGUISettings();
+                AutoBuilder.configure(
+                    () -> getState().Pose,   // Supplier of current robot pose
+                    this::resetPose,         // Consumer for seeding pose against auto
+                    () -> getState().Speeds, // Supplier of current robot speeds
+                    // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                    (speeds, feedforwards) -> setControl(
+                        m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                    ),
+                    new PPHolonomicDriveController(
+                        // PID constants for translation
+                        new PIDConstants(10, 0, 0),
+                        // PID constants for rotation
+                        new PIDConstants(7, 0, 0)
+                    ),
+                    config,
+                    // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                    () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                    this // Subsystem for requirements
+                );
+            } catch (Exception ex) {
+                DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+            }
         }
     }
 
     private List<Waypoint> trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
         List<Waypoint> waypoints = new ArrayList<Waypoint>();
-        
+        Pose2d currentPose;
         // Checks if the id that is being used is an id that is allowed to be used for positioning
         if (!usedAprilTags.contains((int) aprilTagID)) {
             return null;
         }
-        Pose2d currentPose = getState().Pose;
+
+        if (Utils.isSimulation()) {
+            currentPose = MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose();
+        } else {
+            currentPose = getState().Pose;
+        }
         double[] pose = {aprilTagPoses[(int) aprilTagID][1].getX(), aprilTagPoses[(int) aprilTagID][1].getY()};
 
         // Reef Alignment
@@ -491,21 +525,39 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         );
         // Prevent the path from being flipped if the coordinates are already correct
         path.preventFlipping = true;
-        try {
-            System.out.println("Path made and executing");
-            return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
-            setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
-                .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
-            new PPHolonomicDriveController(
-                // PID constants for translation
-                new PIDConstants(10, 0, 0),
-                // PID constants for rotation
-                new PIDConstants(7, 0, 0)
-            ), RobotConfig.fromGUISettings(), () -> false, this);
-        } catch (IOException | ParseException ex) {
-            System.out.println("No Command due to try-catch");
-            return Commands.none();
+        System.out.println("Path made and executing");
+        if (Utils.isSimulation()) {
+            try {
+                return new FollowPathCommand(path, () -> MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose(), () -> MapleSimSwerveDrivetrain.mapleSimDrive.getDriveTrainSimulatedChassisSpeedsRobotRelative(), (speeds, feedforwards) -> 
+                setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                new PPHolonomicDriveController(
+                    // PID constants for translation
+                    new PIDConstants(10, 0, 0),
+                    // PID constants for rotation
+                    new PIDConstants(7, 0, 0)
+                ), RobotConfig.fromGUISettings(), () -> false, this);
+            } catch (IOException | ParseException ex) {
+                System.out.println("No Command due to try-catch");
+                return Commands.none();
+            }
+        } else {
+            try {
+                return new FollowPathCommand(path, () -> getState().Pose, () -> getState().Speeds, (speeds, feedforwards) -> 
+                setControl(m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                new PPHolonomicDriveController(
+                    // PID constants for translation
+                    new PIDConstants(10, 0, 0),
+                    // PID constants for rotation
+                    new PIDConstants(7, 0, 0)
+                ), RobotConfig.fromGUISettings(), () -> false, this);
+            } catch (IOException | ParseException ex) {
+                System.out.println("No Command due to try-catch");
+                return Commands.none();
+            }
         }
     }
 
@@ -526,67 +578,106 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             @Override
             public void execute() {
-                if (isCoralStation) {
-                    if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
-                        if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
-                            if (getState().Pose.getY() > 4.026) {
-                                orientation = -54;
+                if (Utils.isSimulation()) {
+                    if (isCoralStation) {
+                        if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
+                            if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY() >= 4.4959 || MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY() <= 3.5561) {
+                                if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY() > 4.026) {
+                                    orientation = -54;
+                                } else {
+                                    orientation = 54;
+                                }
                             } else {
-                                orientation = 54;
+                                orientation = 0;
+                        
                             }
                         } else {
-                            orientation = 0;
-                       
-                        }
-                    } else {
-                        if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
-                            if (getState().Pose.getY() > 4.026) {
-                                orientation = 54;
+                            if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY() >= 4.4959 || MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY() <= 3.5561) {
+                                if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY() > 4.026) {
+                                    orientation = 54;
+                                } else {
+                                    orientation = -54;
+                                }
                             } else {
-                                orientation = -54;
+                                orientation = 0;
+                            }
+                        }
+
+                        if (Math.abs(MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getRotation().getDegrees() - orientation) >= 1) {
+                            setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        } else {
+                            setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                        }
+
+                    } else {
+                        int closestDirection = 0;
+                        double smallestDifference = Double.MAX_VALUE;
+                        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                            for (int direction = 0; direction < reefDirections.length; direction++) {
+                                // Normalize the difference to be within -180 to +180 degrees
+                                double difference = reefDirections[direction] - MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getRotation().getDegrees();
+                                difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                            
+                                if (Math.abs(difference) < smallestDifference) {
+                                    closestDirection = direction;
+                                    smallestDifference = Math.abs(difference);
+                                }
                             }
                         } else {
-                            orientation = 0;
+                            for (int direction = 0; direction < reefDirections.length; direction++) {
+                                // Normalize the difference to be within -180 to +180 degrees
+                                double difference = reefDirections[direction] - MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getRotation().getDegrees() + 180;
+                                difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                            
+                                if (Math.abs(difference) < smallestDifference) {
+                                    closestDirection = direction;
+                                    smallestDifference = Math.abs(difference);
+                                }
+                            }
+                        }
+
+                        orientation = reefDirections[closestDirection];
+                        if (!(Math.abs(driverController.getRightX()) > 0.2)) {
+                            if (Math.abs(MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getRotation().getDegrees() - orientation) >= 1) {
+                                setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                                .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                            } else {
+                                setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                                .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                            }
+                        } else {
+                            setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                            .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate));// Drive counterclockwise with negative X (left)
                         }
                     }
-
-                    if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
-                        setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
-                    } else {
-                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
-                    }
-
                 } else {
-                    int closestDirection = 0;
-                    double smallestDifference = Double.MAX_VALUE;
-                    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
-                        for (int direction = 0; direction < reefDirections.length; direction++) {
-                            // Normalize the difference to be within -180 to +180 degrees
-                            double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees();
-                            difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                    if (isCoralStation) {
+                        if (DriverStation.getAlliance().orElse(Alliance.Red) == Alliance.Blue) {
+                            if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
+                                if (getState().Pose.getY() > 4.026) {
+                                    orientation = -54;
+                                } else {
+                                    orientation = 54;
+                                }
+                            } else {
+                                orientation = 0;
                         
-                            if (Math.abs(difference) < smallestDifference) {
-                                closestDirection = direction;
-                                smallestDifference = Math.abs(difference);
+                            }
+                        } else {
+                            if (getState().Pose.getY() >= 4.4959 || getState().Pose.getY() <= 3.5561) {
+                                if (getState().Pose.getY() > 4.026) {
+                                    orientation = 54;
+                                } else {
+                                    orientation = -54;
+                                }
+                            } else {
+                                orientation = 0;
                             }
                         }
-                    } else {
-                        for (int direction = 0; direction < reefDirections.length; direction++) {
-                            // Normalize the difference to be within -180 to +180 degrees
-                            double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees() + 180;
-                            difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
-                        
-                            if (Math.abs(difference) < smallestDifference) {
-                                closestDirection = direction;
-                                smallestDifference = Math.abs(difference);
-                            }
-                        }
-                    }
 
-                    orientation = reefDirections[closestDirection];
-                    if (!(Math.abs(driverController.getRightX()) > 0.2)) {
                         if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
                             setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
                             .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
@@ -594,10 +685,48 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                             setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
                             .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
                         }
+
                     } else {
-                        setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
-                        .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
-                        .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate));// Drive counterclockwise with negative X (left)
+                        int closestDirection = 0;
+                        double smallestDifference = Double.MAX_VALUE;
+                        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                            for (int direction = 0; direction < reefDirections.length; direction++) {
+                                // Normalize the difference to be within -180 to +180 degrees
+                                double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees();
+                                difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                            
+                                if (Math.abs(difference) < smallestDifference) {
+                                    closestDirection = direction;
+                                    smallestDifference = Math.abs(difference);
+                                }
+                            }
+                        } else {
+                            for (int direction = 0; direction < reefDirections.length; direction++) {
+                                // Normalize the difference to be within -180 to +180 degrees
+                                double difference = reefDirections[direction] - getState().Pose.getRotation().getDegrees() + 180;
+                                difference = (difference + 180) % 360 - 180; // Keeps difference in range -180 to +180
+                            
+                                if (Math.abs(difference) < smallestDifference) {
+                                    closestDirection = direction;
+                                    smallestDifference = Math.abs(difference);
+                                }
+                            }
+                        }
+
+                        orientation = reefDirections[closestDirection];
+                        if (!(Math.abs(driverController.getRightX()) > 0.2)) {
+                            if (Math.abs(getState().Pose.getRotation().getDegrees() - orientation) >= 1) {
+                                setControl(new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withTargetDirection(Rotation2d.fromDegrees(orientation)).withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                                .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                            } else {
+                                setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)) // Drive forward with negative Y (forward)
+                                .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond))); // Drive left with negative X (left)
+                            }
+                        } else {
+                            setControl(new SwerveRequest.FieldCentric().withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                            .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
+                            .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate));// Drive counterclockwise with negative X (left)
+                        }
                     }
                 }
             }
@@ -646,8 +775,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putBoolean("L Sensor", getLTOFBeam());
         SmartDashboard.putBoolean("R Sensor", getRTOFBeam());
         
-        field.setRobotPose(getState().Pose);
-
+        if (Utils.isSimulation()) {
+            field.setRobotPose(MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
+        } else {
+            field.setRobotPose(getState().Pose);
+        }
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance().ifPresent(allianceColor -> {
                 setOperatorPerspectiveForward(

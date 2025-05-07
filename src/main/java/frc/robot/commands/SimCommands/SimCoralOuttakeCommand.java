@@ -6,7 +6,7 @@ import frc.robot.subsystems.Carriage.CarriageSubsystemSim;
 public class SimCoralOuttakeCommand extends Command {
     private final CarriageSubsystemSim rollers;
     private final double level;
-    private final double L1 = 0.5;
+    private final double L1 = 0.5 + 0.2;
     private final double L2 = 0.81;
     private final double L3 = 1.25;
 
