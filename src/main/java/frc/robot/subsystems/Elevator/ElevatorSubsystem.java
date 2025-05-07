@@ -1,14 +1,21 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.Elevator;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import dev.doglog.DogLog;
+
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.ResetMode;
 
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -22,19 +29,20 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class ElevatorSubsystem extends SubsystemBase {
     private static final int MOTOR_CANID = 14;
 
-    private final SparkMax elevMotor;
-    private final SparkMaxConfig elevMotorConfig;
-    private final SparkClosedLoopController closedLoopController;
-    private final RelativeEncoder encoder;
-
-    private static final double L1 = 0;
-    private static final double L2 = 8.5;
-    private static final double L2_5 = 21;
-    private static final double L3 = 27;
-
-    private final double gravityVoltage = 0.4;
-
-    public ElevatorSubsystem() {
+    private static SparkMax elevMotor;
+        private final SparkMaxConfig elevMotorConfig;
+        private final SparkClosedLoopController closedLoopController;
+        private final RelativeEncoder encoder;
+    
+        private static final double L1 = 0;
+        private static final double L2 = 8.5;
+        private static final double L2_5 = 21;
+        private static final double L3 = 27;
+    
+        private final double gravityVoltage = 0.4;
+        
+        public ElevatorSubsystem() {
+    
         elevMotor = new SparkMax(MOTOR_CANID, MotorType.kBrushless);
         elevMotorConfig = new SparkMaxConfig();
 
@@ -148,5 +156,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void stopMotor() {
         elevMotor.stopMotor();
+    }
+
+    public static SparkMax getElevatorMotor() {
+        return elevMotor;
     }
 }

@@ -1,6 +1,6 @@
 package frc.robot.commands.RealCommands;
 
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.Elevator.ElevatorSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 

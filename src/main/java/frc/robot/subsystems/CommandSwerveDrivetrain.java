@@ -47,6 +47,8 @@ import com.pathplanner.lib.config.PIDConstants;
 import dev.doglog.DogLog;
 
 import java.io.IOException;
+
+import org.ironmaple.simulation.SimulatedArena;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -693,8 +695,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // }
 
     public void resetPoseSimulationToDrive() {
-        if (this.mapleSimSwerveDrivetrain != null)
+        if (this.mapleSimSwerveDrivetrain != null) {
             MapleSimSwerveDrivetrain.mapleSimDrive.setSimulationWorldPose(getState().Pose);
+            SimulatedArena.getInstance().resetFieldForAuto();
+        }
         Timer.delay(0.1); // Wait for simulation to update
         super.resetPose(getState().Pose);
     }

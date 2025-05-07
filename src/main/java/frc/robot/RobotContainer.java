@@ -19,7 +19,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.Elevator.*;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.commands.RealCommands.AlgaeMoveCommand;
 import frc.robot.commands.RealCommands.CoralIntakeCommand;
@@ -44,6 +43,7 @@ import frc.robot.commands.RealCommands.RepositionCoralCommand;
 import frc.robot.commands.RealCommands.ResetSimPoseToDriveCommand;
 import frc.robot.commands.RealCommands.ScoreCommand;
 import frc.robot.commands.RealCommands.ScoreNoElevatorCommand;
+import frc.robot.commands.SimCommands.SimElevatorCommand;
 import frc.robot.commands.SimCommands.SimCoralIntakeCommand;
 import frc.robot.commands.SimCommands.SimCoralOuttakeCommand;
 import frc.robot.commands.SimCommands.SimPathScoreCommand;
@@ -55,6 +55,7 @@ import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 
 public class RobotContainer {
     private ElevatorSubsystem elevator;
+    private ElevatorSubsystemSim simElevator;
     private CarriageSubsystemSim simCarriage;
     private CarriageSubsystem carriage;
     private AlgaeRemoverSubsystem algaeRemover;
@@ -101,6 +102,7 @@ public class RobotContainer {
 
         if (Utils.isSimulation()) {
             simCarriage = new CarriageSubsystemSim(MapleSimSwerveDrivetrain.mapleSimDrive);
+            simElevator = new ElevatorSubsystemSim();
         }
         RegisterNamedComands();
 
@@ -416,10 +418,11 @@ public class RobotContainer {
         opController.rightBumper().and(opController.back()).onTrue(new PathScoreAlgaeCommand(carriage, elevator, drivetrain, vision, "right", 3.0).until(opController.leftStick()).unless(opLock));
 
         // Extends and retracts the elevator
-        opController.povUp().toggleOnTrue(new ElevatorControlCommand(elevator, 3).until(opController.leftStick()));
-        opController.povRight().toggleOnTrue(new ElevatorControlCommand(elevator, 2.5).until(opController.leftStick()));
-        opController.povLeft().toggleOnTrue(new ElevatorControlCommand(elevator, 2).until(opController.leftStick()));
-        opController.povDown().toggleOnTrue(new ElevatorControlCommand(elevator, 1).until(opController.leftStick()));
+
+        opController.povUp().onTrue(new SimElevatorCommand(simElevator, 3.0));
+        opController.povRight().onTrue(new SimElevatorCommand(simElevator, 2.5));
+        opController.povLeft().onTrue(new SimElevatorCommand(simElevator, 2.0));
+        opController.povDown().onTrue(new SimElevatorCommand(simElevator, 1.0));
 
         // Resets elevator
         opController.rightStick().onTrue(new ElevatorResetCommand(elevator));
