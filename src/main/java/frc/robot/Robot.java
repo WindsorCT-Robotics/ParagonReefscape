@@ -118,11 +118,6 @@ public class Robot extends LoggedRobot {
   public void simulationInit() {
     // Obtains the default instance of the simulation world, which is a Reefscape Arena.
     SimulatedArena.getInstance();
-    for (int i = 0; i < 10; i++) {
-      SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralOnField(new Pose2d(5, 5, Rotation2d.fromDegrees(0))));
-      SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(5, 5)));
-      SimulatedArena.getInstance().addGamePiece(new ReefscapeAlgaeOnField(new Translation2d(5, 5)));
-    }
 
     camera = new PhotonCamera(cameraName);
 

@@ -19,6 +19,9 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.SendableChooserSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,6 +51,7 @@ import frc.robot.commands.SimCommands.SimElevatorToggleCommand;
 import frc.robot.commands.SimCommands.SimCoralIntakeCommand;
 import frc.robot.commands.SimCommands.SimCoralOuttakeCommand;
 import frc.robot.commands.SimCommands.SimPathScoreCommand;
+import frc.robot.commands.SimCommands.SimSpawnCommand;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Carriage.CarriageSubsystem;
@@ -60,6 +64,7 @@ public class RobotContainer {
     private CarriageSubsystemSim simCarriage;
     private CarriageSubsystem carriage;
     private AlgaeRemoverSubsystem algaeRemover;
+    private SimulationCommands simCommands;
     public LEDSubsystem led;
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -90,6 +95,7 @@ public class RobotContainer {
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
+    SendableChooser<Command> m_chooser = new SendableChooser<>();
 
     public final Limelight vision = new Limelight(drivetrain);
 
@@ -104,6 +110,10 @@ public class RobotContainer {
         if (Utils.isSimulation()) {
             simCarriage = new CarriageSubsystemSim(MapleSimSwerveDrivetrain.mapleSimDrive);
             simElevator = new ElevatorSubsystemSim();
+            simCommands = new SimulationCommands();
+            // m_chooser.setDefaultOption("None", null);
+            // m_chooser.addOption("Auto Coral Spawn", new SimSpawnCommand(simCommands, "coral", true));
+            // SmartDashboard.putData("Auto Spwan", m_chooser);
         }
         RegisterNamedComands();
 
@@ -116,7 +126,13 @@ public class RobotContainer {
         } else {
             configureBindings();
         }
-        
+
+        SmartDashboard.putData("Coral Spawn", (Sendable) new SimSpawnCommand(simCommands, "coral", false));
+        SmartDashboard.putData("Toggle Coral Spawn", (Sendable) new SimSpawnCommand(simCommands, "coral", true));
+        SmartDashboard.putData("Algae Spawn", (Sendable) new SimSpawnCommand(simCommands, "algae", false));
+        SmartDashboard.putData("Toggle Algae Spawn", (Sendable) new SimSpawnCommand(simCommands, "algae", true));
+        SmartDashboard.putData("Stack Spawn", (Sendable) new SimSpawnCommand(simCommands, "stack", false));
+        SmartDashboard.putData("Toggle Stack Spawn", (Sendable) new SimSpawnCommand(simCommands, "stack", true));
     }
 
     private void RegisterNamedComands()
