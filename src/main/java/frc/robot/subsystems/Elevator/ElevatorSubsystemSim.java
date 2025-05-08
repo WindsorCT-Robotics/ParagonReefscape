@@ -145,7 +145,6 @@ public class ElevatorSubsystemSim extends SubsystemBase {
     }
 
     public void setToL3() {
-        System.out.println("hey");
         goal = L3;
         profile = new TrapezoidProfile(elevatorConstraints);
     }

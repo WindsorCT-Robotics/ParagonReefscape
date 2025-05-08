@@ -57,7 +57,6 @@ public class CarriageSubsystemSim extends SubsystemBase {
 
     public void scoreCoral(double velocity, double height) {
         if (intakeSimulation.obtainGamePieceFromIntake()) {
-            System.out.println("h");
             SimulatedArena.getInstance()
             .addGamePieceProjectile(new ReefscapeCoralOnFly(
             // Obtain robot position from drive simulation

@@ -493,9 +493,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         List<Waypoint> waypoints;
         Rotation2d orientation;
         if (Utils.isSimulation()) {
-            aprilTagID = VisionSim.getBestAprilTagSim();
+            aprilTagID = getClosestAprilTagSim();
         } else {
-            aprilTagID = LimelightHelpers.getFiducialID(limelight.getLimelightName());
+            aprilTagID = getClosestAprilTag();
         }
         System.out.println("Current apriltag is " + aprilTagID);
         
@@ -512,6 +512,32 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (waypoints == null) {
             System.out.println("Waypoints is null");
             return Commands.none();
+        }
+
+        if (Utils.isSimulation()) {
+            if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getX() > (8.774 - 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            } else {
+                if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getX() < (8.774 + 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            }
+        } else {
+            if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                if (getState().Pose.getX() > (8.774 - 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            } else {
+                if (getState().Pose.getX() < (8.774 + 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            }
         }
 
         PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI); // The constraints for this path.
@@ -926,7 +952,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 aprilTagPoses[id][1] = new Pose2d(aprilTagPositions[id + subtract][0] + redAdjustX, aprilTagPositions[id + subtract][1] + redAdjustY, Rotation2d.fromDegrees(aprilTagPositions[id + subtract][2]));
                 subtract = subtract - 2;
             }
-            // System.out.println(Rotation2d.fromDegrees(aprilTagPositions[id][2]));
         }
     }
 
@@ -940,5 +965,61 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return getState().Pose;
     }
 
+    public double getClosestAprilTag() {
+        double aprilTag = -1;
+        double closestDistance = Double.MAX_VALUE;
 
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+            for (int i = 0; i < aprilTagPositions.length; i++) {
+                if (Set.of(17, 18, 19, 20, 21, 22).contains(i)) {
+                    double aprilTagDistance = Math.abs(Math.sqrt(Math.pow(aprilTagPoses[i][1].getX() - getState().Pose.getX(), 2) + Math.pow(aprilTagPoses[i][1].getY() - getState().Pose.getY(), 2)));
+                    if (aprilTagDistance < closestDistance) {
+                        aprilTag = i;
+                        closestDistance = aprilTagDistance;
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < aprilTagPositions.length; i++) {
+                if (Set.of(6, 7, 8, 9, 10, 11).contains(i)) {
+                    double aprilTagDistance = Math.abs(Math.sqrt(Math.pow(aprilTagPoses[i][1].getX() - getState().Pose.getX(), 2) + Math.pow(aprilTagPoses[i][1].getY() - getState().Pose.getY(), 2)));
+                    if (aprilTagDistance < closestDistance) {
+                        aprilTag = i;
+                        closestDistance = aprilTagDistance;
+                    }
+                }
+            }
+        }
+        return aprilTag;
+    }
+    
+
+    public double getClosestAprilTagSim() {
+        double aprilTag = -1;
+        double closestDistance = Double.MAX_VALUE;
+
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+            for (int i = 0; i < aprilTagPositions.length; i++) {
+                if (Set.of(17, 18, 19, 20, 21, 22).contains(i)) {
+                    double aprilTagDistance = Math.abs(Math.sqrt(Math.pow(aprilTagPoses[i][1].getX() - MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getX(), 2) + Math.pow(aprilTagPoses[i][1].getY() - MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY(), 2)));
+                    if (aprilTagDistance < closestDistance) {
+                        aprilTag = i;
+                        closestDistance = aprilTagDistance;
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < aprilTagPositions.length; i++) {
+                if (Set.of(6, 7, 8, 9, 10, 11).contains(i)) {
+                    double aprilTagDistance = Math.abs(Math.sqrt(Math.pow(aprilTagPoses[i][1].getX() - MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getX(), 2) + Math.pow(aprilTagPoses[i][1].getY() - MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getY(), 2)));
+                    if (aprilTagDistance < closestDistance) {
+                        aprilTag = i;
+                        closestDistance = aprilTagDistance;
+                    }
+                }
+            }
+        }
+        
+        return aprilTag;
+    }
 }
