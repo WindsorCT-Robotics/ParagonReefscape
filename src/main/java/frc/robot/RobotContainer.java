@@ -20,11 +20,13 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.SendableChooserSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -126,9 +128,53 @@ public class RobotContainer {
             SmartDashboard.putData("Toggle Algae Spawn", (Sendable) new SimSpawnCommand(simCommands, "algae", true));
             SmartDashboard.putData("Stack Spawn", (Sendable) new SimSpawnCommand(simCommands, "stack", false));
             SmartDashboard.putData("Toggle Stack Spawn", (Sendable) new SimSpawnCommand(simCommands, "stack", true));
+
+
+            SmartDashboard.putData("Swerve Drive", new Sendable() {
+                @Override
+                public void initSendable(SendableBuilder builder) {
+                    builder.setSmartDashboardType("SwerveDrive");
+    
+                    builder.addDoubleProperty("Front Left Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Front Left Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Front Right Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Front Right Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Back Left Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Back Left Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Back Right Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Back Right Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Robot Angle", () -> drivetrain.getPigeon2Yaw() - 90, null);
+                }
+            });
+
         } else {
             configureBindings();
+            SmartDashboard.putData("Swerve Drive", new Sendable() {
+                @Override
+                public void initSendable(SendableBuilder builder) {
+                    builder.setSmartDashboardType("SwerveDrive");
+    
+                    builder.addDoubleProperty("Front Left Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Front Left Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Front Right Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Front Right Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Back Left Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Back Left Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Back Right Angle", () -> drivetrain.getState().ModuleStates[0].angle.getDegrees(), null);
+                    builder.addDoubleProperty("Back Right Velocity", () -> drivetrain.getState().ModuleStates[0].speedMetersPerSecond, null);
+    
+                    builder.addDoubleProperty("Robot Angle", () -> drivetrain.getPigeon2Yaw() - 90, null);
+                }
+            });       
         }
+        SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     }
 
     private void RegisterNamedComands()
@@ -349,6 +395,7 @@ public class RobotContainer {
 
         
         // Driver Bindings
+        driverController.start().onTrue(drivetrain.pathFindToAlign(18.0, "left").until(driverController.x()));
         // Intake
         driverController.leftBumper().onTrue(new SimCoralIntakeCommand(simCarriage).until(driverController.x()));
 

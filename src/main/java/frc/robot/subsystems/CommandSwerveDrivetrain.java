@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import frc.lib.Limelight.LimelightHelpers;
+import frc.robot.Telemetry;
 import frc.robot.VisionSim;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -13,6 +14,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -22,6 +25,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -52,6 +56,7 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.opencv.core.Point;
 import org.photonvision.simulation.VisionSystemSim;
 
 import java.util.ArrayList;
@@ -388,8 +393,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
-    private List<Waypoint> trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
-        List<Waypoint> waypoints = new ArrayList<Waypoint>();
+    private Pose2d[] trajectory(boolean isCoralStation, double aprilTagID, String direction, Rotation2d orientation) {
+        Pose2d[] waypoints = new Pose2d[2];
         Pose2d currentPose;
         // Checks if the id that is being used is an id that is allowed to be used for positioning
         if (!usedAprilTags.contains((int) aprilTagID)) {
@@ -405,9 +410,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // Reef Alignment
         if (direction.equalsIgnoreCase("left")) {
-            waypoints = PathPlannerPath.waypointsFromPoses(
-                currentPose,
-                new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation));
+            waypoints[0] = currentPose;
+            waypoints[1] = new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + leftAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + leftAngle, "y"), orientation);
         }
 
         if (direction.equalsIgnoreCase("center")) {
@@ -431,13 +435,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
                 orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
             }
-            waypoints = PathPlannerPath.waypointsFromPoses(currentPose, aprilTagPoses[(int) aprilTagID][1]);
+            waypoints[0] = currentPose;
+            waypoints[1] = aprilTagPoses[(int) aprilTagID][1];
         }
 
         if (direction.equalsIgnoreCase("right")) {
-            waypoints = PathPlannerPath.waypointsFromPoses(
-                currentPose,
-                new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation));
+            waypoints[0] = currentPose;
+            waypoints[1] = new Pose2d(calculateDirectionalTranslation(pose[0], branchOffset, orientation.getDegrees() + rightAngle, "x"), calculateDirectionalTranslation(pose[1], branchOffset, orientation.getDegrees() + rightAngle, "y"), orientation);
         }
         return waypoints;
     }
@@ -491,6 +495,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         System.out.println("Begin generating path");
 
         List<Waypoint> waypoints;
+        Pose2d[] poses = new Pose2d[2];
         Rotation2d orientation;
         if (Utils.isSimulation()) {
             aprilTagID = getClosestAprilTagSim();
@@ -503,7 +508,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         if (usedAprilTags.contains((int) aprilTagID)) {
             orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
-            waypoints = trajectory(isCoralStation, aprilTagID, direction, orientation);
+            poses = trajectory(isCoralStation, aprilTagID, direction, orientation);
+            waypoints = PathPlannerPath.waypointsFromPoses(poses);
         } else {
             System.out.println("No valid apriltag");
             return Commands.none();
@@ -585,6 +591,69 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 return Commands.none();
             }
         }
+    }
+
+    public Command pathfindingCommand(double id, String direction) {
+        System.out.println("Begin generating path");
+
+        List<Waypoint> waypoints;
+        Pose2d[] poses = new Pose2d[2];
+        Rotation2d orientation;
+        
+        aprilTagID = id;
+
+        System.out.println("Current apriltag is " + aprilTagID);
+        
+        // Create a list of waypoints from poses. Each pose represents one waypoint.
+        // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
+        if (usedAprilTags.contains((int) aprilTagID)) {
+            orientation = Rotation2d.fromDegrees(aprilTagPoses[(int) aprilTagID][0].getRotation().getDegrees());
+            poses = trajectory(false , aprilTagID, direction, orientation);
+            waypoints = PathPlannerPath.waypointsFromPoses(poses);
+            System.out.println(waypoints);
+        } else {
+            System.out.println("No valid apriltag");
+            return Commands.none();
+        }
+
+        if (waypoints == null) {
+            System.out.println("Waypoints is null");
+            return Commands.none();
+        }
+
+        if (Utils.isSimulation()) {
+            if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getX() > (8.774 - 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            } else {
+                if (MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose().getX() < (8.774 + 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            }
+        } else {
+            if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                if (getState().Pose.getX() > (8.774 - 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            } else {
+                if (getState().Pose.getX() < (8.774 + 0.53)) {
+                    System.out.println("Not on alliance side");
+                    return Commands.none();
+                }
+            }
+        }
+        System.out.println(MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
+        PathConstraints constraints = new PathConstraints(3, 3, 2 * Math.PI, 4 * Math.PI);
+
+        return AutoBuilder.pathfindToPose(poses[1], constraints);
+    }
+
+    public Command pathFindToAlign(double id, String direction) {
+        return new DeferredCommand(() -> pathfindingCommand(id, direction), Set.of(this));
     }
 
     public Command pathToAlign(Limelight limelight, boolean isCoralStation, String direction) {
@@ -789,6 +858,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
          * Otherwise, only check and apply the operator perspective if the DS is disabled.
          * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
          */
+
         SmartDashboard.putNumber("Yaw", getPigeon2().getYaw().getValueAsDouble());
         
         SmartDashboard.putNumber("Drivetrain X", getState().Pose.getTranslation().getX());

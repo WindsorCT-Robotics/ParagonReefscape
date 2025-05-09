@@ -16,6 +16,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.photonvision.PhotonCamera;
 
+import com.pathplanner.lib.pathfinding.LocalADStar;
+import com.pathplanner.lib.pathfinding.Pathfinding;
+
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -56,6 +59,11 @@ public class Robot extends LoggedRobot {
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
     m_robotContainer = new RobotContainer();
+  }
+
+  @Override
+  public void robotInit() {
+    Pathfinding.setPathfinder(new LocalADStar());
   }
 
   @Override
