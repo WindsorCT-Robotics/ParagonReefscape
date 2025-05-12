@@ -104,6 +104,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // end on the fly
 
     private Field2d field = new Field2d();
+    private Field2d pathplannerField = new Field2d();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -213,6 +214,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         configureAutoBuilder();
         SmartDashboard.putData(field);
+        SmartDashboard.putData("Closest April Tag", pathplannerField);
 
         
         rTOFSensor = new TimeOfFlight(R_TOF_CANID);
@@ -249,7 +251,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         configureAutoBuilder();
         SmartDashboard.putData(field);
-
+        SmartDashboard.putData("Closest April Tag", pathplannerField);
         
         rTOFSensor = new TimeOfFlight(R_TOF_CANID);
         lTOFSensor = new TimeOfFlight(L_TOF_CANID);
@@ -293,7 +295,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         configureAutoBuilder();
         SmartDashboard.putData(field);
-
+        SmartDashboard.putData("Closest April Tag", pathplannerField);
         
         rTOFSensor = new TimeOfFlight(R_TOF_CANID);
         lTOFSensor = new TimeOfFlight(L_TOF_CANID);
@@ -873,8 +875,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         
         if (Utils.isSimulation()) {
             field.setRobotPose(MapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
+            pathplannerField.setRobotPose(aprilTagPoses[(int) getClosestAprilTagSim()][1]);
         } else {
             field.setRobotPose(getState().Pose);
+            pathplannerField.setRobotPose(aprilTagPoses[(int) getClosestAprilTag()][1]);
         }
         if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance().ifPresent(allianceColor -> {

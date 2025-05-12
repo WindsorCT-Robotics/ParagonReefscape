@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.Limelight.LimelightHelpers;
@@ -32,6 +33,9 @@ public class Limelight extends SubsystemBase {
   private Boolean fieldError = false;
   private Boolean distanceError = false;
   private PoseEstimate botpose;
+
+  private Field2d visionField = new Field2d();
+
   private static final RectanglePoseArea field =
         new RectanglePoseArea(new Translation2d(0.0, 0.0), new Translation2d(16.54, 8.02));
 
@@ -40,6 +44,7 @@ public class Limelight extends SubsystemBase {
     HttpCamera httpCamera = new HttpCamera("limelight", "http://10.5.71.11:5800/");
     CameraServer.addCamera(httpCamera);
     httpCamera.setExposureAuto();
+    SmartDashboard.putData("Vision Field", visionField);
   }
 
   @Override
@@ -76,6 +81,7 @@ public class Limelight extends SubsystemBase {
       if (!(tx_output == 0 && ty_output == 0 && ta_output == 0)) { //If result finds a vaild target then continues if statement result.valid
         invalidError = false;
         botpose = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(ll);
+        visionField.setRobotPose(botpose.pose);
         SmartDashboard.putNumber("Number Of Apriltags", botpose.tagCount);
         if (field.isPoseWithinArea(botpose.pose)) { 
           fieldError = false;

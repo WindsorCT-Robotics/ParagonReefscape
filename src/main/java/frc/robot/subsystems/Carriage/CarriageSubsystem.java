@@ -60,7 +60,7 @@ public class CarriageSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Outtake Beam Breaker", beamBreaker.get());
+        SmartDashboard.putBoolean("Outtake Beam Breaker", !beamBreaker.get());
     }
 
     public void moveRollers(boolean reverse) {

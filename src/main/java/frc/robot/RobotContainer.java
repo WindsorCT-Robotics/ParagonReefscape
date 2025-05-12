@@ -129,6 +129,7 @@ public class RobotContainer {
             SmartDashboard.putData("Stack Spawn", (Sendable) new SimSpawnCommand(simCommands, "stack", false));
             SmartDashboard.putData("Toggle Stack Spawn", (Sendable) new SimSpawnCommand(simCommands, "stack", true));
 
+            SmartDashboard.putData("April Tag 18", (Sendable) drivetrain.pathfindingCommand(18.0, "center"));
 
             SmartDashboard.putData("Swerve Drive", new Sendable() {
                 @Override
@@ -150,7 +151,6 @@ public class RobotContainer {
                     builder.addDoubleProperty("Robot Angle", () -> drivetrain.getPigeon2Yaw() - 90, null);
                 }
             });
-
         } else {
             configureBindings();
             SmartDashboard.putData("Swerve Drive", new Sendable() {
@@ -174,6 +174,7 @@ public class RobotContainer {
                 }
             });       
         }
+
         SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     }
 
