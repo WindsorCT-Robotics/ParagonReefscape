@@ -126,22 +126,23 @@ public class ElevatorSubsystemSim extends SubsystemBase {
     }
 
     public boolean isAtL3() {
-        return (Math.abs(elevMotorSim.getPosition() - L3.position) <= 0.1);
+        System.out.println(elevMotorSim.getPosition() * 60 - L3.position);
+        return (Math.abs(elevMotorSim.getPosition() * 60 - L3.position) <= 0.1);
     }
 
     @AutoLogOutput(key = "Elevator/L2.5")
     public boolean isAtL2_5() {
-        return (Math.abs(elevMotorSim.getPosition() - L2_5.position) <= 0.1);
+        return (Math.abs(elevMotorSim.getPosition() * 60 - L2_5.position) <= 0.1);
     }
 
     @AutoLogOutput(key = "Elevator/L2")
     public boolean isAtL2() {
-        return (Math.abs(elevMotorSim.getPosition() - L2.position) <= 0.1);
+        return (Math.abs(elevMotorSim.getPosition() * 60 - L2.position) <= 0.1);
     }
 
     @AutoLogOutput(key = "Elevator/L1")
     public boolean isAtL1() {
-        return (Math.abs(elevMotorSim.getPosition() - L1.position) <= 0.1);
+        return (Math.abs(elevMotorSim.getPosition() * 60 - L1.position) <= 0.1);
     }
 
     public void setToL3() {
