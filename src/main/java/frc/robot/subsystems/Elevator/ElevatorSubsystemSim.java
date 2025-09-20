@@ -26,15 +26,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystemSim extends SubsystemBase {
 
-    private final static SparkMax elevMotor = ElevatorSubsystem.getElevatorMotor();
-    private final static SparkMaxSim elevMotorSim = new SparkMaxSim(elevMotor, DCMotor.getKrakenX60(1));
+    private static final SparkMax elevMotor = ElevatorSubsystem.getElevatorMotor();
+    private static final SparkMaxSim elevMotorSim = new SparkMaxSim(elevMotor, DCMotor.getKrakenX60(1));
     
     private final SparkMaxConfig elevMotorConfig;
-
-    // private static final double L1 = 0;
-    // private static final double L2 = 8.5;
-    // private static final double L2_5 = 21;
-    // private static final double L3 = 27;
 
     private final double gravityVoltage = 0.4;
 
