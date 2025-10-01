@@ -1,4 +1,4 @@
-package frc.robot.Units;
+package frc.robot.units;
 
 public class Rotations {
     private final double rotations;

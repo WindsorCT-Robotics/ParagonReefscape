@@ -1,6 +1,6 @@
 package frc.robot.subsystems.Carriage;
 
-import frc.robot.Units.Percent;
+import frc.robot.units.Percent;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;

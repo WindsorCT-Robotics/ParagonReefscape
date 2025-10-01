@@ -1,4 +1,4 @@
-package frc.robot.Units;
+package frc.robot.units;
 
 public class GearRatio {
     private final double ratio;

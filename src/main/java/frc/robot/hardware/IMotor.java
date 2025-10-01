@@ -1,7 +1,7 @@
 package frc.robot.hardware;
 
-import frc.robot.Units.Voltage;
-import frc.robot.Units.Rotations;
+import frc.robot.units.Voltage;
+import frc.robot.units.Rotations;
 
 public interface IMotor {
     public void setVoltage(Voltage voltage);

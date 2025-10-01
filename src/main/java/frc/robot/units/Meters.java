@@ -1,4 +1,4 @@
-package frc.robot.Units;
+package frc.robot.units;
 
 public class Meters {
     private static double centimeterConversionFactor = 100;

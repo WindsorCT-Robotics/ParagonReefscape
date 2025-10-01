@@ -1,7 +1,7 @@
 package frc.robot.hardware;
 
-import frc.robot.Units.Meters;
-import frc.robot.Units.Rotations;
+import frc.robot.units.Meters;
+import frc.robot.units.Rotations;
 
 public interface IPositionalMotor extends IMotor {
     public void travelTo(Meters position);

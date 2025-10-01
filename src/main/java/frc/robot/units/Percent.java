@@ -1,4 +1,4 @@
-package frc.robot.Units;
+package frc.robot.units;
 
 public class Percent {
     private final double percent;
