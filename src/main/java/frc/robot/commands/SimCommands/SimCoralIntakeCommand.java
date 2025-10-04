@@ -1,7 +1,7 @@
 package frc.robot.commands.SimCommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Carriage.CarriageSubsystemSim;
+import frc.robot.subsystems.carriage.CarriageSubsystemSim;
 
 public class SimCoralIntakeCommand extends Command {
     private final CarriageSubsystemSim rollers;

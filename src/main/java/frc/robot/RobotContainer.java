@@ -56,8 +56,8 @@ import frc.robot.commands.SimCommands.SimPathScoreCommand;
 import frc.robot.commands.SimCommands.SimSpawnCommand;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.Limelight;
-import frc.robot.subsystems.Carriage.CarriageSubsystem;
-import frc.robot.subsystems.Carriage.CarriageSubsystemSim;
+import frc.robot.subsystems.carriage.CarriageSubsystem;
+import frc.robot.subsystems.carriage.CarriageSubsystemSim;
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 
 public class RobotContainer {

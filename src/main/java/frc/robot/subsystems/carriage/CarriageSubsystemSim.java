@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Carriage;
+package frc.robot.subsystems.carriage;
 
 import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;

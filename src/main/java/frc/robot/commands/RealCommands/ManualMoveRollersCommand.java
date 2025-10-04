@@ -1,7 +1,7 @@
 package frc.robot.commands.RealCommands;
 
-import frc.robot.Units.Percent;
-import frc.robot.subsystems.Carriage.CarriageSubsystem;
+import frc.robot.units.Percent;
+import frc.robot.subsystems.carriage.CarriageSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import java.util.function.DoubleSupplier;
