@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Elevator.*;
+import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.commands.RealCommands.AlgaeMoveCommand;
 import frc.robot.commands.RealCommands.CoralIntakeCommand;

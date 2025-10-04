@@ -1,7 +1,7 @@
 package frc.robot.commands.SimCommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Elevator.ElevatorSubsystemSim;
+import frc.robot.subsystems.elevator.ElevatorSubsystemSim;
 
 public class SimElevatorCommand extends Command {
     private final ElevatorSubsystemSim elevator;

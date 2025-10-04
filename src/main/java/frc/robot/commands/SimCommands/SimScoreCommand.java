@@ -1,6 +1,6 @@
 package frc.robot.commands.SimCommands;
 
-import frc.robot.subsystems.Carriage.CarriageSubsystemSim;
+import frc.robot.subsystems.carriage.CarriageSubsystemSim;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class SimScoreCommand extends SequentialCommandGroup {
