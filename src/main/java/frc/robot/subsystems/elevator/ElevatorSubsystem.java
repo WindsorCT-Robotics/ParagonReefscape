@@ -1,163 +1,94 @@
 package frc.robot.subsystems.elevator;
 
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.LimitSwitchConfig.Type;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
-import dev.doglog.DogLog;
-
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.SparkBase.ResetMode;
-
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
-
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkClosedLoopController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.units.Centimeters;
+import frc.robot.units.Meters;
+import frc.robot.hardware.IPositionalMotor;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    private static final int MOTOR_CANID = 14;
+    private final IPositionalMotor motor;
+    private static final Centimeters LEVEL2_HEIGHT = new Centimeters(81);
+    // TODO: Double-check to make sure this value is correct
+    private static final Centimeters LEVEL2_ALGAE_HEIGHT = new Centimeters(108);
+    private static final Centimeters LEVEL3_HEIGHT = new Centimeters(121);
+    private static final Centimeters LEVEL1_HEIGHT = new Centimeters(46);
 
-    private static SparkMax elevMotor;
-    private final SparkMaxConfig elevMotorConfig;
-    private final SparkClosedLoopController closedLoopController;
-    private final RelativeEncoder encoder;
+    public class InvalidElevatorPositionException extends RuntimeException {
+        private final Position position;
 
-    private static final double L1 = 0;
-    private static final double L2 = 8.5;
-    private static final double L2_5 = 21;
-    private static final double L3 = 27;
+        public InvalidElevatorPositionException(Position position) {
+            super(String.format("The given position %d is not a valid elevator position.", position.ordinal()));
 
-    private final double gravityVoltage = 0.4;
+            this.position = position;
+        }
 
-    public ElevatorSubsystem() {
+        public Position getInvalidPosition() {
+            return position;
+        }
+    }
 
-        elevMotor = new SparkMax(MOTOR_CANID, MotorType.kBrushless);
-        elevMotorConfig = new SparkMaxConfig();
+    public enum Position {
+        LEVEL_1,
+        LEVEL_2,
+        LEVEL_ALGAE,
+        LEVEL_3
+    }
 
-        elevMotorConfig.limitSwitch.forwardLimitSwitchType(Type.kNormallyOpen);
-        elevMotorConfig.limitSwitch.reverseLimitSwitchType(Type.kNormallyOpen);
-
-        closedLoopController = elevMotor.getClosedLoopController();
-        encoder = elevMotor.getEncoder();
-
-        elevMotorConfig.closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                // Set PID values for position control. We don't need to pass a closed
-                // loop slot, as it will default to slot 0.
-                .p(0.3) // 0.003
-                .i(0)
-                .d(0)
-                .outputRange(-1, 1)
-                // Set PID values for velocity control in slot 1
-                .p(0.0001, ClosedLoopSlot.kSlot1)
-                .i(0, ClosedLoopSlot.kSlot1)
-                .d(0, ClosedLoopSlot.kSlot1)
-                .velocityFF(1.0 / 5767, ClosedLoopSlot.kSlot1)
-                .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
-
-        elevMotorConfig.closedLoop.maxMotion
-                // Set MAXMotion parameters for position control. We don't need to pass
-                // a closed loop slot, as it will default to slot 0.
-                .maxVelocity(5600)
-                .maxAcceleration(5600)
-                .allowedClosedLoopError(0.1)
-                // Set MAXMotion parameters for velocity control in slot 1
-                .maxAcceleration(500, ClosedLoopSlot.kSlot1)
-                .maxVelocity(6000, ClosedLoopSlot.kSlot1)
-                .allowedClosedLoopError(1, ClosedLoopSlot.kSlot1);
-
-        elevMotorConfig.idleMode(IdleMode.kBrake);
-        elevMotorConfig.inverted(true);
-        // elevMotorConfig.smartCurrentLimit(60);
-        elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public ElevatorSubsystem(IPositionalMotor motor) {
+        this.motor = motor;
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Encoder Position", encoder.getPosition());
-        SmartDashboard.putBoolean("Forward Limit Switch", elevMotor.getForwardLimitSwitch().isPressed());
-        SmartDashboard.putBoolean("Reverse Limit Switch", elevMotor.getReverseLimitSwitch().isPressed());
+        SmartDashboard.putBoolean("Is Fully Extended?", isExtended());
+        SmartDashboard.putBoolean("Is Fully Retracted?", isRetracted());
     }
 
-    public void holdPosition() {
-        elevMotor.setVoltage(gravityVoltage);
+    public void stop() {
+        motor.hold();
     }
 
-    @AutoLogOutput(key = "Elevator/L3")
-    public boolean isAtL3() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L3) <= 0.1);
+    public void powerOff() {
+        motor.stop();
     }
 
-    @AutoLogOutput(key = "Elevator/L2.5")
-    public boolean isAtL2_5() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L2_5) <= 0.1);
+    public void moveToTargetPosition(Position position) {
+        switch (position) {
+            case LEVEL_1:
+                motor.travelTo(LEVEL1_HEIGHT.asMeters());
+                break;
+            case LEVEL_2:
+                motor.travelTo(LEVEL2_HEIGHT.asMeters());
+                break;
+            case LEVEL_ALGAE:
+                motor.travelTo(LEVEL2_ALGAE_HEIGHT.asMeters());
+                break;
+            case LEVEL_3:
+                motor.travelTo(LEVEL3_HEIGHT.asMeters());
+                break;
+            default:
+                throw new InvalidElevatorPositionException(position);
+        }
     }
 
-    @AutoLogOutput(key = "Elevator/L2")
-    public boolean isAtL2() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L2) <= 0.1);
+    @AutoLogOutput(key = "Elevator/IsRetracted")
+    public boolean isRetracted() {
+        return (motor.isAtReverseLimit() || motor.getPosition().asCentimeters().equals(LEVEL1_HEIGHT));
     }
 
-    @AutoLogOutput(key = "Elevator/L1")
-    public boolean isAtL1() {
-        return (Math.abs(elevMotor.getEncoder().getPosition() - L1) <= 0.1);
+    @AutoLogOutput(key = "Elevator/IsExtended")
+    public boolean isExtended() {
+        return (motor.isAtForwardLimit() || motor.getPosition().asCentimeters().equals(LEVEL3_HEIGHT));
     }
-
-    public void setToL3() {
-        closedLoopController.setReference(L3, ControlType.kMAXMotionPositionControl,
-                ClosedLoopSlot.kSlot0, gravityVoltage + 0.25);
-    }
-
-    public void setToL2_5() {
-        closedLoopController.setReference(L2_5, ControlType.kMAXMotionPositionControl,
-                ClosedLoopSlot.kSlot0, gravityVoltage);
-    }
-
-    public void setToL2() {
-        closedLoopController.setReference(L2, ControlType.kMAXMotionPositionControl,
-                ClosedLoopSlot.kSlot0, gravityVoltage);
-    }
-
-    public void setToL1() {
-        closedLoopController.setReference(L1, ControlType.kMAXMotionPositionControl,
-                ClosedLoopSlot.kSlot0);
-    }
-
-    public void moveMotor() {
-        elevMotor.set(-0.04);
-    }
-
-    @AutoLogOutput(key = "Elevator/ReverseLimit")
-    public boolean getLowerLimit() {
-        return elevMotor.getReverseLimitSwitch().isPressed();
-    }
-
-    @AutoLogOutput(key = "Elevator/ForwardLimit")
-    public double getElevEncoderPosition() {
-        return elevMotor.getEncoder().getPosition();
+    
+    public Meters getHeight() {
+        return motor.getPosition();
     }
 
     public void resetRelativeEncoder() {
-        elevMotor.getEncoder().setPosition(0);
-    }
-
-    public void stopMotor() {
-        elevMotor.stopMotor();
-    }
-
-    public static SparkMax getElevatorMotor() {
-        return elevMotor;
+        motor.resetRelativeEncoder();
     }
 }
