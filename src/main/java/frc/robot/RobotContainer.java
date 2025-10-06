@@ -16,6 +16,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
+import frc.robot.hardware.AlgaeMotor;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.LEDSubsystem;
@@ -102,11 +105,14 @@ public class RobotContainer {
     public final Limelight vision = new Limelight(drivetrain);
 
     Pose2d odomStart = new Pose2d(0, 0, new Rotation2d(1, 0));
+
+    private static final int ALGAE_MOTOR_CANID = 17;
     
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
-        algaeRemover = new AlgaeRemoverSubsystem();
+        // TODO: Allow for dynamically instantiating based on wether we're in sim mode or not
+        algaeRemover = new AlgaeRemoverSubsystem(new AlgaeMotor(new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless)));
         led = new LEDSubsystem();
 
         if (!Utils.isSimulation()) {

@@ -110,7 +110,7 @@ public class ElevatorMotor implements IPositionalMotor {
     }
 
     @Override
-    public void powerOff() {
+    public void stop() {
         elevMotor.stopMotor();
     }
 
@@ -120,7 +120,12 @@ public class ElevatorMotor implements IPositionalMotor {
     }
 
     @Override
-    public void stop() {
+    public void hold() {
         elevMotor.setVoltage(gravityCompensation.asDouble());
+    }
+
+    @Override
+    public void resetRelativeEncoder() {
+        elevMotor.getEncoder().setPosition(0);
     }
 }

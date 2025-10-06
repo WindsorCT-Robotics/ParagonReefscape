@@ -1,18 +1,19 @@
 package frc.robot.commands.RealCommands;
 
+import frc.robot.hardware.MotorDirection;
 import frc.robot.subsystems.AlgaeRemoverSubsystem;
-
+import frc.robot.units.Percent;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class AlgaeMoveCommand extends Command {
     private final AlgaeRemoverSubsystem motor;
-    private boolean reverse;
-    private double speed;
+    private MotorDirection direction;
+    private Percent speed;
 
-    public AlgaeMoveCommand(AlgaeRemoverSubsystem motor, boolean reverse, double speed) {
+    public AlgaeMoveCommand(AlgaeRemoverSubsystem motor, MotorDirection direction, Percent speed) {
         this.motor = motor;
         this.speed = speed;
-        this.reverse = reverse;
+        this.direction = direction;
         addRequirements(motor);
     }
 
@@ -23,7 +24,7 @@ public class AlgaeMoveCommand extends Command {
 
     @Override
     public void execute() {
-        motor.moveMotor(reverse, speed);
+        motor.setSpeed(speed, direction);
     }
 
     @Override

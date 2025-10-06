@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import frc.robot.hardware.ISpeedMotor;
+import frc.robot.hardware.MotorDirection;
 import frc.robot.units.Percent;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,20 +18,10 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
-    private static final int ALGAE_MOTOR_CANID = 17;
+    private ISpeedMotor motor;
 
-    private SparkMax motor;
-    private SparkMaxConfig motorConfig;
-
-    public AlgaeRemoverSubsystem() {
-        motor = new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless);
-        motorConfig = new SparkMaxConfig();
-
-        motorConfig.inverted(false);
-        motorConfig.idleMode(IdleMode.kBrake);
-        motorConfig.smartCurrentLimit(50);
-        
-        motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public AlgaeRemoverSubsystem(ISpeedMotor motor) {
+        this.motor = motor;
     }
 
     @Override
@@ -37,20 +29,11 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         
     }
 
-    public void moveMotor(boolean reverse, double speed) {
-        if (!reverse) {
-            motor.set(speed);
-        } else {
-            motor.set(-speed);
-        }
-        
-    }
-
-    public void manualMoveMotor(Percent speed) {
-        motor.set(speed.asDouble());
+    public void setSpeed(Percent motorPower, MotorDirection direction) {
+        motor.setSpeed(motorPower, direction);
     }
 
     public void stopMotor() {
-        motor.stopMotor();
+        motor.stop();
     }
 }
