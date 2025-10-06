@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.units.Centimeters;
+import frc.robot.units.Meters;
 import frc.robot.hardware.IPositionalMotor;
 
 public class NewElevatorSubsystem extends SubsystemBase {
@@ -47,11 +48,11 @@ public class NewElevatorSubsystem extends SubsystemBase {
     }
 
     public void stop() {
-        motor.stop();
+        motor.hold();
     }
 
     public void powerOff() {
-        motor.powerOff();
+        motor.stop();
     }
 
     public void moveToTargetPosition(Position position) {
@@ -81,5 +82,13 @@ public class NewElevatorSubsystem extends SubsystemBase {
     @AutoLogOutput(key = "Elevator/IsExtended")
     public boolean isExtended() {
         return (motor.isAtForwardLimit() || motor.getPosition().asCentimeters().equals(LEVEL3_HEIGHT));
+    }
+    
+    public Meters getHeight() {
+        return motor.getPosition();
+    }
+
+    public void resetRelativeEncoder() {
+        motor.resetRelativeEncoder();
     }
 }
