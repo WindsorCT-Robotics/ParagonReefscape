@@ -11,6 +11,7 @@ public class ElevatorSubsystemSim extends ElevatorSubsystem {
     private final ISimPositionalMotor motor;
     private final LoggedMechanism2d visualizedElevator;
     private final LoggedMechanismRoot2d elevatorRoot;
+    @SuppressWarnings("unused")
     private final LoggedMechanismLigament2d elevatorLigament;
 
     public ElevatorSubsystemSim(ISimPositionalMotor motor) {
