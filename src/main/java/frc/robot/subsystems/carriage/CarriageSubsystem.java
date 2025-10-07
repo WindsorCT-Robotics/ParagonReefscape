@@ -1,112 +1,57 @@
 package frc.robot.subsystems.carriage;
 
+import frc.robot.hardware.IBeamBreak;
+import frc.robot.hardware.IDifferentialMotors;
+import frc.robot.hardware.MotorDirection;
 import frc.robot.units.Percent;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import com.revrobotics.spark.SparkMax;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-
 public class CarriageSubsystem extends SubsystemBase {
-    private static final int ROLLER_LEFT_MOTOR_CANID = 15;
-    private static final int ROLLER_RIGHT_MOTOR_CANID = 16;
-    private static final int BEAM_BREAKER_PIN = 0;
-
-    private SparkMax rollerLeft;
-    private SparkMax rollerRight;
-    private RelativeEncoder rollerEncoder;
-
-    private SparkMaxConfig rollerLeftConfig;
-    private SparkMaxConfig rollerRightConfig;
-
+    private final IDifferentialMotors rollerMotors;
     private final Percent speed;
-    private final Percent speedFast;
-    private final Percent speedSlow;
+    private final IBeamBreak beamBreak;
 
-    private final DigitalInput beamBreaker;
-
-    public CarriageSubsystem() {
+    public CarriageSubsystem(IDifferentialMotors rollerMotors, IBeamBreak beamBreak) {
         speed = new Percent(0.25);
-        speedFast = new Percent(0.27);
-        speedSlow = new Percent(0.07);
-        rollerLeft = new SparkMax(ROLLER_LEFT_MOTOR_CANID, MotorType.kBrushless);
-        rollerRight = new SparkMax(ROLLER_RIGHT_MOTOR_CANID, MotorType.kBrushless);
-        rollerLeftConfig = new SparkMaxConfig();
-        rollerRightConfig = new SparkMaxConfig();
-
-        rollerLeftConfig.inverted(true);
-        rollerRightConfig.inverted(false);
-
-        rollerLeftConfig.idleMode(IdleMode.kBrake);
-        rollerRightConfig.idleMode(IdleMode.kBrake);
-
-        rollerLeftConfig.smartCurrentLimit(50);
-        rollerRightConfig.smartCurrentLimit(50);
-
-        rollerLeft.configure(rollerLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        rollerRight.configure(rollerRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        beamBreaker = new DigitalInput(BEAM_BREAKER_PIN);
+        this.rollerMotors = rollerMotors;
+        this.beamBreak = beamBreak;
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Outtake Beam Breaker", !beamBreaker.get());
+        SmartDashboard.putBoolean("Outtake Beam Breaker", isBeamBroken());
     }
 
-    public void moveRollers(boolean reverse) {
-        if (!reverse) {
-            rollerLeft.set(speed.asDouble());
-            rollerRight.set(speed.asDouble());
-        } else {
-            rollerLeft.set(-speed.asDouble());
-            rollerRight.set(-speed.asDouble());
-        }
+    public void moveRollers(MotorDirection direction) {
+        rollerMotors.setSpeed(speed, direction);
     }
 
-    public void manualMoveRollers(Percent speed) {
-        rollerLeft.set(speed.asDouble());
-        rollerRight.set(speed.asDouble());
+    public void manualMoveRollers(Percent speed, MotorDirection direction) {
+        rollerMotors.setSpeed(speed, direction);
     }
 
     public void moveRollersRight() {
-        rollerLeft.set(speedFast.asDouble());
-        rollerRight.set(speedSlow.asDouble());
+        rollerMotors.moveRight(speed);
     }
 
     public void moveRollersLeft() {
-        rollerLeft.set(speedSlow.asDouble());
-        rollerRight.set(speedFast.asDouble());
+        rollerMotors.moveLeft(speed);
     }
 
     @AutoLogOutput(key = "Sensor/OuttakeBeam")
     public boolean isBeamBroken() {
-        return !beamBreaker.get();
+        return beamBreak.isBeamBroken();
     }
 
     public void resetRollerEncoder() {
-        rollerEncoder.setPosition(0.0);  
+        rollerMotors.resetRelativeEncoder();
     }
     
     public void stopRollers() {
-        rollerLeft.stopMotor();
-        rollerRight.stopMotor();
-    }
-
-    public Percent getSpeedSlow() {
-        return speedSlow;
-    }
-
-    public Percent getSpeedFast() {
-        return speedFast;
+        rollerMotors.stop();
     }
 }
