@@ -1,4 +1,6 @@
-package frc.robot.hardware;
+package frc.robot.hardware.sim;
+
+import frc.robot.hardware.IMotor;
 
 /**
  * A motor under physics simulation.

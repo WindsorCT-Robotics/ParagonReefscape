@@ -1,4 +1,6 @@
-package frc.robot.hardware;
+package frc.robot.hardware.sim;
+
+import frc.robot.hardware.IPositionalMotor;
 
 /**
  * A positional motor under physics simulation.
