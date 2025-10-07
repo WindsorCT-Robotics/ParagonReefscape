@@ -1,21 +1,10 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.algae;
 
 import frc.robot.hardware.ISpeedMotor;
 import frc.robot.hardware.MotorDirection;
 import frc.robot.units.Percent;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import com.revrobotics.spark.SparkMax;
-
-import org.littletonrobotics.junction.AutoLogOutput;
-
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkBase.PersistMode;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
     private ISpeedMotor motor;
