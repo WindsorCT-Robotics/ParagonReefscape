@@ -1,7 +1,7 @@
 package frc.robot.commands.RealCommands;
 
 import frc.robot.hardware.MotorDirection;
-import frc.robot.subsystems.AlgaeRemoverSubsystem;
+import frc.robot.subsystems.algae.AlgaeRemoverSubsystem;
 import frc.robot.units.Percent;
 import edu.wpi.first.wpilibj2.command.Command;
 

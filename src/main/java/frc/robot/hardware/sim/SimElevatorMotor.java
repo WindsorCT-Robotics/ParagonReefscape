@@ -5,7 +5,6 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import frc.robot.hardware.ElevatorMotor;
-import frc.robot.hardware.ISimMotor;
 import frc.robot.units.GearRatio;
 import frc.robot.units.Kilograms;
 import frc.robot.units.Radians;
