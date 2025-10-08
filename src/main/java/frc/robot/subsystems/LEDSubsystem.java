@@ -1,45 +1,57 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.hardware.IAddressableLED;
+import frc.robot.units.ColorRGB;
 
 public class LEDSubsystem extends SubsystemBase {
-    private static int ledPort = 0;
-    private static int ledLength = 2;
-    private AddressableLED led;
-    private AddressableLEDBuffer ledBuffer;
+    private final int ledCount;
+    private final IAddressableLED led;
 
-    public LEDSubsystem() {
-        led = new AddressableLED(ledPort);
-        ledBuffer = new AddressableLEDBuffer(ledLength);
-        led.setLength(ledBuffer.getLength());
-        led.start();
+    public LEDSubsystem(IAddressableLED led) {
+        this.led = led;
+
+        ledCount = led.getLEDCount();
+    }
+    
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        super.initSendable(builder);
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("LED Color", convertColor());
+        ColorRGB[] ledColors;
+        String[] ledHexColors;
+
+        SmartDashboard.putBoolean("Are LEDs on?", led.isOn());
+        
+        ledColors = led.getColors();
+        ledHexColors = new String[ledColors.length];
+
+        Arrays.stream(ledColors).map(Object::toString).toList().toArray(ledHexColors);
+        
+        SmartDashboard.putStringArray("LED Colors", ledHexColors);
     }
 
-    public void setLedColorAll(int red, int green, int blue) {
-        for (var i = 0; i < ledBuffer.getLength(); i++) {
-            ledBuffer.setRGB(i, red, green, blue);
+    public void setAllLEDColor(ColorRGB color) {
+        led.setAllLEDColor(color);
+    }
+
+    public void setSingleLEDColor(int address, ColorRGB color) {
+        if (address < 0 || address >= 2) {
+            throw new IndexOutOfBoundsException(String.format("Address %d is out of bounds. Valid addresses for this addressable LED is between 0 and %d", address, ledCount - 1));
         }
-        led.setData(ledBuffer);
-    }
-
-    public void setLedColor(int red, int green, int blue, int ledIndex) {
-        ledBuffer.setRGB(ledIndex, red, green, blue);
-        led.setData(ledBuffer);
-    }
-
-    public boolean convertColor(){
-        if (ledBuffer.getLED(0).toString().equals("#0000FF")){
-        return true;
-        }
-        return false;
+        
+        led.setSingleLEDColor(address, color);
     }
 
     public void checkAprilTags(Limelight limelight) {
