@@ -1,4 +1,4 @@
-package frc.robot.hardware;
+package frc.robot.hardware.impl;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -6,6 +6,8 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import frc.robot.hardware.ISpeedMotor;
+import frc.robot.hardware.MotorDirection;
 import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 import frc.robot.units.Percent;
 import frc.robot.units.Rotations;

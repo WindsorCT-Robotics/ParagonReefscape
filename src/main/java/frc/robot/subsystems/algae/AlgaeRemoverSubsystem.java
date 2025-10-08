@@ -13,11 +13,6 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         this.motor = motor;
     }
 
-    @Override
-    public void periodic() {
-        
-    }
-
     public void setSpeed(Percent motorPower, MotorDirection direction) {
         motor.setSpeed(motorPower, direction);
     }

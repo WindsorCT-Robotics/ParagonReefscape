@@ -2,7 +2,7 @@ package frc.robot.hardware;
 
 /**
  * The direction a Motor should spin in.
- * @see IMotor
+ * @see frc.robot.hardware.IMotor
  */
 public enum MotorDirection {
     /**

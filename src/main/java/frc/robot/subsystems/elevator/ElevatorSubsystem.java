@@ -4,9 +4,9 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.hardware.IPositionalMotor;
 import frc.robot.units.Centimeters;
 import frc.robot.units.Meters;
-import frc.robot.hardware.IPositionalMotor;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final IPositionalMotor motor;

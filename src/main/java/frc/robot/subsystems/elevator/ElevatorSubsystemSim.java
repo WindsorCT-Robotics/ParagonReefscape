@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import edu.wpi.first.math.util.Units;
-import frc.robot.hardware.sim.ISimPositionalMotor;
+import frc.robot.hardware.ISimPositionalMotor;
 
 public class ElevatorSubsystemSim extends ElevatorSubsystem {
     private final ISimPositionalMotor motor;

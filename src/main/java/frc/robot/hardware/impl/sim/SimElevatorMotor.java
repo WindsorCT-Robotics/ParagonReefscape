@@ -1,10 +1,11 @@
-package frc.robot.hardware.sim;
+package frc.robot.hardware.impl.sim;
 
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import frc.robot.hardware.ElevatorMotor;
+import frc.robot.hardware.impl.ElevatorMotor;
+import frc.robot.hardware.sim.ISimMotor;
 import frc.robot.units.GearRatio;
 import frc.robot.units.Kilograms;
 import frc.robot.units.Radians;

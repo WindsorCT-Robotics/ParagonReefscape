@@ -1,7 +1,6 @@
-package frc.robot.hardware.sim;
+package frc.robot.hardware;
 
-import frc.robot.hardware.IMotor;
-import frc.robot.hardware.ISpeedMotor;
+import frc.robot.hardware.sim.ISimMotor;
 
 /**
  * A simulated motor that is capable of setting its duty cycle to run at a desired speed.

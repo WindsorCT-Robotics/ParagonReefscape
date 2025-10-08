@@ -1,4 +1,4 @@
-package frc.robot.hardware;
+package frc.robot.hardware.impl;
 
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import frc.robot.hardware.IPositionalMotor;
 import frc.robot.units.GearRatio;
 import frc.robot.units.Kilograms;
 import frc.robot.units.Meters;
@@ -22,9 +23,9 @@ public class ElevatorMotor implements IPositionalMotor {
     private final GearRatio gearRatio;
     private final Radians circumference;
     private final Kilograms elevatorWeight;
-    private static final double forceOfGravity = 9.81;
-    private static final double torqueConstant = 0.018;
-    private static final double phaseResistance = 0.03;
+    private static final double FORCE_OF_GRAVITY = 9.81;
+    private static final double TORQUE_CONSTANT = 0.018;
+    private static final double PHASE_RESISTANCE = 0.03;
     private Voltage gravityCompensation;
 
     public ElevatorMotor(SparkMax motor, GearRatio gearRatio, Radians pulleyCircumference, Kilograms elevatorWeight) {
@@ -64,9 +65,9 @@ public class ElevatorMotor implements IPositionalMotor {
     public Voltage getHoldVoltage() {
         return new Voltage(
             (
-                (elevatorWeight.asDouble() * forceOfGravity * circumference.asDouble())
-                / (gearRatio.asDouble() * torqueConstant)
-            ) * phaseResistance);
+                (elevatorWeight.asDouble() * FORCE_OF_GRAVITY * circumference.asDouble())
+                / (gearRatio.asDouble() * TORQUE_CONSTANT)
+            ) * PHASE_RESISTANCE);
     }
 
     public Meters getPosition() {
