@@ -16,7 +16,9 @@ public class LEDSubsystem extends SubsystemBase {
     private final int ledCount;
     private final IAddressableLED led;
 
-    public LEDSubsystem(IAddressableLED led) {
+    public LEDSubsystem(String name, IAddressableLED led) {
+        super(name);
+
         this.led = led;
 
         ledCount = led.getLEDCount();
@@ -25,21 +27,9 @@ public class LEDSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
-    }
-
-    @Override
-    public void periodic() {
-        ColorRGB[] ledColors;
-        String[] ledHexColors;
-
-        SmartDashboard.putBoolean("Are LEDs on?", led.isOn());
         
-        ledColors = led.getColors();
-        ledHexColors = new String[ledColors.length];
-
-        Arrays.stream(ledColors).map(Object::toString).toList().toArray(ledHexColors);
-        
-        SmartDashboard.putStringArray("LED Colors", ledHexColors);
+        builder.addBooleanProperty("LED active state", led::isOn, null);
+        builder.addStringArrayProperty("LED Colors", () -> Arrays.stream(led.getColors()).map(ColorRGB::toString).toArray(String[]::new), null);
     }
 
     public void setAllLEDColor(ColorRGB color) {
