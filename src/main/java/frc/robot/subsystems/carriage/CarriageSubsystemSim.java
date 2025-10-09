@@ -24,8 +24,8 @@ public class CarriageSubsystemSim extends CarriageSubsystem {
     private static final Distance INTAKE_LENGTH_FROM_ROBOT_WHEN_ACTIVE = Meters.of(0.2);
     private static final int INTAKE_CAPACITY = 1;
 
-    public CarriageSubsystemSim(ISimDifferentialMotors motors, ISimBeamBreak beamBreak, AbstractDriveTrainSimulation driveTrain) {
-        super(motors, beamBreak);
+    public CarriageSubsystemSim(String subsystemName, ISimDifferentialMotors motors, ISimBeamBreak beamBreak, AbstractDriveTrainSimulation driveTrain) {
+        super(subsystemName, motors, beamBreak);
 
         this.motors = motors;
         this.beamBreak = beamBreak;

@@ -6,7 +6,7 @@ import frc.robot.hardware.MotorDirection;
 import frc.robot.units.Percent;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.util.sendable.SendableBuilder;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -15,15 +15,19 @@ public class CarriageSubsystem extends SubsystemBase {
     private final Percent speed;
     private final IBeamBreak beamBreak;
 
-    public CarriageSubsystem(IDifferentialMotors rollerMotors, IBeamBreak beamBreak) {
+    public CarriageSubsystem(String subsystemName, IDifferentialMotors rollerMotors, IBeamBreak beamBreak) {
+        super(subsystemName);
+        
         speed = new Percent(0.25);
         this.rollerMotors = rollerMotors;
         this.beamBreak = beamBreak;
     }
-
+    
     @Override
-    public void periodic() {
-        SmartDashboard.putBoolean("Outtake Beam Breaker", isBeamBroken());
+    public void initSendable(SendableBuilder builder) {
+        super.initSendable(builder);
+        
+        builder.addBooleanProperty("Outtake Beam Breaker", this::isBeamBroken, null);
     }
 
     public void moveRollers(MotorDirection direction) {

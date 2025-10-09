@@ -14,8 +14,8 @@ public class ElevatorSubsystemSim extends ElevatorSubsystem {
     @SuppressWarnings("unused")
     private final LoggedMechanismLigament2d elevatorLigament;
 
-    public ElevatorSubsystemSim(ISimPositionalMotor motor) {
-        super(motor);
+    public ElevatorSubsystemSim(String subsystemName, ISimPositionalMotor motor) {
+        super(subsystemName, motor);
         this.motor = motor;
         visualizedElevator = new LoggedMechanism2d(Units.inchesToMeters(0), Units.inchesToMeters(0));
         elevatorRoot = visualizedElevator.getRoot("Elevator", Units.inchesToMeters(0), Units.inchesToMeters(0));

@@ -11,6 +11,7 @@ import frc.robot.hardware.MotorDirection;
 import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 import frc.robot.units.Percent;
 import frc.robot.units.Rotations;
+import frc.robot.units.RotationsPerMinute;
 import frc.robot.units.Voltage;
 
 public class AlgaeMotor implements ISpeedMotor {
@@ -81,5 +82,10 @@ public class AlgaeMotor implements ISpeedMotor {
     @Override
     public void resetRelativeEncoder() {
         motor.getEncoder().setPosition(0);
+    }
+    
+    @Override
+    public RotationsPerMinute getRPM() {
+        return new RotationsPerMinute(motor.getEncoder().getVelocity());
     }
 }

@@ -6,6 +6,10 @@ package frc.robot.hardware;
  */
 public enum MotorDirection {
     /**
+     * Do not spin the motor.
+     */
+    STOPPED,
+    /**
      * Spin the motor forwards.
      */
     FORWARD,

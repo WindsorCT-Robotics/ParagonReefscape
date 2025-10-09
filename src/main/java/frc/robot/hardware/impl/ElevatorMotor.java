@@ -16,6 +16,7 @@ import frc.robot.units.Kilograms;
 import frc.robot.units.Meters;
 import frc.robot.units.Radians;
 import frc.robot.units.Rotations;
+import frc.robot.units.RotationsPerMinute;
 import frc.robot.units.Voltage;
 
 public class ElevatorMotor implements IPositionalMotor {
@@ -128,5 +129,10 @@ public class ElevatorMotor implements IPositionalMotor {
     @Override
     public void resetRelativeEncoder() {
         elevMotor.getEncoder().setPosition(0);
+    }
+    
+    @Override
+    public RotationsPerMinute getRPM() {
+        return new RotationsPerMinute(elevMotor.getEncoder().getVelocity());
     }
 }

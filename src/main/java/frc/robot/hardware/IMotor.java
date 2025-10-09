@@ -2,6 +2,7 @@ package frc.robot.hardware;
 
 import frc.robot.units.Voltage;
 import frc.robot.units.Rotations;
+import frc.robot.units.RotationsPerMinute;
 
 /**
  * A motor for driving components in a robot.
@@ -40,6 +41,12 @@ public interface IMotor {
      * @return True if the motor is moving.
      */
     public boolean isMoving();
+
+    /**
+     * Gets the current speed of the motor in RPM.
+     * @return Motor speed in RPM.
+     */
+    public RotationsPerMinute getRPM();
     
     /**
      * Determine if the motor has hit its forward limit switch.

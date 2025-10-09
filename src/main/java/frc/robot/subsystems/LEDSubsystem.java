@@ -10,8 +10,8 @@ public class LEDSubsystem extends SubsystemBase {
     private final int ledCount;
     private final IAddressableLED led;
 
-    public LEDSubsystem(String name, IAddressableLED led) {
-        super(name);
+    public LEDSubsystem(String subsystemName, IAddressableLED led) {
+        super(subsystemName);
 
         this.led = led;
 

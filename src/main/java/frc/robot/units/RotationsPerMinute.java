@@ -1,13 +1,15 @@
 package frc.robot.units;
 
 public class RotationsPerMinute {
-    private final double rotations;
-    private final int minutes;
+    private final double rpm;
 
     public RotationsPerMinute(double rotations, int minutes) {
-        this.rotations = rotations;
-        this.minutes = minutes;
+        rpm =  rotations / minutes;
     }
 
-    public double asDouble() { return rotations / minutes; }
+    public RotationsPerMinute(double rpm) {
+        this.rpm = rpm;
+    }
+
+    public double asDouble() { return rpm; }
 }

@@ -2,7 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.hardware.IPositionalMotor;
 import frc.robot.units.Centimeters;
@@ -37,14 +37,16 @@ public class ElevatorSubsystem extends SubsystemBase {
         LEVEL_3
     }
 
-    public ElevatorSubsystem(IPositionalMotor motor) {
+    public ElevatorSubsystem(String subsystemName, IPositionalMotor motor) {
+        super(subsystemName);
         this.motor = motor;
     }
 
     @Override
-    public void periodic() {
-        SmartDashboard.putBoolean("Is Fully Extended?", isExtended());
-        SmartDashboard.putBoolean("Is Fully Retracted?", isRetracted());
+    public void initSendable(SendableBuilder builder) {
+        super.initSendable(builder);
+        builder.addBooleanProperty("Is Fully Extended?", this::isExtended, null);
+        builder.addBooleanProperty("Is Fully Retracted?", this::isRetracted, null);
     }
 
     public void stop() {
