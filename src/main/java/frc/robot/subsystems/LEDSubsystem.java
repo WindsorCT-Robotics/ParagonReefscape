@@ -53,15 +53,4 @@ public class LEDSubsystem extends SubsystemBase {
         
         led.setSingleLEDColor(address, color);
     }
-
-    public void checkAprilTags(Limelight limelight) {
-        if (limelight.getTagCount() == 1) {
-            setLedColor(0, 255, 0, 0);
-            setLedColor(255, 0, 0, 1);
-        } else if (limelight.getTagCount() > 1) {
-            setLedColorAll(0, 255, 0);
-        } else {
-            setLedColorAll(255, 0, 0);
-        }
-    }
 }
