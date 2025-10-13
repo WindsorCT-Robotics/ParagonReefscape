@@ -23,8 +23,8 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         super.initSendable(builder);
         
         builder.addBooleanProperty("IsEnabled", () -> isEnabled, null);
-        builder.addDoubleProperty("Target Duty Cycle", () -> targetDutyCyle.asDouble(), null);
-        builder.addStringProperty("Target Direction", () -> targetDirection.toString(), null);
+        builder.addDoubleProperty("Target Duty Cycle", targetDutyCyle::asDouble, null);
+        builder.addStringProperty("Target Direction", targetDirection::toString, null);
         builder.addDoubleProperty("Speed (RPM)", () -> motor.getRPM().asDouble(), null);
     }
 
