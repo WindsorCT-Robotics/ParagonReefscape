@@ -59,12 +59,32 @@ public class Limelight extends SubsystemBase {
         CameraServer.addCamera(camera.getCamera());
     }
 
+    public String printPoseEstimate() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(botpose.toString());
+        sb.append('\n');
+        sb.append("Tags Detected: ");
+        sb.append(botpose.tagCount);
+        sb.append('\n');
+        sb.append("Average Tag Area: ");
+        sb.append(botpose.avgTagArea);
+        sb.append('\n');
+        sb.append("Average Tag Distance: ");
+        sb.append(botpose.avgTagDist);
+        sb.append('\n');
+        sb.append("Latency: ");
+        sb.append(botpose.latency);
+
+        return sb.toString();
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
         
         builder.addCloseable(visionField);
-        builder.addStringProperty("Pose Estimate Data", () -> LimelightHelpers.printPoseEstimate(botpose), null);
+        builder.addStringProperty("Pose Estimate Data", this::printPoseEstimate, null);
     }
 
     @Override
@@ -166,11 +186,7 @@ public class Limelight extends SubsystemBase {
         return distanceToTarget.map(distance -> new Percent((distance.asDouble() - 1) / 6));
     }
 
-    public void useLimelight(boolean enable) {
-        this.enable = enable;
-    }
-
-    public void trustLL(boolean trust) {
+    public void (boolean trust) {
         this.trust = trust;
     }
 
