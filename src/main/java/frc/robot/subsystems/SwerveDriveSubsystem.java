@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.units.MetersPerSecond;
@@ -10,11 +7,13 @@ import frc.robot.units.Radians;
 import frc.robot.units.RadiansPerSecond;
 
 public class SwerveDriveSubsystem extends SubsystemBase {
+    private final ISwerveDrivetrain drivetrain;
+
     public SwerveDriveSubsystem(
-        SwerveDrivetrainConstants drivetrainConstants,
-        SwerveModuleConstants<?, ?, ?>... modules
+        String name, ISwerveDrivetrain drivetrain
     ) {
-        
+        super(name);
+        this.drivetrain = drivetrain;
     }
     
     /**
@@ -25,7 +24,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
      */
     public void robotOrientedDrive(MetersPerSecond longditudinalSpeed, MetersPerSecond lateralSpeed, RadiansPerSecond rotationalSpeed)
     {
-
+        drivetrain.
     }
 
     /**
