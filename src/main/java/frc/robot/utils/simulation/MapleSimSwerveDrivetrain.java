@@ -47,7 +47,7 @@ import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 public class MapleSimSwerveDrivetrain {
     private final Pigeon2SimState pigeonSim;
     private final SimSwerveModule[] simModules;
-    public static SwerveDriveSimulation mapleSimDrive;
+    public final SwerveDriveSimulation mapleSimDrive;
 
 
     /**
