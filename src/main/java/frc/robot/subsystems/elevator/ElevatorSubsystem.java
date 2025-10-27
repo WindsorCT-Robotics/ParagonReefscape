@@ -4,12 +4,12 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.hardware.IPositionalMotor;
+import frc.robot.hardware.IDistanceMotor;
 import frc.robot.units.Centimeters;
 import frc.robot.units.Meters;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    private final IPositionalMotor motor;
+    private final IDistanceMotor motor;
     private static final Centimeters LEVEL2_HEIGHT = new Centimeters(81);
     // TODO: Double-check to make sure this value is correct
     private static final Centimeters LEVEL2_ALGAE_HEIGHT = new Centimeters(108);
@@ -37,7 +37,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         LEVEL_3
     }
 
-    public ElevatorSubsystem(String subsystemName, IPositionalMotor motor) {
+    public ElevatorSubsystem(String subsystemName, IDistanceMotor motor) {
         super(subsystemName);
         this.motor = motor;
     }
@@ -60,16 +60,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void moveToTargetPosition(Position position) {
         switch (position) {
             case LEVEL_1:
-                motor.travelTo(LEVEL1_HEIGHT.asMeters());
+                motor.travel(LEVEL1_HEIGHT.asMeters());
                 break;
             case LEVEL_2:
-                motor.travelTo(LEVEL2_HEIGHT.asMeters());
+                motor.travel(LEVEL2_HEIGHT.asMeters());
                 break;
             case LEVEL_ALGAE:
-                motor.travelTo(LEVEL2_ALGAE_HEIGHT.asMeters());
+                motor.travel(LEVEL2_ALGAE_HEIGHT.asMeters());
                 break;
             case LEVEL_3:
-                motor.travelTo(LEVEL3_HEIGHT.asMeters());
+                motor.travel(LEVEL3_HEIGHT.asMeters());
                 break;
             default:
                 throw new InvalidElevatorPositionException(position);

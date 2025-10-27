@@ -1,9 +1,9 @@
 package frc.robot.hardware;
 
-import frc.robot.units.ColorRGB;
+import edu.wpi.first.wpilibj.util.Color;
 
 /**
- * Describes an addressable LED strip.
+ * Provides a common interface for an addressable LED strip.
  */
 public interface IAddressableLED {
     /**
@@ -16,20 +16,20 @@ public interface IAddressableLED {
      * Gets current color for each LED.
      * @return Current color for each LED.
      */
-    public ColorRGB[] getColors();
+    public Color[] getColors();
     
     /**
      * Set all LEDs to the same color.
      * @param color The color to set.
      */
-    public void setAllLEDColor(ColorRGB color);
+    public void setAllLEDColor(Color color);
     
     /**
      * Set a single LED or LED group to the specified color.
      * @param address The LED address to set.
      * @param color The color to set.
      */
-    public void setSingleLEDColor(int address, ColorRGB color);
+    public void setSingleLEDColor(int address, Color color);
     
     /**
      * Turns on the LEDs.

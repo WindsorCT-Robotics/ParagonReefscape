@@ -1,5 +1,14 @@
 package frc.robot.hardware.impl;
 
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.NewtonMeters;
+import static edu.wpi.first.units.Units.Newtons;
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Rotations;
+
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -10,26 +19,27 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import frc.robot.hardware.IPositionalMotor;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Force;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.Torque;
+import edu.wpi.first.units.measure.Voltage;
+import frc.robot.hardware.IDistanceMotor;
 import frc.robot.units.GearRatio;
-import frc.robot.units.Kilograms;
-import frc.robot.units.Meters;
-import frc.robot.units.Radians;
-import frc.robot.units.Rotations;
-import frc.robot.units.RotationsPerMinute;
-import frc.robot.units.Voltage;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 
-public class ElevatorMotor implements IPositionalMotor {
+public class ElevatorMotor implements IDistanceMotor {
     protected final SparkMax elevMotor;
-    private final GearRatio gearRatio;
-    private final Radians circumference;
-    private final Kilograms elevatorWeight;
-    private static final double FORCE_OF_GRAVITY = 9.81;
-    private static final double TORQUE_CONSTANT = 0.018;
-    private static final double PHASE_RESISTANCE = 0.03;
-    private Voltage gravityCompensation;
+    private final ElevatorFeedforward ff;
+    private static final Voltage STATIC_VOLTAGE = Volts.of(0.18);
+    private static final Voltage GRAVITY_COMPENSATION
 
-    public ElevatorMotor(SparkMax motor, GearRatio gearRatio, Radians pulleyCircumference, Kilograms elevatorWeight) {
+    public ElevatorMotor(SparkMax motor, GearRatio gearRatio, Angle pulleyCircumference, Mass elevatorWeight) {
+        ff = new ElevatorFeedforward()
         SparkMaxConfig elevMotorConfig = new SparkMaxConfig();
         this.gearRatio = gearRatio;
         this.circumference = pulleyCircumference;
@@ -64,6 +74,7 @@ public class ElevatorMotor implements IPositionalMotor {
     }
 
     public Voltage getHoldVoltage() {
+        return Volts.of(elevatorWeight.times()
         return new Voltage(
             (
                 (elevatorWeight.asDouble() * FORCE_OF_GRAVITY * circumference.asDouble())
@@ -71,8 +82,8 @@ public class ElevatorMotor implements IPositionalMotor {
             ) * PHASE_RESISTANCE);
     }
 
-    public Meters getPosition() {
-        return getRotations().asMeters(gearRatio, circumference);
+    public Distance getPosition() {
+        return Meters.
     }
 
     @Override
@@ -92,8 +103,8 @@ public class ElevatorMotor implements IPositionalMotor {
     }
 
     @Override
-    public Rotations getRotations() {
-        return new Rotations(elevMotor.getEncoder().getPosition());
+    public Angle getRotations() {
+        return Rotations.of(elevMotor.getEncoder().getPosition());
     }
 
     @Override
@@ -132,7 +143,7 @@ public class ElevatorMotor implements IPositionalMotor {
     }
     
     @Override
-    public RotationsPerMinute getRPM() {
+    public RotationsPerMinute getVelocity() {
         return new RotationsPerMinute(elevMotor.getEncoder().getVelocity());
     }
 }

@@ -1,6 +1,6 @@
 package frc.robot.subsystems.algae;
 
-import frc.robot.hardware.ISpeedMotor;
+import frc.robot.hardware.IDutyMotor;
 import frc.robot.hardware.MotorDirection;
 import frc.robot.units.Percent;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -10,9 +10,9 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
     private boolean isEnabled;
     private Percent targetDutyCyle;
     private MotorDirection targetDirection;
-    private ISpeedMotor motor;
+    private IDutyMotor motor;
 
-    public AlgaeRemoverSubsystem(String subsystemName, ISpeedMotor motor) {
+    public AlgaeRemoverSubsystem(String subsystemName, IDutyMotor motor) {
         super(subsystemName);
 
         this.motor = motor;
@@ -25,7 +25,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         builder.addBooleanProperty("IsEnabled", () -> isEnabled, null);
         builder.addDoubleProperty("Target Duty Cycle", targetDutyCyle::asDouble, null);
         builder.addStringProperty("Target Direction", targetDirection::toString, null);
-        builder.addDoubleProperty("Speed (RPM)", () -> motor.getRPM().asDouble(), null);
+        builder.addDoubleProperty("Speed (RPM)", () -> motor.getVelocity().asDouble(), null);
     }
 
     public void setSpeed(Percent motorPower, MotorDirection direction) {

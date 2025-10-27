@@ -6,15 +6,21 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import frc.robot.hardware.ISpeedMotor;
+import static edu.wpi.first.units.Units.Value;
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Voltage;
+import frc.robot.hardware.IDutyMotor;
 import frc.robot.hardware.MotorDirection;
 import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
-import frc.robot.units.Percent;
-import frc.robot.units.Rotations;
-import frc.robot.units.RotationsPerMinute;
-import frc.robot.units.Voltage;
 
-public class AlgaeMotor implements ISpeedMotor {
+public class AlgaeMotor implements IDutyMotor {
     private final SparkMax motor;
 
     public AlgaeMotor(SparkMax motor) {
@@ -31,13 +37,13 @@ public class AlgaeMotor implements ISpeedMotor {
     }
 
     @Override
-    public void setSpeed(Percent speed, MotorDirection direction) {
+    public void setSpeed(Dimensionless speed, MotorDirection direction) {
         switch (direction) {
         case FORWARD:
-            motor.set(speed.asDouble());
+            motor.set(speed.in(Value));
             break;
         case REVERSE:
-            motor.set(-speed.asDouble());
+            motor.set(-speed.in(Value));
             break;
         default:
             throw new InvalidMotorDirectionException();
@@ -45,8 +51,8 @@ public class AlgaeMotor implements ISpeedMotor {
     }
 
     @Override
-    public Rotations getRotations() {
-        return new Rotations(motor.getEncoder().getPosition());
+    public Angle getRotations() {
+        return Rotations.of(motor.getEncoder().getPosition());
     }
 
     @Override
@@ -71,7 +77,7 @@ public class AlgaeMotor implements ISpeedMotor {
 
     @Override
     public void setVoltage(Voltage voltage) {
-        motor.setVoltage(voltage.asDouble());
+        motor.setVoltage(voltage.in(Volts));
     }
 
     @Override
@@ -85,7 +91,7 @@ public class AlgaeMotor implements ISpeedMotor {
     }
     
     @Override
-    public RotationsPerMinute getRPM() {
-        return new RotationsPerMinute(motor.getEncoder().getVelocity());
+    public AngularVelocity getVelocity() {
+        return RPM.of(motor.getEncoder().getVelocity());
     }
 }

@@ -4,9 +4,9 @@ import frc.robot.hardware.sim.ISimMotor;
 
 /**
  * A positional motor under physics simulation.
- * @see IPositionalMotor
+ * @see IDistanceMotor
  * @see ISimMotor
  */
-public interface ISimPositionalMotor extends ISimMotor, IPositionalMotor {
+public interface ISimPositionalMotor extends ISimMotor, IDistanceMotor {
     
 }

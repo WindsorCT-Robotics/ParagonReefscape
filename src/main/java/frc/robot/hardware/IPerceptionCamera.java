@@ -3,16 +3,19 @@ package frc.robot.hardware;
 import java.util.Optional;
 
 import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
-import frc.robot.units.Degrees;
-import frc.robot.units.Meters;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Angle;
 
+/**
+ * Provides a common interface for a camera capable of perceiving its
+ * environment, including estimating distance and position.
+ */
 public interface IPerceptionCamera extends ICamera {
-
-    PoseEstimate estimateRobotPosition(Degrees yaw);
+    PoseEstimate estimateRobotPosition(Angle yaw);
 
     boolean isEnabled();
 
     boolean hasDetectedValidTarget();
 
-    Optional<Meters> distanceToTarget();
+    Optional<Distance> distanceToTarget();
 }

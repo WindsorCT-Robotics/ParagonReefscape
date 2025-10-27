@@ -1,19 +1,22 @@
 package frc.robot.hardware;
 
-import frc.robot.units.Percent;
+import edu.wpi.first.units.measure.Dimensionless;
 
-public interface IDifferentialMotors extends ISpeedMotor {
+/**
+ * Provides a common interface for a pair of differential motors.
+ */
+public interface IDifferentialMotors extends IDutyMotor {
     /**
      * Move right at the specified speed.
      * @param speed
      */
-    public void moveRight(Percent speed);
+    public void moveRight(Dimensionless speed);
 
     /**
      * Move left at the specified speed.
      * @param speed
      */
-    public void moveLeft(Percent speed);
+    public void moveLeft(Dimensionless speed);
     
     /**
      * Determine if both motors have hit their forward limits.
