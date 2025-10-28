@@ -7,6 +7,8 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.NewtonMeters;
 import static edu.wpi.first.units.Units.Newtons;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.VoltsPerMeterPerSecond;
+import static edu.wpi.first.units.Units.VoltsPerMeterPerSecondSquared;
 import static edu.wpi.first.units.Units.Rotations;
 
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -20,12 +22,19 @@ import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.LinearAccelerationUnit;
+import edu.wpi.first.units.LinearVelocityUnit;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Force;
 import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.units.measure.Torque;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.IDistanceMotor;
@@ -34,15 +43,19 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 
 public class ElevatorMotor implements IDistanceMotor {
     protected final SparkMax elevMotor;
-    // Use https://reca.lc/linear to determine elevator feed-forward coefficients
-    private final ElevatorFeedforward ff;
     private GearRatio gearRatio;
     private Angle circumference;
     private Mass elevatorWeight;
+    // Use https://reca.lc/linear to determine elevator feed-forward coefficients
+    private final ElevatorFeedforward ff;
+    // TODO: Test values on real robot
     private static final Voltage STATIC_VOLTAGE = Volts.of(0.18);
+    private static final Voltage GRAVITY_COMPENSATION = Volts.of(3.31);
+    private static final Per<VoltageUnit, LinearVelocityUnit> VELOCITY_FF = VoltsPerMeterPerSecond.ofNative(1.53);
+    private static final Per<VoltageUnit, LinearAccelerationUnit> ACCELERATTION_FF = VoltsPerMeterPerSecondSquared.ofNative(0.34);
 
     public ElevatorMotor(SparkMax motor, GearRatio gearRatio, Angle pulleyCircumference, Mass elevatorWeight) {
-        ff = new ElevatorFeedforward(0, 0, 0);
+        ff = new ElevatorFeedforward(STATIC_VOLTAGE.in(Volts), GRAVITY_COMPENSATION.in(Volts), VELOCITY_FF.in(VoltsPerMeterPerSecond), ACCELERATTION_FF.in(VoltsPerMeterPerSecondSquared));
         SparkMaxConfig elevMotorConfig = new SparkMaxConfig();
         this.gearRatio = gearRatio;
         this.circumference = pulleyCircumference;
@@ -76,7 +89,6 @@ public class ElevatorMotor implements IDistanceMotor {
     }
 
     public Distance getPosition() {
-        return Meters.
     }
 
     // @Override
