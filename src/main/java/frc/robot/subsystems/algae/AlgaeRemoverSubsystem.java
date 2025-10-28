@@ -2,13 +2,17 @@ package frc.robot.subsystems.algae;
 
 import frc.robot.hardware.IDutyMotor;
 import frc.robot.hardware.MotorDirection;
-import frc.robot.units.Percent;
+
+import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.RPM;
+
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
     private boolean isEnabled;
-    private Percent targetDutyCyle;
+    private Dimensionless targetDutyCyle;
     private MotorDirection targetDirection;
     private IDutyMotor motor;
 
@@ -23,12 +27,12 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         super.initSendable(builder);
         
         builder.addBooleanProperty("IsEnabled", () -> isEnabled, null);
-        builder.addDoubleProperty("Target Duty Cycle", targetDutyCyle::asDouble, null);
+        builder.addDoubleProperty("Target Duty Cycle", () -> targetDutyCyle.in(Percent), null);
         builder.addStringProperty("Target Direction", targetDirection::toString, null);
-        builder.addDoubleProperty("Speed (RPM)", () -> motor.getVelocity().asDouble(), null);
+        builder.addDoubleProperty("Speed (RPM)", () -> motor.getVelocity().in(RPM), null);
     }
 
-    public void setSpeed(Percent motorPower, MotorDirection direction) {
+    public void setSpeed(Dimensionless motorPower, MotorDirection direction) {
         motor.setSpeed(motorPower, direction);
 
         isEnabled = true;
@@ -40,7 +44,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         motor.stop();
 
         isEnabled = false;
-        targetDutyCyle = new Percent(0);
+        targetDutyCyle = Percent.of(0);
         targetDirection = MotorDirection.STOPPED;
     }
 }

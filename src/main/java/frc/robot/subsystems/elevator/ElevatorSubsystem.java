@@ -1,20 +1,21 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Centimeters;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.hardware.IDistanceMotor;
-import frc.robot.units.Centimeters;
-import frc.robot.units.Meters;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final IDistanceMotor motor;
-    private static final Centimeters LEVEL2_HEIGHT = new Centimeters(81);
+    private static final Distance LEVEL2_HEIGHT = Centimeters.of(81);
     // TODO: Double-check to make sure this value is correct
-    private static final Centimeters LEVEL2_ALGAE_HEIGHT = new Centimeters(108);
-    private static final Centimeters LEVEL3_HEIGHT = new Centimeters(121);
-    private static final Centimeters LEVEL1_HEIGHT = new Centimeters(46);
+    private static final Distance LEVEL2_ALGAE_HEIGHT = Centimeters.of(108);
+    private static final Distance LEVEL3_HEIGHT = Centimeters.of(121);
+    private static final Distance LEVEL1_HEIGHT = Centimeters.of(46);
 
     public class InvalidElevatorPositionException extends RuntimeException {
         private final Position position;
@@ -60,16 +61,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void moveToTargetPosition(Position position) {
         switch (position) {
             case LEVEL_1:
-                motor.travel(LEVEL1_HEIGHT.asMeters());
+                motor.travelTo(LEVEL1_HEIGHT);
                 break;
             case LEVEL_2:
-                motor.travel(LEVEL2_HEIGHT.asMeters());
+                motor.travelTo(LEVEL2_HEIGHT);
                 break;
             case LEVEL_ALGAE:
-                motor.travel(LEVEL2_ALGAE_HEIGHT.asMeters());
+                motor.travelTo(LEVEL2_ALGAE_HEIGHT);
                 break;
             case LEVEL_3:
-                motor.travel(LEVEL3_HEIGHT.asMeters());
+                motor.travelTo(LEVEL3_HEIGHT);
                 break;
             default:
                 throw new InvalidElevatorPositionException(position);
@@ -78,15 +79,15 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     @AutoLogOutput(key = "Elevator/IsRetracted")
     public boolean isRetracted() {
-        return (motor.isAtReverseLimit() || motor.getPosition().asCentimeters().equals(LEVEL1_HEIGHT));
+        return (motor.isAtReverseLimit() || motor.getPosition().equals(LEVEL1_HEIGHT));
     }
 
     @AutoLogOutput(key = "Elevator/IsExtended")
     public boolean isExtended() {
-        return (motor.isAtForwardLimit() || motor.getPosition().asCentimeters().equals(LEVEL3_HEIGHT));
+        return (motor.isAtForwardLimit() || motor.getPosition().equals(LEVEL3_HEIGHT));
     }
     
-    public Meters getHeight() {
+    public Distance getHeight() {
         return motor.getPosition();
     }
 

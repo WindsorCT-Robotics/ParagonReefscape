@@ -4,7 +4,7 @@ import java.util.Arrays;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.hardware.IAddressableLED;
-import frc.robot.units.ColorRGB;
+import edu.wpi.first.wpilibj.util.Color;
 
 public class LEDSubsystem extends SubsystemBase {
     private final int ledCount;
@@ -23,14 +23,14 @@ public class LEDSubsystem extends SubsystemBase {
         super.initSendable(builder);
         
         builder.addBooleanProperty("LED active state", led::isOn, null);
-        builder.addStringArrayProperty("LED Colors", () -> Arrays.stream(led.getColors()).map(ColorRGB::toString).toArray(String[]::new), null);
+        builder.addStringArrayProperty("LED Colors", () -> Arrays.stream(led.getColors()).map(Color::toString).toArray(String[]::new), null);
     }
 
-    public void setAllLEDColor(ColorRGB color) {
+    public void setAllLEDColor(Color color) {
         led.setAllLEDColor(color);
     }
 
-    public void setSingleLEDColor(int address, ColorRGB color) {
+    public void setSingleLEDColor(int address, Color color) {
         if (address < 0 || address >= 2) {
             throw new IndexOutOfBoundsException(String.format("Address %d is out of bounds. Valid addresses for this addressable LED is between 0 and %d", address, ledCount - 1));
         }

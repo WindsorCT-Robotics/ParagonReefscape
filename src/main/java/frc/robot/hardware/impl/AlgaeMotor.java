@@ -8,7 +8,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
-import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 

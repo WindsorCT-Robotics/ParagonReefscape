@@ -35,16 +35,17 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 public class ElevatorMotor implements IDistanceMotor {
     protected final SparkMax elevMotor;
     private final ElevatorFeedforward ff;
+    private GearRatio gearRatio;
+    private Angle circumference;
+    private Mass elevatorWeight;
     private static final Voltage STATIC_VOLTAGE = Volts.of(0.18);
-    private static final Voltage GRAVITY_COMPENSATION
 
     public ElevatorMotor(SparkMax motor, GearRatio gearRatio, Angle pulleyCircumference, Mass elevatorWeight) {
-        ff = new ElevatorFeedforward()
+        ff = new ElevatorFeedforward(0, 0, 0);
         SparkMaxConfig elevMotorConfig = new SparkMaxConfig();
         this.gearRatio = gearRatio;
         this.circumference = pulleyCircumference;
         this.elevatorWeight = elevatorWeight;
-        this.gravityCompensation = getHoldVoltage();
 
         elevMotor = motor;
 
@@ -73,33 +74,31 @@ public class ElevatorMotor implements IDistanceMotor {
         elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-    public Voltage getHoldVoltage() {
-        return Volts.of(elevatorWeight.times()
-        return new Voltage(
-            (
-                (elevatorWeight.asDouble() * FORCE_OF_GRAVITY * circumference.asDouble())
-                / (gearRatio.asDouble() * TORQUE_CONSTANT)
-            ) * PHASE_RESISTANCE);
-    }
-
     public Distance getPosition() {
         return Meters.
     }
 
-    @Override
-    public void travelTo(Meters position) {
-        travelTo(position.asRotations(gearRatio, circumference));
-    }
+    // @Override
+    // public void travelTo(Meters position) {
+    //     travelTo(position.asRotations(gearRatio, circumference));
+    // }
+
+    // @Override
+    // public void travelTo(Rotations position) {
+    //     elevMotor
+    //         .getClosedLoopController()
+    //         .setReference(
+    //             position.asDouble(),
+    //             ControlType.kMAXMotionPositionControl,
+    //             ClosedLoopSlot.kSlot0);
+    // }
 
     @Override
-    public void travelTo(Rotations position) {
+    public void travelTo(Distance position) {
         elevMotor
             .getClosedLoopController()
-            .setReference(
-                position.asDouble(),
-                ControlType.kMAXMotionPositionControl,
-                ClosedLoopSlot.kSlot0,
-                gravityCompensation.asDouble());
+            .setReference(position)
+
     }
 
     @Override

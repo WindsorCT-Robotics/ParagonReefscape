@@ -1,10 +1,15 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.hardware.ISimPositionalMotor;
 
 public class ElevatorSubsystemSim extends ElevatorSubsystem {
@@ -14,12 +19,19 @@ public class ElevatorSubsystemSim extends ElevatorSubsystem {
     @SuppressWarnings("unused")
     private final LoggedMechanismLigament2d elevatorLigament;
 
+    private final Distance VISUALIZED_ELEVATOR_LENGTH = Meters.of(0);
+    private final Distance VISUALIZED_ELEVATOR_WIDTH = Meters.of(0);
+    private final Distance ELEVATOR_ROOT_X = Meters.of(0);
+    private final Distance ELEVATOR_ROOT_Y = Meters.of(0);
+    private final Distance ELEVATOR_LIGAMENT_LENGTH = Inches.of(50);
+    private final Angle ELEVATOR_LIGAMENT_ANGLE = Degrees.of(90);
+
     public ElevatorSubsystemSim(String subsystemName, ISimPositionalMotor motor) {
         super(subsystemName, motor);
         this.motor = motor;
-        visualizedElevator = new LoggedMechanism2d(Units.inchesToMeters(0), Units.inchesToMeters(0));
-        elevatorRoot = visualizedElevator.getRoot("Elevator", Units.inchesToMeters(0), Units.inchesToMeters(0));
-        elevatorLigament = elevatorRoot.append(new LoggedMechanismLigament2d("Elevator", Units.inchesToMeters(50), 90));
+        visualizedElevator = new LoggedMechanism2d(VISUALIZED_ELEVATOR_WIDTH.in(Meters), VISUALIZED_ELEVATOR_LENGTH.in(Meters));
+        elevatorRoot = visualizedElevator.getRoot("Elevator", ELEVATOR_ROOT_X.in(Meters), ELEVATOR_ROOT_Y.in(Meters));
+        elevatorLigament = elevatorRoot.append(new LoggedMechanismLigament2d("Elevator", ELEVATOR_LIGAMENT_LENGTH.in(Inches), ELEVATOR_LIGAMENT_ANGLE.in(Degrees)));
     }
     
     @Override
