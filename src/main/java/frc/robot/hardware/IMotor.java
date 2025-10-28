@@ -10,14 +10,18 @@ import edu.wpi.first.units.measure.AngularVelocity;
 public interface IMotor {
     /**
      * Turns the motor by applying a specific Voltage
-     * 
      * @param voltage The voltage to set.
      */
     public void setVoltage(Voltage voltage);
 
     /**
+     * Gets the voltage currently being applied to the motor.
+     * @return The voltage currently being applied to the motor.
+     */
+    public Voltage getVoltage();
+    
+    /**
      * Gets the position of the motor in rotations.
-     * 
      * @return The position of the motor in rotations.
      */
     public Angle getRotations();

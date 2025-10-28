@@ -19,12 +19,12 @@ public class ElevatorSubsystemSim extends ElevatorSubsystem {
     @SuppressWarnings("unused")
     private final LoggedMechanismLigament2d elevatorLigament;
 
-    private final Distance VISUALIZED_ELEVATOR_LENGTH = Meters.of(0);
-    private final Distance VISUALIZED_ELEVATOR_WIDTH = Meters.of(0);
-    private final Distance ELEVATOR_ROOT_X = Meters.of(0);
-    private final Distance ELEVATOR_ROOT_Y = Meters.of(0);
-    private final Distance ELEVATOR_LIGAMENT_LENGTH = Inches.of(50);
-    private final Angle ELEVATOR_LIGAMENT_ANGLE = Degrees.of(90);
+    private static final Distance VISUALIZED_ELEVATOR_LENGTH = Meters.of(0);
+    private static final Distance VISUALIZED_ELEVATOR_WIDTH = Meters.of(0);
+    private static final Distance ELEVATOR_ROOT_X = Meters.of(0);
+    private static final Distance ELEVATOR_ROOT_Y = Meters.of(0);
+    private static final Distance ELEVATOR_LIGAMENT_LENGTH = Inches.of(50);
+    private static final Angle ELEVATOR_LIGAMENT_ANGLE = Degrees.of(90);
 
     public ElevatorSubsystemSim(String subsystemName, ISimPositionalMotor motor) {
         super(subsystemName, motor);

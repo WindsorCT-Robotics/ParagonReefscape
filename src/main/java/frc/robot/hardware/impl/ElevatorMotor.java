@@ -34,6 +34,7 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 
 public class ElevatorMotor implements IDistanceMotor {
     protected final SparkMax elevMotor;
+    // Use https://reca.lc/linear to determine elevator feed-forward coefficients
     private final ElevatorFeedforward ff;
     private GearRatio gearRatio;
     private Angle circumference;

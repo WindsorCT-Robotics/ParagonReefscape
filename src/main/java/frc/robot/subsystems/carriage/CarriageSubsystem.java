@@ -33,11 +33,11 @@ public class CarriageSubsystem extends SubsystemBase {
     }
 
     public void moveRollers(MotorDirection direction) {
-        rollerMotors.setSpeed(speed, direction);
+        rollerMotors.setDuty(speed, direction);
     }
 
     public void manualMoveRollers(Dimensionless speed, MotorDirection direction) {
-        rollerMotors.setSpeed(speed, direction);
+        rollerMotors.setDuty(speed, direction);
     }
 
     public void moveRollersRight() {

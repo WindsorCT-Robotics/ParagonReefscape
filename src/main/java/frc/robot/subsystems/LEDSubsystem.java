@@ -31,7 +31,7 @@ public class LEDSubsystem extends SubsystemBase {
     }
 
     public void setSingleLEDColor(int address, Color color) {
-        if (address < 0 || address >= 2) {
+        if (address < 0 || address >= led.getLEDCount()) {
             throw new IndexOutOfBoundsException(String.format("Address %d is out of bounds. Valid addresses for this addressable LED is between 0 and %d", address, ledCount - 1));
         }
         

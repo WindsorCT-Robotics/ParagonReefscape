@@ -36,7 +36,7 @@ public class AlgaeMotor implements IDutyMotor {
     }
 
     @Override
-    public void setSpeed(Dimensionless speed, MotorDirection direction) {
+    public void setDuty(Dimensionless speed, MotorDirection direction) {
         switch (direction) {
         case FORWARD:
             motor.set(speed.in(Value));
@@ -47,6 +47,11 @@ public class AlgaeMotor implements IDutyMotor {
         default:
             throw new InvalidMotorDirectionException();
         }
+    }
+    
+    @Override
+    public Voltage getVoltage() {
+        return Volts.of(motor.getBusVoltage());
     }
 
     @Override

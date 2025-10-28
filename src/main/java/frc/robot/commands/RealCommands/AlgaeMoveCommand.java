@@ -24,7 +24,7 @@ public class AlgaeMoveCommand extends Command {
 
     @Override
     public void execute() {
-        motor.setSpeed(speed, direction);
+        motor.setDuty(speed, direction);
     }
 
     @Override
