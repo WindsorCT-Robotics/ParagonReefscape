@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.util.sendable.Sendable;
-import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
+import frc.lib.sim.MapleSimSwerveDrivetrain;
 
 public class SimulationCommands {
     public SimulationCommands() {

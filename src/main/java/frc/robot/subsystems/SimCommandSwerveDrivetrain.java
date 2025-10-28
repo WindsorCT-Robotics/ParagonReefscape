@@ -17,8 +17,8 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
+import frc.lib.sim.MapleSimSwerveDrivetrain;
 import frc.robot.generated.TunerConstants;
-import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 
 public class SimCommandSwerveDrivetrain extends CommandSwerveDrivetrain {
     private static final Time SIM_LOOP_PERIOD = Millisecond.of(5);

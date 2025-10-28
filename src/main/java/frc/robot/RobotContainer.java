@@ -38,6 +38,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.elevator.*;
 import frc.robot.subsystems.limelight.Limelight;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.lib.sim.MapleSimSwerveDrivetrain;
 import frc.robot.commands.RealCommands.AlgaeMoveCommand;
 import frc.robot.commands.RealCommands.CoralIntakeCommand;
 import frc.robot.commands.RealCommands.CoralOuttakeCommand;
@@ -61,7 +62,6 @@ import frc.robot.commands.SimCommands.SimSpawnCommand;
 import frc.robot.subsystems.algae.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.carriage.CarriageSubsystem;
 import frc.robot.subsystems.carriage.CarriageSubsystemSim;
-import frc.robot.utils.simulation.MapleSimSwerveDrivetrain;
 
 public class RobotContainer {
     private ElevatorSubsystem elevator;
