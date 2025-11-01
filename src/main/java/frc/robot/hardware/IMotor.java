@@ -1,8 +1,7 @@
 package frc.robot.hardware;
 
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 /**
  * Provides a common intorface for a basic motor.
@@ -20,12 +19,6 @@ public interface IMotor {
      */
     public Voltage getVoltage();
     
-    /**
-     * Gets the position of the motor in rotations.
-     * @return The position of the motor in rotations.
-     */
-    public Angle getRotations();
-
     /**
      * Resets the recorded number of rotations of the motor.
      */
@@ -50,13 +43,6 @@ public interface IMotor {
      * @return True if the motor is moving.
      */
     public boolean isMoving();
-
-    /**
-     * Gets the current speed of the motor.
-     * 
-     * @return Motor speed.
-     */
-    public AngularVelocity getVelocity();
 
     /**
      * Determine if the motor has hit its forward limit switch.

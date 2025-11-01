@@ -1,6 +1,7 @@
 package frc.robot.hardware;
 
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 /**
  * A motor that can move a certain distance relative to the robot on any one axis.
@@ -20,4 +21,12 @@ public interface IDistanceMotor extends IMotor {
      * @see Meters
      */
     public Distance getPosition();
+    
+    /**
+     * Gets the current speed of the motor.
+     * 
+     * @return Motor speed.
+     */
+    public LinearVelocity getVelocity();
+
 }
