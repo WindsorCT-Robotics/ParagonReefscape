@@ -14,13 +14,11 @@ import org.littletonrobotics.junction.AutoLogOutput;
 
 public class CarriageSubsystem extends SubsystemBase {
     private final IDifferentialMotors rollerMotors;
-    private final Dimensionless speed;
     private final IBeamBreak beamBreak;
+    private static final Dimensionless DEFAULT_SPEED = Percent.of(25);
 
     public CarriageSubsystem(String subsystemName, IDifferentialMotors rollerMotors, IBeamBreak beamBreak) {
         super(subsystemName);
-        
-        speed = Percent.of(25);
         this.rollerMotors = rollerMotors;
         this.beamBreak = beamBreak;
     }
@@ -29,22 +27,23 @@ public class CarriageSubsystem extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
         
+        // TODO: Add left and right motor telemetry
         builder.addBooleanProperty("Outtake Beam Breaker", this::isBeamBroken, null);
     }
-
-    public void moveRollers(MotorDirection direction) {
-        rollerMotors.setDuty(speed, direction);
+    
+    public Dimensionless getDefaultSpeed() {
+        return DEFAULT_SPEED;
     }
 
-    public void manualMoveRollers(Dimensionless speed, MotorDirection direction) {
-        rollerMotors.setDuty(speed, direction);
+    public void moveRollers(Dimensionless speed, MotorDirection direction) {
+        rollerMotors.move(speed, direction);
     }
 
-    public void moveRollersRight() {
+    public void moveRollersRight(Dimensionless speed) {
         rollerMotors.moveRight(speed);
     }
 
-    public void moveRollersLeft() {
+    public void moveRollersLeft(Dimensionless speed) {
         rollerMotors.moveLeft(speed);
     }
 
