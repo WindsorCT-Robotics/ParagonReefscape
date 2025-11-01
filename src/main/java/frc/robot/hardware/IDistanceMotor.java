@@ -28,5 +28,4 @@ public interface IDistanceMotor extends IMotor {
      * @return Motor speed.
      */
     public LinearVelocity getVelocity();
-
 }

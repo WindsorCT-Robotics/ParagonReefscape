@@ -1,7 +1,6 @@
 package frc.robot.hardware;
 
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.units.measure.LinearVelocity;
 
 /**
  * Provides a common intorface for a basic motor.

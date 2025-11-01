@@ -16,10 +16,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.IDutyMotor;
+import frc.robot.hardware.IRPMMotor;
 import frc.robot.hardware.MotorDirection;
 import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 
-public class AlgaeMotor implements IDutyMotor {
+public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     private final SparkMax motor;
 
     public AlgaeMotor(SparkMax motor) {
@@ -55,7 +56,7 @@ public class AlgaeMotor implements IDutyMotor {
     }
 
     @Override
-    public Angle getRotations() {
+    public Angle getPosition() {
         return Rotations.of(motor.getEncoder().getPosition());
     }
 
@@ -71,7 +72,7 @@ public class AlgaeMotor implements IDutyMotor {
 
     @Override
     public boolean isMoving() {
-        return (motor.getEncoder().getVelocity() > 0);
+        return (getVelocity().gt(RPM.zero()));
     }
 
     @Override
@@ -97,5 +98,10 @@ public class AlgaeMotor implements IDutyMotor {
     @Override
     public AngularVelocity getVelocity() {
         return RPM.of(motor.getEncoder().getVelocity());
+    }
+    
+    @Override
+    public void setVelocity(AngularVelocity velocity) {
+        motor.set(velocity.in(RPM));
     }
 }
