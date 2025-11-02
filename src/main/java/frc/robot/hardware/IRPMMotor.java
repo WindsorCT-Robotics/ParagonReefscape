@@ -5,6 +5,5 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 public interface IRPMMotor extends IMotor {
     public Angle getPosition();
-    public void setVelocity(AngularVelocity velocity);
     public AngularVelocity getVelocity();
 }
