@@ -48,6 +48,7 @@ public class ElevatorMotor implements IDistanceMotor {
     private static final GearRatio GEAR_RATIO = new GearRatio(1);
     private static final Distance PULLEY_DIAMETER = Meters.of(0.042);
     private static final Distance ALLOWED_ERROR = Meters.of(0.75);
+    private static final Distance DISTANCE_FROM_FLOOR = Meters.of(0.115);
 
     public ElevatorMotor(SparkMax motor) {
         ff = new ElevatorFeedforward(STATIC_VOLTAGE.in(Volts), GRAVITY_COMPENSATION.in(Volts), VELOCITY_FF.in(VoltsPerMeterPerSecond), ACCELERATTION_FF.in(VoltsPerMeterPerSecondSquared));
@@ -89,10 +90,9 @@ public class ElevatorMotor implements IDistanceMotor {
     
     @Override
     public void travelTo(Distance position) {
-        
         elevMotor
             .getClosedLoopController()
-            .setReference(position.in(Meters), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
+            .setReference(position.minus(DISTANCE_FROM_FLOOR).in(Meters), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
     }
 
     @Override
