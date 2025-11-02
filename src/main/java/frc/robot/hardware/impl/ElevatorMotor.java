@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.VoltsPerMeterPerSecondSquared;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Value;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -34,7 +35,8 @@ import frc.robot.units.GearRatio;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 
 public class ElevatorMotor implements IDistanceMotor {
-    protected final SparkMax elevMotor;
+    protected final SparkMax motor;
+    protected final RelativeEncoder encoder;
 
     // Used https://reca.lc/linear to estimate elevator feed-forward coefficients
     private final ElevatorFeedforward ff;
@@ -54,14 +56,15 @@ public class ElevatorMotor implements IDistanceMotor {
         ff = new ElevatorFeedforward(STATIC_VOLTAGE.in(Volts), GRAVITY_COMPENSATION.in(Volts), VELOCITY_FF.in(VoltsPerMeterPerSecond), ACCELERATTION_FF.in(VoltsPerMeterPerSecondSquared));
         SparkMaxConfig elevMotorConfig = new SparkMaxConfig();
 
-        elevMotor = motor;
+        this.motor = motor;
+        this.encoder = motor.getEncoder();
         
         elevMotorConfig.encoder
             .positionConversionFactor(
-                PULLEY_DIAMETER
+                1 / (PULLEY_DIAMETER
                     .times(Math.PI)
                     .times(GEAR_RATIO.asDouble())
-                    .in(Meters));
+                    .in(Meters)));
 
         elevMotorConfig.limitSwitch
             .forwardLimitSwitchType(Type.kNormallyOpen)
@@ -85,63 +88,64 @@ public class ElevatorMotor implements IDistanceMotor {
         
         elevMotorConfig.idleMode(IdleMode.kBrake);
         elevMotorConfig.inverted(true);
-        elevMotor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        motor.configure(elevMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
     
     @Override
     public void travelTo(Distance position) {
-        elevMotor
+        motor
             .getClosedLoopController()
             .setReference(position.minus(DISTANCE_FROM_FLOOR).in(Meters), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
     }
 
     @Override
     public boolean isAtForwardLimit() {
-        return elevMotor.getForwardLimitSwitch().isPressed();
+        return motor.getForwardLimitSwitch().isPressed();
     }
 
     @Override
     public boolean isAtReverseLimit() {
-        return elevMotor.getReverseLimitSwitch().isPressed();
+        return motor.getReverseLimitSwitch().isPressed();
     }
 
     @Override
     public boolean isMoving() {
-        return elevMotor.getEncoder().getVelocity() > 0;
+        return encoder.getVelocity() > 0;
     }
 
     @Override
     public void stop() {
-        elevMotor.stopMotor();
+        motor.stopMotor();
     }
 
     @Override
     public void setVoltage(Voltage voltage) {
-        elevMotor.setVoltage(voltage.in(Volts));
+        motor.setVoltage(voltage.in(Volts));
     }
 
     @Override
     public void hold() {
-        elevMotor.setVoltage(ff.calculate(0));
+        motor.getClosedLoopController()
+            .setReference(0, ControlType.kVoltage, ClosedLoopSlot.kSlot0, ff.calculate(0));
     }
 
     @Override
     public void resetRelativeEncoder() {
-        elevMotor.getEncoder().setPosition(0);
+        encoder.setPosition(0);
     }
     
     @Override
     public Distance getPosition() {
-        return Meters.of(elevMotor.getEncoder().getPosition());
+        return Meters.of(encoder.getPosition());
     }
 
     @Override
     public Voltage getVoltage() {
-        return Volts.of(elevMotor.getAppliedOutput());
+        return Volts.of(motor.getBusVoltage());
     }
 
     @Override
     public LinearVelocity getVelocity() {
-        return Meters.per(Minute).of(elevMotor.getEncoder().getVelocity());
+        return Meters.per(Minute).of(encoder.getVelocity());
     }
 }
