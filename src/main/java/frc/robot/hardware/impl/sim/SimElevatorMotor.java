@@ -14,7 +14,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import org.littletonrobotics.junction.Logger;
 
-
 public class SimElevatorMotor extends ElevatorMotor implements ISimHardware {
     private final SparkMaxSim elevSim;
     private static final int MOTOR_COUNT = 1;
@@ -27,6 +26,7 @@ public class SimElevatorMotor extends ElevatorMotor implements ISimHardware {
     @Override
     public void iterate(Voltage batteryVoltage, Time stepTime) {
         elevSim.iterate(elevSim.getVelocity(), batteryVoltage.in(Volts), stepTime.in(Seconds));
-        Logger.recordOutput("Height", elevSim.getPosition());
+        Logger.recordOutput("Elevator/Height", elevSim.getPosition());
+        Logger.recordOutput("Elevator/Velocity", elevSim.getVelocity());
     }
 }
