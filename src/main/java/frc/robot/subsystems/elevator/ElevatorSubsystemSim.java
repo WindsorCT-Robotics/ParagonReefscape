@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import frc.robot.hardware.ISimPositionalMotor;
+import frc.robot.hardware.sim.ISimPositionalMotor;
 
 public class ElevatorSubsystemSim extends ElevatorSubsystem {
     private final ISimPositionalMotor motor;

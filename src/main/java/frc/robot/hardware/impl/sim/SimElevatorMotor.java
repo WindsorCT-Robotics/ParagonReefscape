@@ -4,23 +4,29 @@ import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.impl.ElevatorMotor;
-import frc.robot.hardware.sim.ISimMotor;
+import frc.robot.hardware.sim.ISimHardware;
+
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 
 import org.littletonrobotics.junction.Logger;
 
 
-public class SimElevatorMotor extends ElevatorMotor implements ISimMotor {
+public class SimElevatorMotor extends ElevatorMotor implements ISimHardware {
     private final SparkMaxSim elevSim;
+    private static final int MOTOR_COUNT = 1;
 
     public SimElevatorMotor(SparkMax motor) {
         super(motor);
-        elevSim = new SparkMaxSim(elevMotor, DCMotor.getNEO(1));
+        elevSim = new SparkMaxSim(motor, DCMotor.getNEO(MOTOR_COUNT));
     }
 
     @Override
-    public void iterate() {
-        elevSim.iterate(elevSim.getVelocity(), 12, 1);
+    public void iterate(Voltage batteryVoltage, Time stepTime) {
+        elevSim.iterate(elevSim.getVelocity(), batteryVoltage.in(Volts), stepTime.in(Seconds));
         Logger.recordOutput("Height", elevSim.getPosition());
     }
 }

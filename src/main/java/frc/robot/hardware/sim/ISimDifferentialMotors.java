@@ -7,6 +7,6 @@ import frc.robot.hardware.IDifferentialMotors;
  * @see ISimMotor
  * @see IDifferentialMotors
  */
-public interface ISimDifferentialMotors extends ISimMotor, IDifferentialMotors {
+public interface ISimDifferentialMotors extends ISimHardware, IDifferentialMotors {
 
 }

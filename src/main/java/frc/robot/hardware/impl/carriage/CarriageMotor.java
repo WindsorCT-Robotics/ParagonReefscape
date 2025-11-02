@@ -1,4 +1,4 @@
-package frc.robot.hardware.impl;
+package frc.robot.hardware.impl.carriage;
 
 import edu.wpi.first.units.measure.Dimensionless;
 import frc.robot.hardware.IDifferentialMotors;

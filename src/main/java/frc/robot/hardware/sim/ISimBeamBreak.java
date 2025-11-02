@@ -7,6 +7,6 @@ import frc.robot.hardware.IBeamBreak;
  * @see ISimMotor
  * @see IBeamBreak
  */
-public interface ISimBeamBreak extends ISimMotor, IBeamBreak {
+public interface ISimBeamBreak extends ISimHardware, IBeamBreak {
 
 }
