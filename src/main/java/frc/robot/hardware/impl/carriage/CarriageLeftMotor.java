@@ -1,11 +1,9 @@
 package frc.robot.hardware.impl.carriage;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Minute;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Value;
 
 import com.revrobotics.RelativeEncoder;

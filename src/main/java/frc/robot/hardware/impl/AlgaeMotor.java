@@ -1,5 +1,6 @@
 package frc.robot.hardware.impl;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -22,9 +23,11 @@ import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 
 public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     private final SparkMax motor;
+    private final RelativeEncoder encoder;
 
     public AlgaeMotor(SparkMax motor) {
         this.motor = motor;
+        this.encoder = motor.getEncoder();
 
         SparkMaxConfig config = new SparkMaxConfig();
 
@@ -60,7 +63,7 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
 
     @Override
     public Angle getPosition() {
-        return Rotations.of(motor.getEncoder().getPosition());
+        return Rotations.of(encoder.getPosition());
     }
 
     @Override
@@ -95,11 +98,11 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
 
     @Override
     public void resetRelativeEncoder() {
-        motor.getEncoder().setPosition(0);
+        encoder.setPosition(0);
     }
     
     @Override
     public AngularVelocity getVelocity() {
-        return RPM.of(motor.getEncoder().getVelocity());
+        return RPM.of(encoder.getVelocity());
     }
 }
