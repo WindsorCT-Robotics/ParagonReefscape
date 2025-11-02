@@ -45,8 +45,11 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
         case REVERSE:
             motor.set(-speed.in(Value));
             break;
+        case STOPPED:
+            stop();
+            break;
         default:
-            throw new InvalidMotorDirectionException();
+            throw new InvalidMotorDirectionException(direction);
         }
     }
     
@@ -98,10 +101,5 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     @Override
     public AngularVelocity getVelocity() {
         return RPM.of(motor.getEncoder().getVelocity());
-    }
-    
-    @Override
-    public void setVelocity(AngularVelocity velocity) {
-        motor.set(velocity.in(RPM));
     }
 }
