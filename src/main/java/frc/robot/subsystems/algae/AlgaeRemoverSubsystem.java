@@ -4,7 +4,6 @@ import frc.robot.hardware.IDutyMotor;
 import frc.robot.hardware.MotorDirection;
 
 import static edu.wpi.first.units.Units.Percent;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Dimensionless;
@@ -30,7 +29,6 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         builder.addBooleanProperty("IsEnabled", () -> isEnabled, null);
         builder.addDoubleProperty("Target Duty Cycle (%)", () -> targetDutyCyle.in(Percent), this::setDuty);
         builder.addStringProperty("Target Direction", targetDirection::toString, null);
-        builder.addDoubleProperty("Speed (RPM)", () -> motor.getVelocity().in(RPM), null);
         builder.addDoubleProperty("Voltage (v)", () -> motor.getVoltage().in(Volts), v -> motor.setVoltage(Volts.of(v)));
     }
 
