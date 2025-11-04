@@ -15,6 +15,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
     private Dimensionless targetDutyCyle;
     private MotorDirection targetDirection;
     private IDutyMotor motor;
+    private static final Dimensionless DEFAULT_SPEED = Percent.of(70); // Tested algae motor speed percentage from old code.
 
     public AlgaeRemoverSubsystem(String subsystemName, IDutyMotor motor) {
         super(subsystemName);
@@ -30,6 +31,10 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Target Duty Cycle (%)", () -> targetDutyCyle.in(Percent), this::setDuty);
         builder.addStringProperty("Target Direction", targetDirection::toString, null);
         builder.addDoubleProperty("Voltage (v)", () -> motor.getVoltage().in(Volts), v -> motor.setVoltage(Volts.of(v)));
+    }
+
+    public Dimensionless getDefaultSpeed() {
+        return DEFAULT_SPEED;
     }
 
     private void setDuty(double duty) {
