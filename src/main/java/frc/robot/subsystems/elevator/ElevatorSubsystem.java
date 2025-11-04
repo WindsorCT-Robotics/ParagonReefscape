@@ -1,6 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Centimeters;
+import static edu.wpi.first.units.Units.Meters;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -85,6 +86,21 @@ public class ElevatorSubsystem extends SubsystemBase {
     @AutoLogOutput(key = "Elevator/IsExtended")
     public boolean isExtended() {
         return (motor.isAtForwardLimit() || motor.getPosition().equals(LEVEL3_HEIGHT));
+    }
+
+    public boolean isPositionAt(Position position) {
+        switch(position) {
+            case LEVEL_1:
+                return getHeight() == LEVEL1_HEIGHT;
+            case LEVEL_2:
+                return getHeight() == LEVEL2_HEIGHT;
+            case LEVEL_ALGAE:
+                return getHeight() == LEVEL2_ALGAE_HEIGHT;
+            case LEVEL_3:
+                return getHeight() == LEVEL3_HEIGHT;
+            default:
+                throw new InvalidElevatorPositionException(position);
+        }
     }
     
     public Distance getHeight() {
