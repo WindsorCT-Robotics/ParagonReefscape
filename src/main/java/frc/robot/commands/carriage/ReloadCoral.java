@@ -8,8 +8,7 @@ public class ReloadCoral extends SequentialCommandGroup {
     public ReloadCoral(CarriageSubsystem carriageSubsystem, Dimensionless speed) {
         addCommands(
                 new UnloadCoral(carriageSubsystem, speed),
-                new LoadCoral(carriageSubsystem, speed)
-        );
+                new LoadCoral(carriageSubsystem, speed));
     }
 
     public ReloadCoral(CarriageSubsystem carriageSubsystem) {

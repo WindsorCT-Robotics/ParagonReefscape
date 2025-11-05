@@ -4,7 +4,7 @@ import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.carriage.CarriageSubsystem;
 
-public class CamberCoralCommand extends Command{
+public class CamberCoralCommand extends Command {
     private final CarriageSubsystem carriageSubsystem;
     private Dimensionless speed;
     private final CamberDirection direction;
@@ -14,7 +14,7 @@ public class CamberCoralCommand extends Command{
         this.speed = carriageSubsystem.getDefaultSpeed();
         this.direction = direction;
     }
-    
+
     public CamberCoralCommand(CarriageSubsystem carriageSubsystem, Dimensionless speed, CamberDirection direction) {
         this.carriageSubsystem = carriageSubsystem;
         this.speed = speed;
@@ -23,16 +23,13 @@ public class CamberCoralCommand extends Command{
 
     @Override
     public void initialize() {
-        switch (direction) {
-            case LEFT:
+        if (direction == CamberDirection.LEFT) {
             carriageSubsystem.moveRollersLeft(speed);
-            break;
-            case RIGHT:
+        } else {
             carriageSubsystem.moveRollersRight(speed);
-            break;
         }
     }
-    
+
     @Override
     public void end(boolean interrupted) {
         carriageSubsystem.stopRollers();

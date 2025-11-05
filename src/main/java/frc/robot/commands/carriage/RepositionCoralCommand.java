@@ -23,7 +23,7 @@ public class RepositionCoralCommand extends Command {
     @Override
     public void initialize() {
         if (carriageSubsystem.isBeamBroken()) {
-            carriageSubsystem.moveRollers(speed, MotorDirection.REVERSE);   
+            carriageSubsystem.moveRollers(speed, MotorDirection.REVERSE);
         } else {
             end(false);
         }

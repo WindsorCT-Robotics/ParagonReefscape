@@ -27,7 +27,7 @@ public class LoadCoral extends Command {
     public void end(boolean interrupted) {
         carriageSubsystem.stopRollers();
     }
-    
+
     @Override
     public boolean isFinished() {
         return carriageSubsystem.isBeamBroken();

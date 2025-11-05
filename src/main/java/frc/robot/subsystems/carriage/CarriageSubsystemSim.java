@@ -4,10 +4,14 @@ import frc.robot.hardware.sim.ISimBeamBreak;
 import frc.robot.hardware.sim.ISimDifferentialMotors;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+
+import java.util.function.Supplier;
 
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
@@ -20,39 +24,48 @@ public class CarriageSubsystemSim extends CarriageSubsystem {
     private final ISimBeamBreak beamBreak;
     private final IntakeSimulation intakeSimulation;
     private final AbstractDriveTrainSimulation driveTrain;
+    private final Supplier<Voltage> batteryVoltageSupplier;
+    private final Supplier<Time> simTimeSupplier;
     private static final Distance INTAKE_WIDTH = Meters.of(0.7);
     private static final Distance INTAKE_LENGTH_FROM_ROBOT_WHEN_ACTIVE = Meters.of(0.2);
     private static final int INTAKE_CAPACITY = 1;
 
-    public CarriageSubsystemSim(String subsystemName, ISimDifferentialMotors motors, ISimBeamBreak beamBreak, AbstractDriveTrainSimulation driveTrain) {
+    public CarriageSubsystemSim(String subsystemName, ISimDifferentialMotors motors, ISimBeamBreak beamBreak,
+            AbstractDriveTrainSimulation driveTrain, Supplier<Voltage> batteryVoltageSupplier,
+            Supplier<Time> simTimeSupplier) {
         super(subsystemName, motors, beamBreak);
 
         this.motors = motors;
         this.beamBreak = beamBreak;
         this.driveTrain = driveTrain;
+        this.batteryVoltageSupplier = batteryVoltageSupplier;
+        this.simTimeSupplier = simTimeSupplier;
 
         this.intakeSimulation = IntakeSimulation.OverTheBumperIntake(
-        // Specify the type of game pieces that the intake can collect
-        "Coral",
-        // Specify the drivetrain to which this intake is attached
-        driveTrain,
-        // Width of the intake
-        INTAKE_WIDTH,
-        // The extension length of the intake beyond the robot's frame (when activated)
-        INTAKE_LENGTH_FROM_ROBOT_WHEN_ACTIVE,
-        // The intake is mounted on the back side of the chassis
-        IntakeSimulation.IntakeSide.BACK,
-        // The intake can hold up to 1 note
-        INTAKE_CAPACITY);
+                // Specify the type of game pieces that the intake can collect
+                "Coral",
+                // Specify the drivetrain to which this intake is attached
+                driveTrain,
+                // Width of the intake
+                INTAKE_WIDTH,
+                // The extension length of the intake beyond the robot's frame (when activated)
+                INTAKE_LENGTH_FROM_ROBOT_WHEN_ACTIVE,
+                // The intake is mounted on the back side of the chassis
+                IntakeSimulation.IntakeSide.BACK,
+                // The intake can hold up to 1 note
+                INTAKE_CAPACITY);
     }
 
     @Override
     public void periodic() {
+        Voltage batteryVoltage = batteryVoltageSupplier.get();
+        Time simTime = simTimeSupplier.get();
+
         super.periodic();
-        motors.iterate();
-        beamBreak.iterate();
+        motors.iterate(batteryVoltage, simTime);
+        beamBreak.iterate(batteryVoltage, simTime);
     }
-    
+
     public void moveRollers(boolean runIntake) {
         if (runIntake) {
             intakeSimulation.startIntake();
@@ -66,26 +79,27 @@ public class CarriageSubsystemSim extends CarriageSubsystem {
         return intakeSimulation.getGamePiecesAmount() != 0;
     }
 
-    // TODO: This function should probably be private and the values should be calculated based on physics simulation
+    // TODO: This function should probably be private and the values should be
+    // calculated based on physics simulation
     public void scoreCoral(double velocity, double height) {
         if (intakeSimulation.obtainGamePieceFromIntake()) {
             SimulatedArena.getInstance()
-            .addGamePieceProjectile(new ReefscapeCoralOnFly(
-            // Obtain robot position from drive simulation
-            driveTrain.getSimulatedDriveTrainPose().getTranslation(),
-            // The scoring mechanism is installed at (0.46, 0) (meters) on the robot
-            new Translation2d(0.4, 0),
-            // Obtain robot speed from drive simulation
-            driveTrain.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-            // Obtain robot facing from drive simulation
-            driveTrain.getSimulatedDriveTrainPose().getRotation(),
-            // The height at which the coral is ejected
-            Meters.of(height),
-            // The initial speed of the coral
-            // TODO: Calculate this based on motor physics simulation
-            MetersPerSecond.of(velocity),
-            // The coral is ejected at a 35-degree slope
-            Degrees.of(-10)));
+                    .addGamePieceProjectile(new ReefscapeCoralOnFly(
+                            // Obtain robot position from drive simulation
+                            driveTrain.getSimulatedDriveTrainPose().getTranslation(),
+                            // The scoring mechanism is installed at (0.46, 0) (meters) on the robot
+                            new Translation2d(0.4, 0),
+                            // Obtain robot speed from drive simulation
+                            driveTrain.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                            // Obtain robot facing from drive simulation
+                            driveTrain.getSimulatedDriveTrainPose().getRotation(),
+                            // The height at which the coral is ejected
+                            Meters.of(height),
+                            // The initial speed of the coral
+                            // TODO: Calculate this based on motor physics simulation
+                            MetersPerSecond.of(velocity),
+                            // The coral is ejected at a 35-degree slope
+                            Degrees.of(-10)));
         } else {
             System.out.println("No coral");
         }

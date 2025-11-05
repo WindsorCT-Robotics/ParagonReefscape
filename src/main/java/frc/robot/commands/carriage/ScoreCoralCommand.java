@@ -9,7 +9,7 @@ public class ScoreCoralCommand extends Command {
     private final CarriageSubsystem carriageSubsystem;
     private final MotorDirection direction;
     private Dimensionless speed;
-    
+
     public ScoreCoralCommand(CarriageSubsystem carriageSubsystem, MotorDirection direction) {
         this.carriageSubsystem = carriageSubsystem;
         this.direction = direction;
@@ -31,7 +31,6 @@ public class ScoreCoralCommand extends Command {
     public void end(boolean interrupted) {
         carriageSubsystem.stopRollers();
     }
-
 
     @Override
     public boolean isFinished() {

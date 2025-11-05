@@ -21,7 +21,8 @@ public class PushAlgaeCommand extends Command {
 
     @Override
     public void initialize() {
-        algaeRemoverSubsystem.setSpeed(speed, MotorDirection.FORWARD); //TODO: Check if this is the correct motor direction
+        algaeRemoverSubsystem.setSpeed(speed, MotorDirection.FORWARD); // TODO: Check if this is the correct motor
+                                                                       // direction
     }
 
     @Override
@@ -31,6 +32,6 @@ public class PushAlgaeCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return super.isFinished(); // Only finishes when the user decides to.
+        return false; // Only finishes when the user decides to.
     }
 }

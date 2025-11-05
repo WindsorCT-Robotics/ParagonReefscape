@@ -22,6 +22,6 @@ public class HoldElevatorCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return super.isFinished();
+        return false;
     }
 }

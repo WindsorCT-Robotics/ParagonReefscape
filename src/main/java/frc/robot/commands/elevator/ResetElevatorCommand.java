@@ -13,7 +13,7 @@ public class ResetElevatorCommand extends Command {
 
     @Override
     public void initialize() {
-        elevatorSubsystem.moveToTargetPosition(Position.LEVEL_1); //TODO: Potentially create a duty cycle method
+        elevatorSubsystem.moveToTargetPosition(Position.LEVEL_1); // TODO: Potentially create a duty cycle method
     }
 
     @Override
