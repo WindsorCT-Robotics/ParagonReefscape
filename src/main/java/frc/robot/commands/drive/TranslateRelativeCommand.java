@@ -26,8 +26,8 @@ public class TranslateRelativeCommand extends Command {
     }
 
     @Override
-    public void execute() {
-        new DriveCommand(drivetrain, () -> driveRequest(controller));
+    public void initialize() {
+        new DriveCommand(drivetrain, () -> driveRequest(controller)).schedule();
     }
 
     private RobotCentric driveRequest(CommandXboxController controller) {
