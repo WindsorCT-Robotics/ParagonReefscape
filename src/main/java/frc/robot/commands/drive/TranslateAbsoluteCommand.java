@@ -15,7 +15,7 @@ public class TranslateAbsoluteCommand extends Command {
     private final CommandSwerveDrivetrain drivetrain;
     private final LinearVelocity MaxVelocity;
     private final AngularVelocity MaxAngularRate;
-    private FieldCentric centricDrive;
+    private FieldCentric fieldCentric;
     private CommandXboxController controller;
 
     public TranslateAbsoluteCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController controller) {
@@ -31,7 +31,7 @@ public class TranslateAbsoluteCommand extends Command {
     }
 
     private FieldCentric centricDrive(CommandXboxController controller) {
-        return centricDrive
+        return fieldCentric
             .withVelocityX(-controller.getLeftY() * Math.abs(controller.getLeftY()) * MaxVelocity.in(MetersPerSecond)) // Drive forward with negative Y (forward)
             .withVelocityY(-controller.getLeftX() * Math.abs(controller.getLeftX()) * MaxVelocity.in(MetersPerSecond)) // Drive left with negative X (left)
             .withRotationalRate(-controller.getRightX() * Math.abs(controller.getRightX()) * MaxAngularRate.in(RadiansPerSecond));
