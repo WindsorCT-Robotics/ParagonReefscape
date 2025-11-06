@@ -27,10 +27,10 @@ public class TranslateAbsoluteCommand extends Command {
 
     @Override
     public void execute() {
-        new DriveCommand(drivetrain, () -> centricDrive(controller));
+        new DriveCommand(drivetrain, () -> driveRequest(controller));
     }
 
-    private FieldCentric centricDrive(CommandXboxController controller) {
+    private FieldCentric driveRequest(CommandXboxController controller) {
         return fieldCentric
             .withVelocityX(-controller.getLeftY() * Math.abs(controller.getLeftY()) * MaxVelocity.in(MetersPerSecond)) // Drive forward with negative Y (forward)
             .withVelocityY(-controller.getLeftX() * Math.abs(controller.getLeftX()) * MaxVelocity.in(MetersPerSecond)) // Drive left with negative X (left)
