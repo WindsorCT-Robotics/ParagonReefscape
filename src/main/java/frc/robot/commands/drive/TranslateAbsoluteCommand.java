@@ -2,13 +2,16 @@ package frc.robot.commands.drive;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Value;
+
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class TranslateAbsoluteCommand extends Command {
@@ -16,24 +19,39 @@ public class TranslateAbsoluteCommand extends Command {
     private final LinearVelocity MaxVelocity;
     private final AngularVelocity MaxAngularRate;
     private FieldCentric fieldCentric;
-    private CommandXboxController controller;
+    private Supplier<Dimensionless> xLeftAxis;
+    private Supplier<Dimensionless> yLeftAxis;
+    private Supplier<Dimensionless> xRightAxis;
 
-    public TranslateAbsoluteCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController controller) {
+    public TranslateAbsoluteCommand(
+        CommandSwerveDrivetrain drivetrain, 
+        Supplier<Dimensionless> xLeftAxis, 
+        Supplier<Dimensionless> yLeftAxis,
+        Supplier<Dimensionless> xRightAxis) {
         this.drivetrain = drivetrain;
         this.MaxVelocity = drivetrain.getMaxVelocity();
         this.MaxAngularRate = drivetrain.getMaxAngularRate();
-        this.controller = controller;
-    }
+        this.xLeftAxis = xLeftAxis;
+        this.yLeftAxis = yLeftAxis;
+        this.xRightAxis = xRightAxis;
+        
 
+        fieldCentric = new FieldCentric();
+        addRequirements(drivetrain);
+    }
+    
     @Override
-    public void initialize() {
-        new DriveCommand(drivetrain, () -> driveRequest(controller)).schedule();
+    public void execute() {
+        drivetrain.setControl(driveRequest(xLeftAxis, yLeftAxis, xRightAxis));
     }
 
-    private FieldCentric driveRequest(CommandXboxController controller) {
+    private FieldCentric driveRequest(
+        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
+        Supplier<Dimensionless> xRightAxis
+        ) {
         return fieldCentric
-            .withVelocityX(-controller.getLeftY() * Math.abs(controller.getLeftY()) * MaxVelocity.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-            .withVelocityY(-controller.getLeftX() * Math.abs(controller.getLeftX()) * MaxVelocity.in(MetersPerSecond)) // Drive left with negative X (left)
-            .withRotationalRate(-controller.getRightX() * Math.abs(controller.getRightX()) * MaxAngularRate.in(RadiansPerSecond));
+            .withVelocityX(yLeftAxis.get().in(Value) * MaxVelocity.in(MetersPerSecond)) // Relative to a driver station inverting the axis makes sense.
+            .withVelocityY(xLeftAxis.get().in(Value) * MaxVelocity.in(MetersPerSecond))
+            .withRotationalRate(xRightAxis.get().in(Value) * MaxAngularRate.in(RadiansPerSecond));
     }
 }
