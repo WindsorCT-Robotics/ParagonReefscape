@@ -19,8 +19,11 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Power;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,6 +62,7 @@ import frc.robot.commands.SimCommands.SimCoralIntakeCommand;
 import frc.robot.commands.SimCommands.SimCoralOuttakeCommand;
 import frc.robot.commands.SimCommands.SimPathScoreCommand;
 import frc.robot.commands.SimCommands.SimSpawnCommand;
+import frc.robot.commands.drive.TranslateAbsoluteCommand;
 import frc.robot.subsystems.algae.AlgaeRemoverSubsystem;
 import frc.robot.subsystems.carriage.CarriageSubsystem;
 import frc.robot.subsystems.carriage.CarriageSubsystemSim;
@@ -74,6 +78,7 @@ public class RobotContainer {
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.0).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private final double SQUARED_INPUT = 2;
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     @SuppressWarnings("unused")
@@ -253,13 +258,11 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-driverController.getLeftY() * Math.abs(driverController.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driverController.getLeftX() * Math.abs(driverController.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driverController.getRightX() * Math.abs(driverController.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
+            new TranslateAbsoluteCommand(
+                drivetrain, 
+                () -> curveAxisByExponent(Percent.of(driverController.getLeftX() * 100), SQUARED_INPUT),
+                () -> curveAxisByExponent(Percent.of(driverController.getLeftY() * 100), SQUARED_INPUT), 
+                () -> curveAxisByExponent(Percent.of(driverController.getRightX() * 100), SQUARED_INPUT))
         );
 
         elevator.setDefaultCommand(new ElevatorControlCommand(elevator, 1));
@@ -607,5 +610,17 @@ public class RobotContainer {
         // Triggers
         Logger.recordOutput("OperatorController/LeftTrigger", opController.leftTrigger());
         Logger.recordOutput("OperatorController/RightTrigger", opController.rightTrigger());
+    }
+
+    /**
+     * 
+     * @param percent This value should range from [-100%, 100%].
+     * @param exponent Controls how steep the curve is.
+     * @return Creates a curved percent output to [-100%, 100%].
+     */
+    private Dimensionless curveAxisByExponent(Dimensionless axis, double exponent) {
+        return Percent.of(
+            MathUtil.clamp(
+                Math.pow(axis.in(Percent), exponent), -1, 1) * 100); // WpiLib has a Power Unit but I'm not sure if that's for exponents.
     }
 }
