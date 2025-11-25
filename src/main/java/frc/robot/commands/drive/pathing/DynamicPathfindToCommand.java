@@ -2,7 +2,6 @@ package frc.robot.commands.drive.pathing;
 
 import java.util.List;
 
-import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
@@ -14,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class DynamicPathfindToCommand extends Command {
-    private final CommandSwerveDrivetrain drivetrain;
     private final List<Waypoint> waypoints;
     private final Rotation2d endHeading;
     private final PathConstraints constraints;
@@ -24,7 +22,6 @@ public class DynamicPathfindToCommand extends Command {
         List<Waypoint> waypoints, 
         Rotation2d endHeading, 
         PathConstraints constraints) {
-        this.drivetrain = drivetrain;
         this.waypoints = waypoints;
         this.endHeading = endHeading;
         this.constraints = constraints;
