@@ -36,7 +36,10 @@ public class TranslateRelativeCommand extends Command {
         this.xRightAxis = xRightAxis;
         
 
-        robotCentric = new RobotCentric();
+        robotCentric = new RobotCentric()
+            .withDeadband(MaxVelocity)
+            .withRotationalDeadband(MaxAngularRate);
+        
         addRequirements(drivetrain);
     }
     

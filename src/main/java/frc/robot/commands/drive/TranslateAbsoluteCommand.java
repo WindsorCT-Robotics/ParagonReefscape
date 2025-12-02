@@ -36,7 +36,10 @@ public class TranslateAbsoluteCommand extends Command {
         this.xRightAxis = xRightAxis;
         
 
-        fieldCentric = new FieldCentric();
+        fieldCentric = new FieldCentric()
+            .withDeadband(MaxVelocity)
+            .withRotationalDeadband(MaxAngularRate);
+        
         addRequirements(drivetrain);
     }
     
