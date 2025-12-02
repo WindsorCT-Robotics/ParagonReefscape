@@ -22,7 +22,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -42,8 +41,10 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem, Sendable {
     private final LinearVelocity MAX_VELOCITY = TunerConstants.kSpeedAt12Volts;
     private final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(1.0);
+
     private final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
     private final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
+
     private final SwerveRequest.ApplyRobotSpeeds PATH_DRIVE_CONTROLLER = new SwerveRequest.ApplyRobotSpeeds();
     private final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
     private RobotConfig config = null;
