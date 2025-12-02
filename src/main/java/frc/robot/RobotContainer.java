@@ -116,7 +116,7 @@ public class RobotContainer {
     public RobotContainer() {
         elevator = new ElevatorSubsystem();
         carriage = new CarriageSubsystem();
-        // TODO: Allow for dynamically instantiating based on wether we're in sim mode or not
+        
         algaeRemover = new AlgaeRemoverSubsystem(new AlgaeMotor(new SparkMax(ALGAE_MOTOR_CANID, MotorType.kBrushless)));
         led = new LEDSubsystem();
 
@@ -192,6 +192,7 @@ public class RobotContainer {
         SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
     }
 
+    // TODO: Replace all old commands with new commands.
     private void RegisterNamedComands()
     {
         NamedCommands.registerCommand("IntakeBeamCommand", new CoralIntakeCommand(carriage));
@@ -213,37 +214,6 @@ public class RobotContainer {
         NamedCommands.registerCommand("L2", new ElevatorMoveCommand(elevator, 2.0));
         NamedCommands.registerCommand("L2_5", new ElevatorMoveCommand(elevator, 2.5));
         NamedCommands.registerCommand("L3", new ElevatorMoveCommand(elevator, 3.0));
-
-        NamedCommands.registerCommand("MoveForwardRelative", new MoveDrivetrainCommand(drivetrain, 0.2, 0, true));
-        NamedCommands.registerCommand("MoveForwardRelative 0.4", new MoveDrivetrainCommand(drivetrain, 0.4, 0, true));
-
-
-
-        NamedCommands.registerCommand("MoveBackwardsRelative", new MoveDrivetrainCommand(drivetrain, 0.2, 180, true));
-        NamedCommands.registerCommand("MoveBackwardsRelative 0.4", new MoveDrivetrainCommand(drivetrain, 0.4, 180, true));
-    }
-
-    private void SimRegisterNamedComands()
-    {
-        NamedCommands.registerCommand("IntakeBeamCommand", new SimCoralIntakeCommand(simCarriage));
-
-        NamedCommands.registerCommand("LeftScoreCommand", new SimCoralOuttakeCommand(simCarriage, 1.0));
-        NamedCommands.registerCommand("RightScoreCommand", new SimCoralOuttakeCommand(simCarriage, 1.0));
-
-        NamedCommands.registerCommand("LeftL3ScoreCommand", new SimCoralOuttakeCommand(simCarriage, 3.0));
-        NamedCommands.registerCommand("RightL3ScoreCommand", new SimCoralOuttakeCommand(simCarriage,  3.0));
-        NamedCommands.registerCommand("LeftL2ScoreCommand", new SimCoralOuttakeCommand(simCarriage, 2.0));
-        NamedCommands.registerCommand("RightL2ScoreCommand", new SimCoralOuttakeCommand(simCarriage, 2.0));
-        NamedCommands.registerCommand("LeftL1ScoreCommand", new SimCoralOuttakeCommand(simCarriage, 1.0));
-        NamedCommands.registerCommand("RightL1ScoreCommand", new SimCoralOuttakeCommand(simCarriage, 1.0));
-
-        NamedCommands.registerCommand("AlgaePick", new AlgaeMoveCommand(algaeRemover, true, 0.7));
-        NamedCommands.registerCommand("AlgaePickReverse", new AlgaeMoveCommand(algaeRemover, false, 0.7));
-
-        NamedCommands.registerCommand("L1", new SimElevatorCommand(simElevator, 1.0));
-        NamedCommands.registerCommand("L2", new SimElevatorCommand(simElevator, 2.0));
-        NamedCommands.registerCommand("L2_5", new SimElevatorCommand(simElevator, 2.5));
-        NamedCommands.registerCommand("L3", new SimElevatorCommand(simElevator, 3.0));
 
         NamedCommands.registerCommand("MoveForwardRelative", new MoveDrivetrainCommand(drivetrain, 0.2, 0, true));
         NamedCommands.registerCommand("MoveForwardRelative 0.4", new MoveDrivetrainCommand(drivetrain, 0.4, 0, true));
