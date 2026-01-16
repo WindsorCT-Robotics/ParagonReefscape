@@ -41,11 +41,11 @@ import org.photonvision.simulation.VisionSystemSim;
 
 public class VisionSim {
     // Simulation
-    private PhotonCameraSim cameraSim;
+    private static PhotonCameraSim cameraSim;
     private VisionSystemSim visionSim;
     private final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     private final double camPitch = Units.degreesToRadians(0.0);
-    private final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0, -camPitch, 0));
+    private final Transform3d kRobotToCam = new Transform3d(new Translation3d(0.2, 0.0, 0.3), new Rotation3d(0, -camPitch, 0));
 
     public VisionSim(PhotonCamera cam_in) {
         // ----- Simulation
@@ -70,8 +70,18 @@ public class VisionSim {
             cameraSim.enableDrawWireframe(true);
         }
     }
-
+    
     // ----- Simulation
+    
+    public static double getBestAprilTagSim() {
+        if (cameraSim.getCamera().getLatestResult().hasTargets()) {
+            System.out.println(cameraSim.getCamera().getLatestResult().getBestTarget().fiducialId);
+            return cameraSim.getCamera().getLatestResult().getBestTarget().fiducialId;
+        } else {
+            System.out.println("No tags");
+            return -1;
+        }
+    }
 
     public void simulationPeriodic(Pose2d robotSimPose) {
         visionSim.update(robotSimPose);
