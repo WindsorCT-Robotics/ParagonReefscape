@@ -19,7 +19,7 @@ public class AngleToCoralStationCommand extends Command {
     private final Supplier<Distance> positionY;
     private Angle angle;
     private final Distance WDITH_OF_HALF_FIELD = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldWidth() * 0.5);
-    
+
     public AngleToCoralStationCommand(CommandSwerveDrivetrain drivetrain, Supplier<Distance> positionY) {
         this.drivetrain = drivetrain;
         this.positionY = positionY;
@@ -33,6 +33,9 @@ public class AngleToCoralStationCommand extends Command {
     
     @Override
     public void execute() {
+        // Determine Robot Position
+
+        // Update angle to coral station based on current position
         updateAngleToCoralStation();
     }
     
