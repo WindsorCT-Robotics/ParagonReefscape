@@ -1,8 +1,11 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.Supplier;
@@ -21,7 +24,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -33,6 +38,9 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -333,6 +341,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    public void stop() {
+        setControl(new RobotCentric());
+    }
+
     public RobotConfig getPathConfig() {
         return config;
     }
@@ -359,5 +371,33 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public LinearVelocity getDefaultTOFSpeed() {
         return TOF_SPEED;
+    }
+
+    public LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
+        return MetersPerSecond.of(percent.get().times(MAX_VELOCITY.in(MetersPerSecond)).in(Value));
+    }
+
+    public AngularVelocity calculateAngularVelocityFromPercentage(Supplier<Dimensionless> percent) {
+        return RadiansPerSecond.of(percent.get().times(MAX_ANGULAR_VELOCITY.in(RadiansPerSecond)).in(Value));
+    }
+
+    public Supplier<RobotCentric> robotCentricDriveRequest(
+        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
+        Supplier<Dimensionless> xRightAxis
+        ) {
+        return () -> new RobotCentric()
+        .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
+        .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
+        .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis));
+    }
+
+    public Supplier<FieldCentric> fieldCentricDriveRequest(
+        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
+        Supplier<Dimensionless> xRightAxis
+        ) {
+        return () -> new FieldCentric()
+            .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
+            .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
+            .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis));
     }
 }
