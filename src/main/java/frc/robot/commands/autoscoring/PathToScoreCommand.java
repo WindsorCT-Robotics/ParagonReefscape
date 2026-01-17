@@ -1,4 +1,4 @@
-package frc.robot.commands.composite;
+package frc.robot.commands.autoscoring;
 
 import java.util.List;
 
