@@ -2,7 +2,7 @@ package frc.robot.hardware;
 
 import edu.wpi.first.units.measure.Distance;
 
-public interface IDistanceSensor extends ISensor {
+public interface IDistanceSensor {
 
     /**
      * Gets the distance reading from the sensor.
