@@ -1,5 +1,6 @@
 package frc.robot.commands.drive.timeOfFlight;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Millimeters;
 
@@ -8,21 +9,19 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.TimeOfFlight.TimeOfFlightSubsystem;
+import frc.robot.subsystems.timeofflight.TimeOfFlightSubsystem;
 
 public class AlignToSensorCommand extends Command {
     private final CommandSwerveDrivetrain drivetrain;
     private final TimeOfFlightSubsystem timeOfFlight;
-    private final LinearVelocity ALIGN_VELOCITY_Y;
+    private final LinearVelocity ALIGN_VELOCITY_X;
     private final HorizontalDirection direction;
-    private final RobotCentric driveRequest;
 
     public AlignToSensorCommand(CommandSwerveDrivetrain drivetrain, TimeOfFlightSubsystem timeOfFlight, HorizontalDirection direction) {
         this.drivetrain = drivetrain;
         this.timeOfFlight = timeOfFlight;
         this.direction = direction;
-        this.ALIGN_VELOCITY_Y = drivetrain.getDefaultTOFSpeed();
-        driveRequest = new RobotCentric();
+        this.ALIGN_VELOCITY_X = MetersPerSecond.of(0.6);
     }
 
     @Override
@@ -39,37 +38,19 @@ public class AlignToSensorCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        stop();
+        drivetrain.stop();
     }
 
     @Override
     public boolean isFinished() {
-        return isAligned();
-    }
-
-    private boolean isAligned() {
-        switch (direction) {
-            case LEFT:
-                return timeOfFlight.getLeftDistance().in(Millimeters) < TimeOfFlightSubsystem.getThresholdDistance().in(Millimeters);
-            case RIGHT:
-                return timeOfFlight.getRightDistance().in(Millimeters) < TimeOfFlightSubsystem.getThresholdDistance().in(Millimeters);
-            default:
-                return true;
-        }
+        return timeOfFlight.isAtDistanceThreshold();
     }
 
     private void moveLeft() {
-        drivetrain.setControl(driveRequest.withVelocityY(ALIGN_VELOCITY_Y));
+        drivetrain.robotCentricSwerveRequest(ALIGN_VELOCITY_X, MetersPerSecond.zero(), DegreesPerSecond.zero());
     }
 
     private void moveRight() {
-        drivetrain.setControl(driveRequest.withVelocityY(ALIGN_VELOCITY_Y.times(-1)));
-    }
-
-    private void stop() { // TODO: Should this be a part of CommandSwerveDrivetrain?
-        drivetrain.setControl(
-            driveRequest
-            .withVelocityX(MetersPerSecond.of(0))
-            .withVelocityY(MetersPerSecond.of(0)));
+        drivetrain.robotCentricSwerveRequest(ALIGN_VELOCITY_X.times(-1), MetersPerSecond.zero(), DegreesPerSecond.zero());
     }
 }

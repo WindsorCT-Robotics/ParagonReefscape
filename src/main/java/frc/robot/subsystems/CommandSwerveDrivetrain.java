@@ -54,7 +54,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
 
     private final SwerveRequest.ApplyRobotSpeeds PATH_DRIVE_CONTROLLER = new SwerveRequest.ApplyRobotSpeeds();
-    private final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
     private RobotConfig config = null;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
@@ -369,10 +368,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return PATH_DRIVE_CONTROLLER;
     }
 
-    public LinearVelocity getDefaultTOFSpeed() {
-        return TOF_SPEED;
-    }
-
     public LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
         return MetersPerSecond.of(percent.get().times(MAX_VELOCITY.in(MetersPerSecond)).in(Value));
     }
@@ -381,23 +376,37 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return RadiansPerSecond.of(percent.get().times(MAX_ANGULAR_VELOCITY.in(RadiansPerSecond)).in(Value));
     }
 
-    public Supplier<RobotCentric> robotCentricDriveRequest(
+    public void robotCentricDriveRequest(
         Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
         Supplier<Dimensionless> xRightAxis
         ) {
-        return () -> new RobotCentric()
-        .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
-        .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
-        .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis));
-    }
-
-    public Supplier<FieldCentric> fieldCentricDriveRequest(
-        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
-        Supplier<Dimensionless> xRightAxis
-        ) {
-        return () -> new FieldCentric()
+        setControl(new RobotCentric()
             .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
             .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
-            .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis));
+            .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis)));
+    }
+
+    public void fieldCentricDriveRequest(
+        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
+        Supplier<Dimensionless> xRightAxis
+        ) {
+        setControl(new FieldCentric()
+            .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
+            .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
+            .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis)));
+    }
+
+    public void robotCentricSwerveRequest(LinearVelocity xVelocity, LinearVelocity yVelocity, AngularVelocity angularVelocity) {
+        setControl(new RobotCentric()
+            .withVelocityX(xVelocity)
+            .withVelocityY(yVelocity)
+            .withRotationalRate(angularVelocity));
+    }
+
+    public void fieldCentricSwerveRequest(LinearVelocity xVelocity, LinearVelocity yVelocity, AngularVelocity angularVelocity) {
+        setControl(new FieldCentric()
+            .withVelocityX(xVelocity)
+            .withVelocityY(yVelocity)
+            .withRotationalRate(angularVelocity));
     }
 }
