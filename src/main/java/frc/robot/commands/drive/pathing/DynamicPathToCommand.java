@@ -9,6 +9,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -38,34 +39,6 @@ public class DynamicPathToCommand extends Command {
         */
 
         try {
-            /* This is the manual follow path command.
-            new FollowPathCommand(
-                createPath(waypoints, endHeading, constraints), 
-
-                () -> drivetrain.getState().Pose,
-
-                () -> drivetrain.getState().Speeds, 
-
-                // Control the drivetrain.
-                (speeds, feedforwards) -> drivetrain.setControl(
-                    drivetrain.getPathDriveController().withSpeeds(speeds)
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-
-                new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                    drivetrain.getTranslationPID(),
-                    drivetrain.getRotationPID()
-                ), 
-
-                drivetrain.getPathConfig(), 
-
-                () -> false, 
-
-                drivetrain)
-            .schedule();
-            */
-
             AutoBuilder.followPath(createPath(waypoints, endHeading, constraints));
         } catch (Exception e) {
             System.out.println("No Command due to try-catch");
