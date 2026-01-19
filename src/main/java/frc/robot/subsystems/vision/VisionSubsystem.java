@@ -2,6 +2,8 @@ package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.Meter;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -23,6 +25,7 @@ public class VisionSubsystem extends SubsystemBase {
     public record PoseOutOfBounds(PoseEstimate invalidPose) implements VisionError { }
     
     private final IPerceptionCamera camera;
+    private final Supplier<Angle> yawSupplier;
     private static final Distance FIELD_LENGTH = Meter.of(16.54);
     private static final Distance FIELD_WIDTH = Meter.of(8.02);
     private static final RectanglePoseArea field = new RectanglePoseArea(
@@ -31,17 +34,18 @@ public class VisionSubsystem extends SubsystemBase {
             FIELD_LENGTH
             , FIELD_WIDTH));
     
-    public VisionSubsystem(String subsystemName, IPerceptionCamera camera) {
+    public VisionSubsystem(String subsystemName, IPerceptionCamera camera, Supplier<Angle> yawSupplier) {
         super(subsystemName);
         
         this.camera = camera;
         CameraServer.addCamera(camera.getCamera());
+        this.yawSupplier = yawSupplier;
     }
 
-    public Result<Pose2d, VisionError> estimatePosition(Angle yaw) {
+    private Result<PoseEstimate, VisionError> estimatePosition() {
         PoseEstimate result;
 
-        result = camera.estimateRobotPosition(yaw);
+        result = camera.estimateRobotPosition(yawSupplier.get());
 
         if (result.tagCount < 1) {
             return new Failure<>(new NoTags());
@@ -51,6 +55,10 @@ public class VisionSubsystem extends SubsystemBase {
             return new Failure<>(new PoseOutOfBounds(result));
         }
 
-        return new Success<>(result.pose);
+        return new Success<>(result);
+    }
+
+    public Supplier<Result<PoseEstimate, VisionError>> positionEstimateSupplier() {
+        return this::estimatePosition;
     }
 }
