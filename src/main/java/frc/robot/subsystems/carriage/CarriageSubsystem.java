@@ -2,7 +2,6 @@ package frc.robot.subsystems.carriage;
 
 import frc.robot.hardware.IBeamBreak;
 import frc.robot.hardware.IDifferentialMotors;
-import frc.robot.hardware.MotorDirection;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.units.measure.Dimensionless;
@@ -35,8 +34,8 @@ public class CarriageSubsystem extends SubsystemBase {
         return DEFAULT_SPEED;
     }
 
-    public void moveRollers(Dimensionless speed, MotorDirection direction) {
-        rollerMotors.move(speed, direction);
+    public void moveRollers(Dimensionless speed) {
+        rollerMotors.move(speed);
     }
 
     public void moveRollersRight(Dimensionless speed) {

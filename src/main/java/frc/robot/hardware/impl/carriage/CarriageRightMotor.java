@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.Value;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -17,8 +19,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.IDutyRPMMotor;
-import frc.robot.hardware.MotorDirection;
-import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 
 public class CarriageRightMotor implements IDutyRPMMotor {
     private final SparkMax motor;
@@ -35,6 +35,8 @@ public class CarriageRightMotor implements IDutyRPMMotor {
             .inverted(false)
             .idleMode(IdleMode.kBrake)
             .smartCurrentLimit((int)CURRENT_LIMIT.in(Amps));
+        
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     @Override
@@ -88,19 +90,7 @@ public class CarriageRightMotor implements IDutyRPMMotor {
     }
 
     @Override
-    public void setDuty(Dimensionless speed, MotorDirection direction) {
-        switch (direction) {
-        case FORWARD:
-            motor.set(speed.in(Value));
-            break;
-        case REVERSE:
-            motor.set(-speed.in(Value));
-            break;
-        case STOPPED:
-            stop();
-            break;
-        default:
-            throw new InvalidMotorDirectionException(direction);
-        }
+    public void setDuty(Dimensionless speed) {
+        motor.set(speed.in(Value));
     }
 }

@@ -18,8 +18,6 @@ import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.IDutyMotor;
 import frc.robot.hardware.IRPMMotor;
-import frc.robot.hardware.MotorDirection;
-import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 
 public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     private final SparkMax motor;
@@ -40,20 +38,8 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     }
 
     @Override
-    public void setDuty(Dimensionless speed, MotorDirection direction) {
-        switch (direction) {
-        case FORWARD:
-            motor.set(speed.in(Value));
-            break;
-        case REVERSE:
-            motor.set(-speed.in(Value));
-            break;
-        case STOPPED:
-            stop();
-            break;
-        default:
-            throw new InvalidMotorDirectionException(direction);
-        }
+    public void setDuty(Dimensionless speed) {
+        motor.set(speed.in(Value));
     }
     
     @Override

@@ -12,5 +12,5 @@ public interface IDutyMotor extends IMotor {
      * @param speed The percentage of the motor power to apply to achieve the desired speed.
      * @param direction The direction to run the motor in.
      */
-    public void setDuty(Dimensionless speed, MotorDirection direction);
+    public void setDuty(Dimensionless speed);
 }

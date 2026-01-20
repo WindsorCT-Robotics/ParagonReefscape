@@ -2,7 +2,6 @@ package frc.robot.commands.carriage;
 
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.hardware.MotorDirection;
 import frc.robot.subsystems.carriage.CarriageSubsystem;
 
 public class UnloadCoral extends Command {
@@ -20,7 +19,7 @@ public class UnloadCoral extends Command {
 
     @Override
     public void initialize() {
-        carriageSubsystem.moveRollers(speed, MotorDirection.REVERSE);
+        carriageSubsystem.moveRollers(speed);
     }
 
     @Override

@@ -4,7 +4,6 @@ import edu.wpi.first.units.measure.Dimensionless;
 import frc.robot.hardware.IDifferentialMotors;
 import frc.robot.hardware.IDutyRPMMotor;
 import frc.robot.hardware.IRPMMotor;
-import frc.robot.hardware.MotorDirection;
 
 import static edu.wpi.first.units.Units.Percent;
 
@@ -20,20 +19,20 @@ public class CarriageMotor implements IDifferentialMotors {
     
     @Override
     public void moveRight(Dimensionless duty) {
-        rightMotor.setDuty(duty.times(SPEED_DIFFERENTIAL), MotorDirection.FORWARD);
-        leftMotor.setDuty(duty, MotorDirection.FORWARD);
+        rightMotor.setDuty(duty.times(SPEED_DIFFERENTIAL));
+        leftMotor.setDuty(duty);
     }
 
     @Override
     public void moveLeft(Dimensionless duty) {
-        rightMotor.setDuty(duty, MotorDirection.FORWARD);
-        leftMotor.setDuty(duty.times(SPEED_DIFFERENTIAL), MotorDirection.FORWARD);
+        rightMotor.setDuty(duty);
+        leftMotor.setDuty(duty.times(SPEED_DIFFERENTIAL));
     }
 
     @Override
-    public void move(Dimensionless duty, MotorDirection direction) {
-        rightMotor.setDuty(duty, direction);
-        leftMotor.setDuty(duty, direction);
+    public void move(Dimensionless duty) {
+        rightMotor.setDuty(duty);
+        leftMotor.setDuty(duty);
     }
 
     @Override
