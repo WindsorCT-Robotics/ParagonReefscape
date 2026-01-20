@@ -8,7 +8,19 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public final class ReefscapeAprilTagFieldLayoutMapper {
-    private ReefscapeAprilTagFieldLayoutMapper() {
+    private final AprilTagFieldLayout layout;
+    
+    public ReefscapeAprilTagFieldLayoutMapper() {
+        AprilTagFieldLayout original = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+        double fieldLength = original.getFieldLength();
+        double fieldWidth = original.getFieldWidth();
+        layout = new AprilTagFieldLayout(
+                original.getTags().stream().map(ReefscapeAprilTagFieldLayoutMapper::mapTag).toList(),
+                fieldLength,
+                fieldWidth
+        );
+
+        layout.setOrigin(original.getOrigin());
     }
 
     private static AprilTag mapTag (AprilTag tag) {
@@ -50,22 +62,7 @@ public final class ReefscapeAprilTagFieldLayoutMapper {
         return new ReefscapeApriltag(tag, location, alliance);
     }
 
-    public static AprilTagFieldLayout map() {
-        AprilTagFieldLayout original = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
-        double fieldLength = original.getFieldLength();
-        double fieldWidth = original.getFieldWidth();
-        AprilTagFieldLayout mappedLayout = new AprilTagFieldLayout(
-                original.getTags().stream().map(ReefscapeAprilTagFieldLayoutMapper::mapTag).toList(),
-                fieldLength,
-                fieldWidth
-        );
-
-        mappedLayout.setOrigin(original.getOrigin());
-
-        return mappedLayout;
-    }
-    
-    public static List<ReefscapeApriltag> getTags(AprilTagFieldLayout layout) {
+    public List<ReefscapeApriltag> getTags() {
         return layout.getTags().stream()
                 .map(ReefscapeApriltag.class::cast)
                 .toList();

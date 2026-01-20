@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -8,6 +9,7 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -19,12 +21,18 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.util.sendable.Sendable;
@@ -36,8 +44,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.apriltag.AprilTagLocation;
+import frc.robot.apriltag.ReefscapeAprilTagFieldLayoutMapper;
+import frc.robot.apriltag.ReefscapeApriltag;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.result.Failure;
+import frc.robot.result.Result;
+import frc.robot.result.Success;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
@@ -52,6 +66,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
     private final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
+
+    public sealed interface AprilTagSearchError permits NoAprilTagsFound, AllianceUnknown { }
+    public record NoAprilTagsFound() implements AprilTagSearchError { }
+    public record AllianceUnknown() implements AprilTagSearchError { }
 
     private final SwerveRequest.ApplyRobotSpeeds PATH_DRIVE_CONTROLLER = new SwerveRequest.ApplyRobotSpeeds();
     private RobotConfig config = null;
@@ -409,4 +427,46 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .withVelocityY(yVelocity)
             .withRotationalRate(angularVelocity));
     }
+
+    private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
+        ReefscapeAprilTagFieldLayoutMapper mapper = new ReefscapeAprilTagFieldLayoutMapper();
+        Result<ReefscapeApriltag, AprilTagSearchError> closestTag;
+        Distance closestDistance = Meters.of(Double.MAX_VALUE);
+        List<ReefscapeApriltag> tags = mapper.getTags();
+        Alliance alliance;
+        Pose2d robotPosition = getState().Pose;
+
+        if (tags.isEmpty()) {
+            return new Failure<>(new NoAprilTagsFound());
+        }
+
+        if (DriverStation.getAlliance().isEmpty()) {
+            return new Failure<>(new AllianceUnknown());
+        }
+
+        alliance = DriverStation.getAlliance().get();
+
+        tags.stream()
+            .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.REEF)
+            .min(tag -> Math.sqrt())
+
+        for (ReefscapeApriltag tag : tags) {
+            Distance xDistance = Meters.of(getState().Pose.getX() - tag.pose.getX());
+            Distance yDistance = Meters.of(getState().Pose.getY() - tag.pose.getY());
+            Distance tagDistance = Meters.of(Math.sqrt(Math.pow(xDistance.in(Meters), 2) + Math.pow(yDistance.in(Meters), 2)));
+
+            if (
+                tag.alliance == DriverStation.getAlliance().orElse(Alliance.Blue) && 
+                tag.location == AprilTagLocation.REEF && 
+                tagDistance.in(Meters) < closestDistance.in(Meters)
+            ) {
+                closestTag = tag;
+                closestDistance = tagDistance;
+            }
+        }
+
+        return new Success<>(closestTag);
+    }
+
+
 }
