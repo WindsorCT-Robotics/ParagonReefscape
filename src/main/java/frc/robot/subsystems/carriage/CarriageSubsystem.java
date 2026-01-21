@@ -57,9 +57,13 @@ public class CarriageSubsystem extends SubsystemBase {
     public Command scoreCoral() {
         return runEnd(this::moveRollers, rollerMotors::stop).until(beamIntact);
     }
+    
+    public Command unloadCoral() {
+        return runEnd(this::reverseRollers, rollerMotors::stop).until(beamIntact);
+    }
 
     public Command reloadCoral() {
-        return scoreCoral().andThen(loadCoral());
+        return unloadCoral().andThen(loadCoral());
     }
     
     public Command scoreCoralCambered(CamberDirection direction) {
@@ -78,6 +82,10 @@ public class CarriageSubsystem extends SubsystemBase {
 
     private void moveRollers() {
         rollerMotors.move(DEFAULT_SPEED);
+    }
+    
+    private void reverseRollers() {
+        rollerMotors.move(DEFAULT_SPEED.unaryMinus());
     }
 
     @AutoLogOutput(key = "Sensor/OuttakeBeam")
