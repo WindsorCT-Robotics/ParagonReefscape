@@ -52,47 +52,48 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem, Sendable {
-    private final LinearVelocity MAX_VELOCITY = TunerConstants.kSpeedAt12Volts;
-    private final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(1.0);
+    private static final LinearVelocity MAX_VELOCITY = TunerConstants.kSpeedAt12Volts;
+    private static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(1.0);
 
-    private final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
-    private final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
+    private static final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
+    private static final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
 
-    private final SwerveRequest.ApplyRobotSpeeds PATH_DRIVE_CONTROLLER = new SwerveRequest.ApplyRobotSpeeds();
-    private final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
-    private RobotConfig config = null;
+    private final SwerveRequest.ApplyRobotSpeeds pathDriveController = new SwerveRequest.ApplyRobotSpeeds();
+    private static final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
+
+    private RobotConfig config;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
-    private boolean m_hasAppliedOperatorPerspective = false;
+    private boolean hasAppliedOperatorPerspective = false;
 
     /* Swerve requests to apply during SysId characterization */
-    private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
-    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
-    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+    private final SwerveRequest.SysIdSwerveTranslation translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
+    private final SwerveRequest.SysIdSwerveSteerGains steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
+    private final SwerveRequest.SysIdSwerveRotation rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
     
     private static final Distance THRESHOLD_DISTANCE = Millimeters.of(400);
     private static final Time DEBOUNCE_TIME = Milliseconds.of(50);
     private final IDistanceSensor leftTofSensor;
     private final IDistanceSensor rightTofSensor;
 
-    private enum ReefAlignment {
+    private enum BranchAlignment {
         ALLIGN_LEFT,
         ALLIGN_RIGHT
     }
 
-    public final Trigger isLeftReefAligned = new Trigger(() -> isReefAligned(ReefAlignment.ALLIGN_LEFT)).debounce(DEBOUNCE_TIME.in(Seconds));
-    public final Trigger isRightReefAligned = new Trigger(() -> isReefAligned(ReefAlignment.ALLIGN_RIGHT)).debounce(DEBOUNCE_TIME.in(Seconds));
+    public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALLIGN_LEFT)).debounce(DEBOUNCE_TIME.in(Seconds));
+    public final Trigger isRightReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALLIGN_RIGHT)).debounce(DEBOUNCE_TIME.in(Seconds));
 
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
      * for the drive motors.
      */
     @SuppressWarnings("unused")
-    private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
+    private final SysIdRoutine sysIdRoutineTranslation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     null, // Use default ramp rate (1 V/s)
                     Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
@@ -100,7 +101,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     // Log state with SignalLogger class
                     state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
             new SysIdRoutine.Mechanism(
-                    output -> setControl(m_translationCharacterization.withVolts(output)),
+                    output -> setControl(translationCharacterization.withVolts(output)),
                     null,
                     this));
 
@@ -109,7 +110,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * the steer motors.
      */
     @SuppressWarnings("unused")
-    private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
+    private final SysIdRoutine sysIdRoutineSteer = new SysIdRoutine(
             new SysIdRoutine.Config(
                     null, // Use default ramp rate (1 V/s)
                     Volts.of(7), // Use dynamic voltage of 7 V
@@ -117,7 +118,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     // Log state with SignalLogger class
                     state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
             new SysIdRoutine.Mechanism(
-                    volts -> setControl(m_steerCharacterization.withVolts(volts)),
+                    volts -> setControl(steerCharacterization.withVolts(volts)),
                     null,
                     this));
 
@@ -129,7 +130,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * importing the log to SysId.
      */
     @SuppressWarnings("unused")
-    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
+    private final SysIdRoutine sysIdRoutineRotation = new SysIdRoutine(
             new SysIdRoutine.Config(
                     /* This is in radians per second², but SysId only supports "volts per second" */
                     Volts.of(Math.PI / 6).per(Second),
@@ -141,7 +142,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             new SysIdRoutine.Mechanism(
                     output -> {
                         /* output is actually radians per second, but SysId only supports "volts" */
-                        setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+                        setControl(rotationCharacterization.withRotationalRate(output.in(Volts)));
                         /* also log the requested output for SysId */
                         SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
                     },
@@ -149,7 +150,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     this));
 
     /* The SysId routine to test */
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
+    private SysIdRoutine sysIdRoutineToApply = sysIdRoutineSteer;
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -271,24 +272,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /**
      * Runs the SysId Quasistatic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
+     * specified by {@link #sysIdRoutineToApply}.
      *
      * @param direction Direction of the SysId Quasistatic test
      * @return Command to run
      */
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.quasistatic(direction);
+        return sysIdRoutineToApply.quasistatic(direction);
     }
 
     /**
      * Runs the SysId Dynamic test in the given direction for the routine
-     * specified by {@link #m_sysIdRoutineToApply}.
+     * specified by {@link #sysIdRoutineToApply}.
      *
      * @param direction Direction of the SysId Dynamic test
      * @return Command to run
      */
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.dynamic(direction);
+        return sysIdRoutineToApply.dynamic(direction);
     }
 
     @Override
@@ -329,13 +330,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
          * This ensures driving behavior doesn't change until an explicit disable event
          * occurs during testing.
          */
-        if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
+        if (!hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             DriverStation.getAlliance().ifPresent(allianceColor -> {
                 setOperatorPerspectiveForward(
                         allianceColor == Alliance.Red
                                 ? kRedAlliancePerspectiveRotation
                                 : kBlueAlliancePerspectiveRotation);
-                m_hasAppliedOperatorPerspective = true;
+                hasAppliedOperatorPerspective = true;
             });
         }
     }
@@ -348,7 +349,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             config = RobotConfig.fromGUISettings();
         } catch (Exception e) {
             // Handle exception as needed
-            e.printStackTrace();
+            DriverStation.reportError("Failed to configure AutoBuilder: " + e.getMessage(), e.getStackTrace());
         }
 
         try {
@@ -359,7 +360,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     () -> getState().Speeds, // Supplier of current robot speeds
                     // Consumer of ChassisSpeeds and feedforwards to drive the robot
                     (speeds, feedforwards) -> setControl(
-                            PATH_DRIVE_CONTROLLER.withSpeeds(speeds)
+                            pathDriveController.withSpeeds(speeds)
                                     .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
                     new PPHolonomicDriveController(
@@ -379,8 +380,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
     
-    private boolean isReefAligned(ReefAlignment alignment) {
-        Distance distance = (alignment == ReefAlignment.ALLIGN_LEFT) 
+    private boolean isBranchAligned(BranchAlignment alignment) {
+        Distance distance =
+            (alignment == BranchAlignment.ALLIGN_LEFT) 
                 ? leftTofSensor.getDistance()
                 : rightTofSensor.getDistance();
 
@@ -408,13 +410,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         );
     }
     
-    private Command alignToBranch(ReefAlignment alignment) {
+    private Command alignToBranch(BranchAlignment alignment) {
         return runEnd(
             () -> move(MetersPerSecond::zero, 
-                () -> (alignment == ReefAlignment.ALLIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED, 
+                () -> (alignment == BranchAlignment.ALLIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED, 
                 RadiansPerSecond::zero),
             this::stop)
-            .until((alignment == ReefAlignment.ALLIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
+            .until((alignment == BranchAlignment.ALLIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
     }
 
     public RobotConfig getPathConfig() {
@@ -438,7 +440,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public SwerveRequest.ApplyRobotSpeeds getPathDriveController() {
-        return PATH_DRIVE_CONTROLLER;
+        return pathDriveController;
     }
 
     public LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {

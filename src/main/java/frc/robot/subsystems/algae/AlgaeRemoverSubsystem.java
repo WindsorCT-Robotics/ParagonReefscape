@@ -3,8 +3,9 @@ package frc.robot.subsystems.algae;
 import frc.robot.hardware.IDutyMotor;
 
 import static edu.wpi.first.units.Units.Percent;
-import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
+
+import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -35,26 +36,23 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
     }
 
     private void setTargetDutyCycle(double duty) {
-        setSpeed(Percent.of(duty)).schedule();
+        setSpeed(() -> Percent.of(duty)).schedule();
     }
 
-    private Command setSpeed(Dimensionless duty) {
-        return runOnce(() -> {
-            if (duty.gt(MAX_DUTY) || duty.lt(MIN_DUTY)) {
-                throw new IllegalArgumentException(String.format("Duty cycle must be between %d%% and %d%%; got %d%%", MIN_DUTY.in(Percent), MAX_DUTY.in(Percent), duty.in(Percent)));
+    private Command setSpeed(Supplier<Dimensionless> duty) {
+        return run(() -> {
+            Dimensionless dutyCycle = duty.get();
+            if (dutyCycle.gt(MAX_DUTY) || dutyCycle.lt(MIN_DUTY)) {
+                throw new IllegalArgumentException(String.format("Duty cycle must be between %d%% and %d%%; got %d%%", MIN_DUTY.in(Percent), MAX_DUTY.in(Percent), dutyCycle.in(Percent)));
             }
 
-            targetDutyCyle = duty;
+            targetDutyCyle = dutyCycle;
 
-            if (duty.equals(Percent.zero())) {
-                motor.setDuty(Percent.zero());
-            } else {
-                motor.setDuty(duty);
-            }
+            motor.setDuty(dutyCycle);
         });
     }
 
     public Command removeAlgae() {
-        return setSpeed(DEFAULT_SPEED);
+        return setSpeed(() -> DEFAULT_SPEED);
     }
 }

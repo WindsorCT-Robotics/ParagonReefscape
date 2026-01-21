@@ -2,10 +2,16 @@ package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Centimeters;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Seconds;
+
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +25,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     private static final Distance LEVEL2_ALGAE_HEIGHT = Centimeters.of(108);
     private static final Distance LEVEL3_HEIGHT = Centimeters.of(121);
     private static final Distance LEVEL1_HEIGHT = Centimeters.of(46);
+    private static final Time DEBOUNCE_TIME = Milliseconds.of(50);
+    public final Trigger isFullyExtended;
+    public final Trigger isFullyRetracted;
 
     public enum Position {
         LEVEL_1,
@@ -30,6 +39,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     public ElevatorSubsystem(String subsystemName, IDistanceMotor motor) {
         super(subsystemName);
         this.motor = motor;
+        this.isFullyExtended = new Trigger(motor::isAtForwardLimit).debounce(DEBOUNCE_TIME.in(Seconds), DebounceType.kBoth);
+        this.isFullyRetracted = new Trigger(motor::isAtReverseLimit).debounce(DEBOUNCE_TIME.in(Seconds), DebounceType.kBoth);
     }
 
     @Override
@@ -40,25 +51,27 @@ public class ElevatorSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Height (m)", () -> getHeight().in(Meters), this::setHeight);
     }
 
-    private Command move(Distance height) {
-        return runOnce(() -> motor.travelTo(height));
+    private Command move(Supplier<Distance> height) {
+        return runEnd(() -> motor.travelTo(height.get()), motor::hold);
     }
-
-    private void moveToTargetPosition(Position position) {
+    
+    private Distance getDistance(Position position) {
         switch (position) {
             case LEVEL_1:
-                motor.travelTo(LEVEL1_HEIGHT);
-                break;
+                return LEVEL1_HEIGHT;
             case LEVEL_2:
-                motor.travelTo(LEVEL2_HEIGHT);
-                break;
+                return LEVEL2_HEIGHT;
             case LEVEL_ALGAE:
-                motor.travelTo(LEVEL2_ALGAE_HEIGHT);
-                break;
+                return LEVEL2_ALGAE_HEIGHT;
             case LEVEL_3:
-                motor.travelTo(LEVEL3_HEIGHT);
-                break;
+                return LEVEL3_HEIGHT;
+            default:
+                throw new IllegalArgumentException("Invalid elevator position: " + position);
         }
+    }
+    
+    public Command move(Position position) {
+        return move(() -> getDistance(position));
     }
 
     @AutoLogOutput(key = "Elevator/IsRetracted")
@@ -80,19 +93,19 @@ public class ElevatorSubsystem extends SubsystemBase {
         runOnce(() -> motor.travelTo(Meters.of(heightMeters)));
     }
 
-    public Command resetRelativeEncoder() {
+    public Command reset() {
         return runOnce(motor::resetRelativeEncoder);
     }
     
-    public Command holdPosition() {
+    public Command hold() {
         return runOnce(motor::hold);
     }
 
-    public Command stopMotor() {
+    public Command stop() {
         return runOnce(motor::stop);
     }
 
     public Command translateElevator(Position position) {
-        return runOnce(() -> moveToTargetPosition(position));
+        return run(() -> move(position));
     }
 }
