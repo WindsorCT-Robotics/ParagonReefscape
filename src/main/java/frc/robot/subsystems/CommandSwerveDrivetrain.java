@@ -1,10 +1,12 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Millimeters;
+import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -25,8 +27,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -35,9 +38,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.hardware.IDistanceSensor;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
@@ -68,6 +73,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+    
+    private static final Distance THRESHOLD_DISTANCE = Millimeters.of(400);
+    private static final Time DEBOUNCE_TIME = Milliseconds.of(50);
+    private final IDistanceSensor leftTofSensor;
+    private final IDistanceSensor rightTofSensor;
+
+    private enum ReefAlignment {
+        ALLIGN_LEFT,
+        ALLIGN_RIGHT
+    }
+
+    public final Trigger isLeftReefAligned = new Trigger(() -> isReefAligned(ReefAlignment.ALLIGN_LEFT)).debounce(DEBOUNCE_TIME.in(Seconds));
+    public final Trigger isRightReefAligned = new Trigger(() -> isReefAligned(ReefAlignment.ALLIGN_RIGHT)).debounce(DEBOUNCE_TIME.in(Seconds));
 
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
@@ -142,14 +160,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * through
      * getters in the classes.
      *
+     * @param name                Name of the subsystem
+     * @param leftTofSensor       Distance sensor for calibrating alignment to the left branch on a reef.
+     * @param rightTofSensor      Distance sensor for calibrating alignment to the right branch on a reef.
      * @param drivetrainConstants Drivetrain-wide constants for the swerve drive
      * @param modules             Constants for each specific module
      */
     public CommandSwerveDrivetrain(String name,
+            IDistanceSensor leftTofSensor,
+            IDistanceSensor rightTofSensor,
             SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules) {
-
         super(drivetrainConstants, modules);
+        this.leftTofSensor = leftTofSensor;
+        this.rightTofSensor = rightTofSensor;
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
@@ -164,6 +188,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * through
      * getters in the classes.
      *
+     * @param name                Name of the subsystem
+     * @param leftTofSensor       Distance sensor for calibrating alignment to the left branch on a reef.
+     * @param rightTofSensor      Distance sensor for calibrating alignment to the right branch on a reef.
      * @param drivetrainConstants     Drivetrain-wide constants for the swerve drive
      * @param odometryUpdateFrequency The frequency to run the odometry loop. If
      *                                unspecified or set to 0 Hz, this is 250 Hz on
@@ -171,10 +198,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param modules                 Constants for each specific module
      */
     public CommandSwerveDrivetrain(String name,
+            IDistanceSensor leftTofSensor,
+            IDistanceSensor rightTofSensor,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
+        this.leftTofSensor = leftTofSensor;
+        this.rightTofSensor = rightTofSensor;
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
@@ -189,6 +220,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * through
      * getters in the classes.
      *
+     * @param name                Name of the subsystem
+     * @param leftTofSensor       Distance sensor for calibrating alignment to the left branch on a reef.
+     * @param rightTofSensor      Distance sensor for calibrating alignment to the right branch on a reef.
      * @param drivetrainConstants       Drivetrain-wide constants for the swerve
      *                                  drive
      * @param odometryUpdateFrequency   The frequency to run the odometry loop. If
@@ -208,6 +242,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param modules                   Constants for each specific module
      */
     public CommandSwerveDrivetrain(String name,
+            IDistanceSensor leftTofSensor,
+            IDistanceSensor rightTofSensor,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             Matrix<N3, N1> odometryStandardDeviation,
@@ -215,6 +251,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation,
                 modules);
+        this.leftTofSensor = leftTofSensor;
+        this.rightTofSensor = rightTofSensor;
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
@@ -340,9 +378,43 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     ex.getStackTrace());
         }
     }
+    
+    private boolean isReefAligned(ReefAlignment alignment) {
+        Distance distance = (alignment == ReefAlignment.ALLIGN_LEFT) 
+                ? leftTofSensor.getDistance()
+                : rightTofSensor.getDistance();
 
-    public void stop() {
-        setControl(new RobotCentric());
+        return distance.gte(THRESHOLD_DISTANCE);
+    }
+    
+    private Command stop() {
+        return runOnce(() -> setControl(new RobotCentric()));
+    }
+    
+    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY, Supplier<AngularVelocity> rotationalRate) {
+        return run(() -> setControl(
+            new RobotCentric()
+            .withVelocityX(velocityX.get())
+            .withVelocityY(velocityY.get())
+            .withRotationalRate(rotationalRate.get())
+        ));
+    }
+    
+    public Command moveWithPercentages(Supplier<Dimensionless> percentX, Supplier<Dimensionless> percentY, Supplier<Dimensionless> percentRotationalRate) {
+        return move(
+            () -> calculateLinearVelocityFromPercentage(percentX),
+            () -> calculateLinearVelocityFromPercentage(percentY),
+            () -> calculateAngularVelocityFromPercentage(percentRotationalRate)
+        );
+    }
+    
+    private Command alignToBranch(ReefAlignment alignment) {
+        return runEnd(
+            () -> move(MetersPerSecond::zero, 
+                () -> (alignment == ReefAlignment.ALLIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED, 
+                RadiansPerSecond::zero),
+            this::stop)
+            .until((alignment == ReefAlignment.ALLIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
     }
 
     public RobotConfig getPathConfig() {
@@ -367,10 +439,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public SwerveRequest.ApplyRobotSpeeds getPathDriveController() {
         return PATH_DRIVE_CONTROLLER;
-    }
-
-    public LinearVelocity getDefaultTOFSpeed() {
-        return TOF_SPEED;
     }
 
     public LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {

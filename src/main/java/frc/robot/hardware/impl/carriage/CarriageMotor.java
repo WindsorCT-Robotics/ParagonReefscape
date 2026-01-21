@@ -1,48 +1,77 @@
 package frc.robot.hardware.impl.carriage;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Value;
+
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Dimensionless;
-import frc.robot.hardware.IDifferentialMotors;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.IDutyRPMMotor;
-import frc.robot.hardware.IRPMMotor;
 
-import static edu.wpi.first.units.Units.Percent;
+public class CarriageMotor implements IDutyRPMMotor {
+    private final SparkMax motor;
+    private final RelativeEncoder encoder;
+    private static final Current CURRENT_LIMIT = Amps.of(50);
 
-public class CarriageMotor implements IDifferentialMotors {
-    private final IDutyRPMMotor rightMotor;
-    private final IDutyRPMMotor leftMotor;
-    private static final Dimensionless SPEED_DIFFERENTIAL = Percent.of(0.25);
+    /**
+     * Defines a motor used in the carriage system. The motor will be configured with IdleMode sett to brake and a current limit of 50A.
+     * @param motor Thhe SparkMax motor controller.
+     * @param willRunInverted Whether the motor will be inverted. By default, the left motor is inverted.
+     */
+    public CarriageMotor(SparkMax motor, boolean willRunInverted) {
+        this.motor = motor;
+        this.encoder = motor.getEncoder();
 
-    public CarriageMotor(IDutyRPMMotor rightMotor, IDutyRPMMotor leftMotor) {
-        this.rightMotor = rightMotor;
-        this.leftMotor = leftMotor;
+        SparkMaxConfig config = new SparkMaxConfig();
+
+        config
+            .inverted(willRunInverted)
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit((int) CURRENT_LIMIT.in(Amps));
+
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
     
     @Override
-    public void moveRight(Dimensionless duty) {
-        rightMotor.setDuty(duty.times(SPEED_DIFFERENTIAL));
-        leftMotor.setDuty(duty);
+    public void setVoltage(Voltage voltage) {
+        motor.setVoltage(voltage.in(Volts));
     }
 
     @Override
-    public void moveLeft(Dimensionless duty) {
-        rightMotor.setDuty(duty);
-        leftMotor.setDuty(duty.times(SPEED_DIFFERENTIAL));
+    public Voltage getVoltage() {
+        return Volts.of(motor.getBusVoltage());
     }
 
     @Override
-    public void move(Dimensionless duty) {
-        rightMotor.setDuty(duty);
-        leftMotor.setDuty(duty);
+    public void resetRelativeEncoder() {
+        encoder.setPosition(0);
     }
 
     @Override
-    public IRPMMotor getLeftMotor() {
-        return leftMotor;
+    public void hold() {
+        stop();
     }
 
     @Override
-    public IRPMMotor getRightMotor() {
-        return rightMotor;
+    public void stop() {
+        motor.stopMotor();
+    }
+
+    @Override
+    public boolean isMoving() {
+        return encoder.getVelocity() > 0;
     }
 
     @Override
@@ -56,24 +85,17 @@ public class CarriageMotor implements IDifferentialMotors {
     }
 
     @Override
-    public boolean isAtLeftLimit() {
-        return false;
+    public Angle getPosition() {
+        return Rotations.of(encoder.getPosition());
     }
 
     @Override
-    public boolean isAtRightLimit() {
-        return false;
+    public AngularVelocity getVelocity() {
+        return RPM.of(encoder.getVelocity());
     }
 
     @Override
-    public void resetRelativeEncoder() {
-        rightMotor.resetRelativeEncoder();
-        leftMotor.resetRelativeEncoder();
-    }
-
-    @Override
-    public void stop() {
-        leftMotor.stop();
-        rightMotor.stop();
+    public void setDuty(Dimensionless speed) {
+        motor.set(speed.in(Value));
     }
 }
