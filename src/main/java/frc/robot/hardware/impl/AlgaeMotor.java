@@ -9,6 +9,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -22,6 +23,8 @@ import frc.robot.hardware.IRPMMotor;
 public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     private final SparkMax motor;
     private final RelativeEncoder encoder;
+    private static final Dimensionless MAX_DUTY = Percent.of(100);
+    private static final Dimensionless MIN_DUTY = Percent.of(-100);
 
     public AlgaeMotor(SparkMax motor) {
         this.motor = motor;
@@ -39,6 +42,9 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
 
     @Override
     public void setDuty(Dimensionless speed) {
+        if (speed.gt(MAX_DUTY) || speed.lt(MIN_DUTY)) {
+            throw new IllegalArgumentException("Speed " + speed + " is out of bounds for duty motor Acceptable ranges are [" + MIN_DUTY + ", " + MAX_DUTY + "].");
+        }
         motor.set(speed.in(Value));
     }
     
@@ -64,6 +70,7 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
 
     @Override
     public void setVoltage(Voltage voltage) {
+        // TODO: Determine safe voltage limits for motor
         motor.setVoltage(voltage.in(Volts));
     }
 
