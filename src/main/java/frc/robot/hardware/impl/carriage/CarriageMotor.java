@@ -1,6 +1,7 @@
 package frc.robot.hardware.impl.carriage;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.units.Units.Rotations;
@@ -24,7 +25,8 @@ public class CarriageMotor implements IDutyRPMMotor {
     private final SparkMax motor;
     private final RelativeEncoder encoder;
     private static final Current CURRENT_LIMIT = Amps.of(50);
-
+    private static final Dimensionless MAX_DUTY = Percent.of(100);
+    private static final Dimensionless MIN_DUTY = Percent.of(-100);
     /**
      * Defines a motor used in the carriage system. The motor will be configured with IdleMode sett to brake and a current limit of 50A.
      * @param motor Thhe SparkMax motor controller.
@@ -96,6 +98,10 @@ public class CarriageMotor implements IDutyRPMMotor {
 
     @Override
     public void setDuty(Dimensionless speed) {
+        if(speed.gt(MAX_DUTY) || speed.lt(MIN_DUTY)) {
+            throw new IllegalArgumentException("Duty cycle " + speed + " is out of bounds. Valid range is [" + MIN_DUTY + ", " + MAX_DUTY + "].");
+        }
+        
         motor.set(speed.in(Value));
     }
 }
