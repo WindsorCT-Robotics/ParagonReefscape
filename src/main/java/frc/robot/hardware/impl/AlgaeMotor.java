@@ -53,16 +53,6 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     }
 
     @Override
-    public boolean isAtForwardLimit() {
-        return false;
-    }
-
-    @Override
-    public boolean isAtReverseLimit() {
-        return false;
-    }
-
-    @Override
     public boolean isMoving() {
         return (getVelocity().gt(RPM.zero()));
     }

@@ -25,16 +25,17 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.units.LinearAccelerationUnit;
 import edu.wpi.first.units.LinearVelocityUnit;
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.hardware.IDistanceMotor;
+import frc.robot.hardware.ILimitedDistanceMotor;
 import frc.robot.units.GearRatio;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 
-public class ElevatorMotor implements IDistanceMotor {
+public class ElevatorMotor implements ILimitedDistanceMotor {
     protected final SparkMax motor;
     protected final RelativeEncoder encoder;
 
@@ -51,6 +52,8 @@ public class ElevatorMotor implements IDistanceMotor {
     private static final Distance PULLEY_DIAMETER = Meters.of(0.042);
     private static final Distance ALLOWED_ERROR = Meters.of(0.75);
     private static final Distance DISTANCE_FROM_FLOOR = Meters.of(0.115);
+    
+    private static final Dimensionless HOMING_DUTY = Percent.of(-20);
 
     public ElevatorMotor(SparkMax motor) {
         ff = new ElevatorFeedforward(STATIC_VOLTAGE.in(Volts), GRAVITY_COMPENSATION.in(Volts), VELOCITY_FF.in(VoltsPerMeterPerSecond), ACCELERATTION_FF.in(VoltsPerMeterPerSecondSquared));
@@ -147,5 +150,10 @@ public class ElevatorMotor implements IDistanceMotor {
     @Override
     public LinearVelocity getVelocity() {
         return Meters.per(Minute).of(encoder.getVelocity());
+    }
+    
+    @Override
+    public void home() {
+        motor.set(HOMING_DUTY.in(Value));
     }
 }

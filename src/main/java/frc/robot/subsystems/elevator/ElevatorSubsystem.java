@@ -16,10 +16,10 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.hardware.IDistanceMotor;
+import frc.robot.hardware.ILimitedDistanceMotor;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    private final IDistanceMotor motor;
+    private final ILimitedDistanceMotor motor;
     private static final Distance LEVEL2_HEIGHT = Centimeters.of(81);
     // TODO: Double-check to make sure this value is correct
     private static final Distance LEVEL2_ALGAE_HEIGHT = Centimeters.of(108);
@@ -36,7 +36,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         LEVEL_3
     }
 
-    public ElevatorSubsystem(String subsystemName, IDistanceMotor motor) {
+    public ElevatorSubsystem(String subsystemName, ILimitedDistanceMotor motor) {
         super(subsystemName);
         this.motor = motor;
         this.isFullyExtended = new Trigger(motor::isAtForwardLimit).debounce(DEBOUNCE_TIME.in(Seconds), DebounceType.kBoth);
@@ -107,5 +107,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public Command translateElevator(Position position) {
         return run(() -> move(position));
+    }
+    
+    public Command home() {
+        return run(() -> motor.home())
+            .until(motor::isAtReverseLimit)
+            .andThen(motor::resetRelativeEncoder);
     }
 }

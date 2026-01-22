@@ -77,16 +77,6 @@ public class CarriageMotor implements IDutyRPMMotor {
     }
 
     @Override
-    public boolean isAtForwardLimit() {
-        return false;
-    }
-
-    @Override
-    public boolean isAtReverseLimit() {
-        return false;
-    }
-
-    @Override
     public Angle getPosition() {
         return Rotations.of(encoder.getPosition());
     }
