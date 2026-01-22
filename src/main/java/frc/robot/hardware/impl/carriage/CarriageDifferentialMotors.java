@@ -10,7 +10,7 @@ import static edu.wpi.first.units.Units.Percent;
 public class CarriageDifferentialMotors implements IDifferentialMotors {
     private final IDutyRPMMotor rightMotor;
     private final IDutyRPMMotor leftMotor;
-    private static final Dimensionless SPEED_DIFFERENTIAL = Percent.of(0.25);
+    private static final Dimensionless SPEED_DIFFERENTIAL = Percent.of(25);
 
     public CarriageDifferentialMotors(IDutyRPMMotor rightMotor, IDutyRPMMotor leftMotor) {
         this.rightMotor = rightMotor;
