@@ -2,13 +2,17 @@ package frc.robot.subsystems.carriage;
 
 import frc.robot.hardware.IBeamBreak;
 import frc.robot.hardware.IDifferentialMotors;
-import frc.robot.hardware.MotorDirection;
-
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Dimensionless;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
+import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -16,6 +20,21 @@ public class CarriageSubsystem extends SubsystemBase {
     private final IDifferentialMotors rollerMotors;
     private final IBeamBreak beamBreak;
     private static final Dimensionless DEFAULT_SPEED = Percent.of(25);
+    private final Time debounceTime = Milliseconds.of(50);
+    public final Trigger beamBroken = new Trigger(this::isBeamBroken).debounce(debounceTime.in(Seconds), DebounceType.kBoth);
+    public final Trigger beamIntact = new Trigger(this::isBeamIntact).debounce(debounceTime.in(Seconds), DebounceType.kBoth);
+
+    public enum CamberDirection {
+        /**
+        * Curves or spins the coral left.
+        */
+        LEFT,
+
+        /**
+        * Curves or spins the coral right.
+        */
+        RIGHT
+    }
 
     public CarriageSubsystem(String subsystemName, IDifferentialMotors rollerMotors, IBeamBreak beamBreak) {
         super(subsystemName);
@@ -31,32 +50,50 @@ public class CarriageSubsystem extends SubsystemBase {
         builder.addBooleanProperty("Outtake Beam Breaker", this::isBeamBroken, null);
     }
     
-    public Dimensionless getDefaultSpeed() {
-        return DEFAULT_SPEED;
+    public Command loadCoral() {
+        return runEnd(this::moveRollers, rollerMotors::stop).until(beamBroken);
+    }
+    
+    public Command scoreCoral() {
+        return runEnd(this::moveRollers, rollerMotors::stop).until(beamIntact);
+    }
+    
+    public Command unloadCoral() {
+        return runEnd(this::reverseRollers, rollerMotors::stop).until(beamIntact);
     }
 
-    public void moveRollers(Dimensionless speed, MotorDirection direction) {
-        rollerMotors.move(speed, direction);
+    public Command reloadCoral() {
+        return unloadCoral().andThen(loadCoral());
+    }
+    
+    public Command scoreCoralCambered(CamberDirection direction) {
+        return runEnd(() -> {
+            if (direction == CamberDirection.LEFT) {
+                rollerMotors.moveLeft(DEFAULT_SPEED);
+            } else {
+                rollerMotors.moveRight(DEFAULT_SPEED);
+            }
+        }, rollerMotors::stop).until(beamIntact);
     }
 
-    public void moveRollersRight(Dimensionless speed) {
-        rollerMotors.moveRight(speed);
+    public Command resetMotorEncoder() {
+        return runOnce(rollerMotors::resetRelativeEncoder);
     }
 
-    public void moveRollersLeft(Dimensionless speed) {
-        rollerMotors.moveLeft(speed);
+    private void moveRollers() {
+        rollerMotors.move(DEFAULT_SPEED);
+    }
+    
+    private void reverseRollers() {
+        rollerMotors.move(DEFAULT_SPEED.unaryMinus());
     }
 
     @AutoLogOutput(key = "Sensor/OuttakeBeam")
-    public boolean isBeamBroken() {
+    private boolean isBeamBroken() {
         return beamBreak.isBeamBroken();
     }
-
-    public void resetRollerEncoder() {
-        rollerMotors.resetRelativeEncoder();
-    }
     
-    public void stopRollers() {
-        rollerMotors.stop();
+    private boolean isBeamIntact() {
+        return !beamBreak.isBeamBroken();
     }
 }

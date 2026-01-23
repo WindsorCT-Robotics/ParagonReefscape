@@ -23,7 +23,7 @@ public interface IDifferentialMotors {
      * @param duty The speed at which the motors will move.
      * @param direction The direction specified to move the motors.
      */
-    public void move(Dimensionless duty, MotorDirection direction);
+    public void move(Dimensionless duty);
     
     /**
      * Get the left motor.
