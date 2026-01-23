@@ -27,6 +27,9 @@ public class CarriageMotor implements IDutyRPMMotor {
     private static final Current CURRENT_LIMIT = Amps.of(50);
     private static final Dimensionless MAX_DUTY = Percent.of(100);
     private static final Dimensionless MIN_DUTY = Percent.of(-100);
+    private static final Voltage MIN_VOLTAGE = Volts.of(5.5);
+    private static final Voltage MAX_VOLTAGE = Volts.of(24);
+
     /**
      * Defines a motor used in the carriage system. The motor will be configured with IdleMode sett to brake and a current limit of 50A.
      * @param motor Thhe SparkMax motor controller.
@@ -48,6 +51,10 @@ public class CarriageMotor implements IDutyRPMMotor {
     
     @Override
     public void setVoltage(Voltage voltage) {
+        if (voltage.gt(MAX_VOLTAGE) || voltage.lt(MIN_VOLTAGE)) {
+            throw new IllegalArgumentException("Voltage " + voltage + " is out of bounds. Valid range is [" + MIN_VOLTAGE + ", " + MAX_VOLTAGE + "].");
+        }
+
         motor.setVoltage(voltage.in(Volts));
     }
 
