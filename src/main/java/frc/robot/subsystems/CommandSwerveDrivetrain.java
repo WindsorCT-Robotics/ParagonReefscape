@@ -81,12 +81,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final IDistanceSensor rightTofSensor;
 
     private enum BranchAlignment {
-        ALLIGN_LEFT,
-        ALLIGN_RIGHT
+        ALIGN_LEFT,
+        ALIGN_RIGHT
     }
 
-    public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALLIGN_LEFT)).debounce(DEBOUNCE_TIME.in(Seconds));
-    public final Trigger isRightReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALLIGN_RIGHT)).debounce(DEBOUNCE_TIME.in(Seconds));
+    public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_LEFT)).debounce(DEBOUNCE_TIME.in(Seconds));
+    public final Trigger isRightReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_RIGHT)).debounce(DEBOUNCE_TIME.in(Seconds));
 
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
@@ -382,7 +382,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     
     private boolean isBranchAligned(BranchAlignment alignment) {
         Distance distance =
-            (alignment == BranchAlignment.ALLIGN_LEFT) 
+            (alignment == BranchAlignment.ALIGN_LEFT) 
                 ? leftTofSensor.getDistance()
                 : rightTofSensor.getDistance();
 
@@ -413,10 +413,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Command alignToBranch(BranchAlignment alignment) {
         return runEnd(
             () -> move(MetersPerSecond::zero, 
-                () -> (alignment == BranchAlignment.ALLIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED, 
+                () -> (alignment == BranchAlignment.ALIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED, 
                 RadiansPerSecond::zero),
             this::stop)
-            .until((alignment == BranchAlignment.ALLIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
+            .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
     }
 
     public RobotConfig getPathConfig() {
