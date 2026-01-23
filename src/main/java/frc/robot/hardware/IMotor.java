@@ -42,22 +42,4 @@ public interface IMotor {
      * @return True if the motor is moving.
      */
     public boolean isMoving();
-
-    /**
-     * Determine if the motor has hit its forward limit switch.
-     * 
-     * @return True if the forward limit switch has been hit.
-     * @implNote If there is no forward limit, this function will always return
-     *           False.
-     */
-    public boolean isAtForwardLimit();
-
-    /**
-     * Determine if the motor has hit its reverse limit switch.
-     * 
-     * @return True if the reverse limit switch has been hit.
-     * @implNote If there is no reverse limit, this function will always return
-     *           False.
-     */
-    public boolean isAtReverseLimit();
 }

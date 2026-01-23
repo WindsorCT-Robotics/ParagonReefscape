@@ -9,6 +9,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 
@@ -18,12 +19,14 @@ import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.hardware.IDutyMotor;
 import frc.robot.hardware.IRPMMotor;
-import frc.robot.hardware.MotorDirection;
-import frc.robot.hardware.exceptions.InvalidMotorDirectionException;
 
 public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     private final SparkMax motor;
     private final RelativeEncoder encoder;
+    private static final Dimensionless MAX_DUTY = Percent.of(100);
+    private static final Dimensionless MIN_DUTY = Percent.of(-100);
+    private static final Voltage MAX_VOLTAGE = Volts.of(24);
+    private static final Voltage MIN_VOLTAGE = Volts.of(5.5);
 
     public AlgaeMotor(SparkMax motor) {
         this.motor = motor;
@@ -32,30 +35,22 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
         SparkMaxConfig config = new SparkMaxConfig();
 
         config
-            .inverted(false)
-            .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(50);
-            
+                .inverted(false)
+                .idleMode(IdleMode.kBrake)
+                .smartCurrentLimit(50);
+
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     @Override
-    public void setDuty(Dimensionless speed, MotorDirection direction) {
-        switch (direction) {
-        case FORWARD:
-            motor.set(speed.in(Value));
-            break;
-        case REVERSE:
-            motor.set(-speed.in(Value));
-            break;
-        case STOPPED:
-            stop();
-            break;
-        default:
-            throw new InvalidMotorDirectionException(direction);
+    public void setDuty(Dimensionless speed) {
+        if (speed.gt(MAX_DUTY) || speed.lt(MIN_DUTY)) {
+            throw new IllegalArgumentException("Speed " + speed
+                    + " is out of bounds for duty motor Acceptable ranges are [" + MIN_DUTY + ", " + MAX_DUTY + "].");
         }
+        motor.set(speed.in(Value));
     }
-    
+
     @Override
     public Voltage getVoltage() {
         return Volts.of(motor.getBusVoltage());
@@ -67,18 +62,8 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     }
 
     @Override
-    public boolean isAtForwardLimit() {
-        return false;
-    }
-
-    @Override
-    public boolean isAtReverseLimit() {
-        return false;
-    }
-
-    @Override
     public boolean isMoving() {
-        return (getVelocity().gt(RPM.zero()));
+        return !(getVelocity().equals(RPM.zero()));
     }
 
     @Override
@@ -88,6 +73,12 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
 
     @Override
     public void setVoltage(Voltage voltage) {
+        if (voltage.lt(MIN_VOLTAGE) || voltage.gt(MAX_VOLTAGE)) {
+            throw new IllegalArgumentException(
+                    "Voltage " + voltage + " is out of bounds for voltage motor. Acceptable ranges are [" + MIN_VOLTAGE
+                            + ", " + MAX_VOLTAGE + "].");
+        }
+
         motor.setVoltage(voltage.in(Volts));
     }
 
@@ -100,7 +91,7 @@ public class AlgaeMotor implements IDutyMotor, IRPMMotor {
     public void resetRelativeEncoder() {
         encoder.setPosition(0);
     }
-    
+
     @Override
     public AngularVelocity getVelocity() {
         return RPM.of(encoder.getVelocity());

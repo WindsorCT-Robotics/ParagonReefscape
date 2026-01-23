@@ -14,10 +14,10 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.hardware.sim.ISimPositionalMotor;
+import frc.robot.hardware.sim.ISimLimitedDistanceMotor;
 
 public class ElevatorSubsystemSim extends ElevatorSubsystem {
-    private final ISimPositionalMotor motor;
+    private final ISimLimitedDistanceMotor motor;
     private final LoggedMechanism2d visualizedElevator;
     private final LoggedMechanismRoot2d elevatorRoot;
     @SuppressWarnings("unused")
@@ -32,7 +32,7 @@ public class ElevatorSubsystemSim extends ElevatorSubsystem {
     private static final Distance ELEVATOR_LIGAMENT_LENGTH = Inches.of(50);
     private static final Angle ELEVATOR_LIGAMENT_ANGLE = Degrees.of(90);
 
-    public ElevatorSubsystemSim(String subsystemName, ISimPositionalMotor motor,
+    public ElevatorSubsystemSim(String subsystemName, ISimLimitedDistanceMotor motor,
             Supplier<Voltage> batteryVoltageSupplier, Supplier<Time> simTimeSupplier) {
         super(subsystemName, motor);
         this.motor = motor;
