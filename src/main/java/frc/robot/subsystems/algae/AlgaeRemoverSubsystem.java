@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
-    private Dimensionless targetDutyCyle;
+    private Dimensionless targetDutyCycle;
     private IDutyMotor motor;
     private static final Dimensionless DEFAULT_SPEED = Percent.of(70); // TODO: Determine if speed needs to be negated
     private static final Dimensionless MAX_DUTY = Percent.of(100);
@@ -29,8 +29,8 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
 
-        builder.addBooleanProperty("IsEnabled", () -> targetDutyCyle.equals(Percent.zero()), null);
-        builder.addDoubleProperty("Target Duty Cycle (%)", () -> targetDutyCyle.in(Percent), this::setTargetDutyCycle);
+        builder.addBooleanProperty("IsEnabled", () -> targetDutyCycle.equals(Percent.zero()), null);
+        builder.addDoubleProperty("Target Duty Cycle (%)", () -> targetDutyCycle.in(Percent), this::setTargetDutyCycle);
         builder.addDoubleProperty("Voltage (v)", () -> motor.getVoltage().in(Volts),
                 v -> motor.setVoltage(Volts.of(v)));
     }
@@ -46,7 +46,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
                 throw new IllegalArgumentException(String.format("Duty cycle must be between %d%% and %d%%; got %d%%", MIN_DUTY.in(Percent), MAX_DUTY.in(Percent), dutyCycle.in(Percent)));
             }
 
-            targetDutyCyle = dutyCycle;
+            targetDutyCycle = dutyCycle;
 
             motor.setDuty(dutyCycle);
         });
