@@ -25,6 +25,7 @@ public class CarriageSubsystem extends SubsystemBase {
     public final Trigger beamIntact = new Trigger(this::isBeamIntact).debounce(debounceTime.in(Seconds), DebounceType.kBoth);
 
     public enum CamberDirection {
+        STRAIGHT,
         /**
         * Curves or spins the coral left.
         */
@@ -54,10 +55,6 @@ public class CarriageSubsystem extends SubsystemBase {
         return runEnd(this::moveRollers, rollerMotors::stop).until(beamBroken);
     }
     
-    public Command scoreCoral() {
-        return runEnd(this::moveRollers, rollerMotors::stop).until(beamIntact);
-    }
-    
     public Command unloadCoral() {
         return runEnd(this::reverseRollers, rollerMotors::stop).until(beamIntact);
     }
@@ -66,12 +63,18 @@ public class CarriageSubsystem extends SubsystemBase {
         return unloadCoral().andThen(loadCoral());
     }
     
-    public Command scoreCoralCambered(CamberDirection direction) {
+    public Command scoreCoral(CamberDirection direction) {
         return runEnd(() -> {
-            if (direction == CamberDirection.LEFT) {
+            switch (direction) {
+            case LEFT:
                 rollerMotors.moveLeft(DEFAULT_SPEED);
-            } else {
+                break;
+            case RIGHT:
                 rollerMotors.moveRight(DEFAULT_SPEED);
+                break;
+            case STRAIGHT:
+                moveRollers();
+                break;
             }
         }, rollerMotors::stop).until(beamIntact);
     }
