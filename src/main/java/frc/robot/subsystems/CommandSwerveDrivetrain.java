@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import javax.print.event.PrintEvent;
-
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -690,7 +688,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         PathConstraints pathConstraints,
         GoalEndState goalEndState
     ) {
-        Pose3d branchPose = findClosestTag().getValue().pose;
+        Pose3d branchPose = translateTo(findClosestTag().getValue().pose, Degrees.of(90.0), Degrees.zero(), BRANCH_DISTANCE);
         return pathToTagCommand(branchPose, branchAlignment, pathConstraints, goalEndState);
     }
 }
