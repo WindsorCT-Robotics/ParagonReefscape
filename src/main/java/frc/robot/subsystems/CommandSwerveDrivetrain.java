@@ -13,18 +13,21 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
 import javax.print.event.PrintEvent;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathfindThenFollowPath;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -41,6 +44,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
@@ -615,11 +620,77 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new PathPlannerPath(waypoints, constraints, idealStartingState, goalEndState);
     }
 
+    private PathPlannerPath createPathToTag(
+        Pose3d tag, 
+        BranchAlignment branchAlignment,
+        PathConstraints pathConstraints,
+        GoalEndState goalEndState
+    ) {
+        SwerveDriveState robotCurrentState = getState();
+        ChassisSpeeds robotChassisSpeeds = robotCurrentState.Speeds;
+        Translation2d robotWaypointAnchor = robotCurrentState.Pose.getTranslation();
+
+        Pigeon2 gyro = getPigeon2();
+        LinearVelocity robotVelocity = MetersPerSecond.of(
+            Math.sqrt(
+                Math.pow(robotChassisSpeeds.vxMetersPerSecond, 2)
+                + Math.pow(robotChassisSpeeds.vyMetersPerSecond, 2)
+        )); // TODO: Does this accurately calculate LinearVelocity?
+
+        IdealStartingState idealStartingState = new IdealStartingState(robotVelocity, new Rotation2d(gyro.getRotation3d().getZ())); // TODO: Is getZ() the vertical axis for angle?
+        Translation2d prevControlRobot = new Translation2d(); // TODO: Make heading point into the direction of velocity maybe.
+        Translation2d nextControlRobot = new Translation2d();
+        
+        Translation2d branchPose = poseToBranch(tag.toPose2d(), branchAlignment).getTranslation();
+        Translation2d prevControlBranch = new Translation2d(); // TODO: Do theses values need to be adjusted?
+        Translation2d nextControlBranch = new Translation2d();
+
+        Waypoint branchWaypoint = new Waypoint(prevControlBranch, branchPose, nextControlBranch);
+
+        Waypoint robotPositionWaypoint = new Waypoint(prevControlRobot, robotWaypointAnchor, nextControlRobot);
+        List<Waypoint> waypoints = new ArrayList<Waypoint>(List.of(robotPositionWaypoint, branchWaypoint));
+        
+        PathPlannerPath path = createPath(waypoints, pathConstraints, idealStartingState, goalEndState);
+
+        return path;
+    }
+
     private Command followPath(PathPlannerPath path) {
         return AutoBuilder.followPath(path);
     }
 
     private Command pathFindThenFollowPath(PathPlannerPath path, PathConstraints pathConstraints) {
         return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
+    }
+
+    public Command pathToTagCommand(
+        Pose3d tag, 
+        BranchAlignment branchAlignment,
+        PathConstraints pathConstraints,
+        GoalEndState goalEndState
+    ) {
+        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints, goalEndState);
+
+        return followPath(path);
+    }
+
+    public Command pathFindThenPathToTagCommand(
+        Pose3d tag, 
+        BranchAlignment branchAlignment,
+        PathConstraints pathConstraints,
+        GoalEndState goalEndState
+    ) {
+        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints, goalEndState);
+
+        return pathFindThenFollowPath(path, pathConstraints);
+    }
+
+    public Command createPathToClosestTagCommand(
+        BranchAlignment branchAlignment,
+        PathConstraints pathConstraints,
+        GoalEndState goalEndState
+    ) {
+        Pose3d branchPose = findClosestTag().getValue().pose;
+        return pathToTagCommand(branchPose, branchAlignment, pathConstraints, goalEndState);
     }
 }
