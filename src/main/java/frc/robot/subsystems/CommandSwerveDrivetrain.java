@@ -16,6 +16,8 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.List;
 import java.util.function.Supplier;
 
+import javax.print.event.PrintEvent;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -611,5 +613,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private PathPlannerPath createPath(List<Waypoint> waypoints, PathConstraints constraints, IdealStartingState idealStartingState, GoalEndState goalEndState) {
         return new PathPlannerPath(waypoints, constraints, idealStartingState, goalEndState);
+    }
+
+    private Command followPath(PathPlannerPath path) {
+        return AutoBuilder.followPath(path);
+    }
+
+    private Command pathFindThenFollowPath(PathPlannerPath path, PathConstraints pathConstraints) {
+        return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
     }
 }
