@@ -42,11 +42,14 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -593,5 +596,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Distance distance) {
         return translateTo(pose, yaw, pitch, pose.getRotation(), distance);
+    }
+
+    private PathConstraints createPathConstraints(
+        LinearVelocity maxLinearVelocity, 
+        LinearAcceleration maxLinearAcceleration,
+        AngularVelocity maxAngularVelocity,
+        AngularAcceleration maxAngularAcceleration,
+        Voltage nomialVoltage,
+        boolean ignoreConstraints
+        ) {
+        return new PathConstraints(maxLinearVelocity, maxLinearAcceleration, maxAngularVelocity, maxAngularAcceleration, nomialVoltage, ignoreConstraints);
     }
 }
