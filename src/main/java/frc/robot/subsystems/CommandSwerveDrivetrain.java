@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Millimeters;
@@ -120,6 +121,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private static final Distance BRANCH_DISTANCE = Meters.of(0.1651);
+    private static final Distance DEFAULT_CONTROL_DISTANCE = Meters.of(0.5);
 
     public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_LEFT))
             .debounce(DEBOUNCE_TIME.in(Seconds));
@@ -565,13 +567,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return distanceFromPointToPoint;
     }
 
-    private Pose2d poseToBranch(Pose2d pose, BranchAlignment branchSide) {
+    private Pose3d poseToBranch(Pose3d pose, BranchAlignment branchSide) {
         switch (branchSide) {
             case ALIGN_LEFT:
-                pose = translateTo(pose, Degrees.of(90), BRANCH_DISTANCE.times(-1));
+                pose = translateTo(pose, Degrees.of(90), Degrees.zero(), BRANCH_DISTANCE.times(-1));
                 break;
             case ALIGN_RIGHT:
-                pose = translateTo(pose, Degrees.of(90), BRANCH_DISTANCE);
+                pose = translateTo(pose, Degrees.of(90), Degrees.zero(), BRANCH_DISTANCE);
                 break;
         }
 
@@ -627,29 +629,34 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         GoalEndState goalEndState
     ) {
         SwerveDriveState robotCurrentState = getState();
-        ChassisSpeeds robotChassisSpeeds = robotCurrentState.Speeds;
+        Pigeon2 gyro = getPigeon2();
+
+        ChassisSpeeds robotRelativeChassisSpeeds = robotCurrentState.Speeds;
+        ChassisSpeeds fieldRelativeChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeChassisSpeeds, gyro.getRotation2d());
+
         Translation2d robotWaypointAnchor = robotCurrentState.Pose.getTranslation();
 
-        Pigeon2 gyro = getPigeon2();
         LinearVelocity robotVelocity = MetersPerSecond.of(
             Math.sqrt(
-                Math.pow(robotChassisSpeeds.vxMetersPerSecond, 2)
-                + Math.pow(robotChassisSpeeds.vyMetersPerSecond, 2)
-        )); // TODO: Does this accurately calculate LinearVelocity?
+                Math.pow(robotRelativeChassisSpeeds.vxMetersPerSecond, 2)
+                + Math.pow(robotRelativeChassisSpeeds.vyMetersPerSecond, 2)
+        ));
+        Angle directionOfVelocity = Radians.of(
+            Math.atan2(fieldRelativeChassisSpeeds.vyMetersPerSecond, fieldRelativeChassisSpeeds.vxMetersPerSecond));
 
-        IdealStartingState idealStartingState = new IdealStartingState(robotVelocity, new Rotation2d(gyro.getRotation3d().getZ())); // TODO: Is getZ() the vertical axis for angle?
-        Translation2d prevControlRobot = new Translation2d(); // TODO: Make heading point into the direction of velocity maybe.
-        Translation2d nextControlRobot = new Translation2d();
+        Translation2d prevControlRobot = new Translation2d();
+        Translation2d nextControlRobot = new Translation2d(DEFAULT_CONTROL_DISTANCE.in(Meters), new Rotation2d(directionOfVelocity));
         
-        Translation2d branchPose = poseToBranch(tag.toPose2d(), branchAlignment).getTranslation();
-        Translation2d prevControlBranch = new Translation2d(); // TODO: Do theses values need to be adjusted?
+        Translation2d branchPose = poseToBranch(tag, branchAlignment).getTranslation().toTranslation2d();
+        Angle invertedBranchYawAngle = Degrees.of(branchPose.getAngle().getDegrees() + 180 % 360);
+        Translation2d prevControlBranch = new Translation2d(DEFAULT_CONTROL_DISTANCE.in(Meters), new Rotation2d(invertedBranchYawAngle.in(Degrees)));
         Translation2d nextControlBranch = new Translation2d();
 
         Waypoint branchWaypoint = new Waypoint(prevControlBranch, branchPose, nextControlBranch);
-
         Waypoint robotPositionWaypoint = new Waypoint(prevControlRobot, robotWaypointAnchor, nextControlRobot);
+
         List<Waypoint> waypoints = new ArrayList<Waypoint>(List.of(robotPositionWaypoint, branchWaypoint));
-        
+        IdealStartingState idealStartingState = new IdealStartingState(robotVelocity, new Rotation2d(gyro.getYaw().getValue()));
         PathPlannerPath path = createPath(waypoints, pathConstraints, idealStartingState, goalEndState);
 
         return path;
@@ -695,8 +702,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private Command addVisionMeasurementCommand(Supplier<PoseEstimate> positionEstimate) {
-        return run(() -> {
-            this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds));
-        });
+        return run(() -> 
+            this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
+            .asProxy();
     }
 }
