@@ -551,19 +551,30 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         closestTag = tags.stream()
             .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.REEF)
-            .min((tag1, tag2) -> pointToPointDistance(robotPosition, tag1.pose.toPose2d()).compareTo(pointToPointDistance(robotPosition, tag2.pose.toPose2d())))
+            .min((tag1, tag2) -> pointToPointDistance(new Pose3d(robotPosition), tag1.pose).compareTo(pointToPointDistance(new Pose3d(robotPosition), tag2.pose)))
             .get();
 
         return new Success<>(closestTag);
     }
 
-    private Distance pointToPointDistance(Pose2d pose1, Pose2d pose2) {
+    /**
+     * 
+     * @param pose1
+     * @param pose2
+     * @return 
+     */
+    private Distance pointToPointDistance(Pose3d pose1, Pose3d pose2) {
         Distance differenceX = Meters.of(pose1.getX() - pose2.getX());
         Distance differenceY = Meters.of(pose1.getY() - pose2.getY());
-        Distance squaredSumOfDifferences = Meters.of(Math.pow(differenceX.in(Meters), 2) + Math.pow(differenceY.in(Meters), 2));
 
-        Distance distanceFromPointToPoint = Meters.of(Math.sqrt(squaredSumOfDifferences.in(Meters)));
+        return pythagoreanDistance(differenceX, differenceY);
+    }
 
+    private Distance pythagoreanDistance(
+        Distance x, 
+        Distance y) {
+        Distance squaredSum = Meters.of(Math.pow(x.in(Meters), 2) + Math.pow(y.in(Meters), 2));
+        Distance distanceFromPointToPoint = Meters.of(Math.sqrt(squaredSum.in(Meters)));
         return distanceFromPointToPoint;
     }
 
