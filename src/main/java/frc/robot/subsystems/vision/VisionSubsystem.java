@@ -1,13 +1,13 @@
 package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 
 import java.util.function.Supplier;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -26,8 +26,8 @@ public class VisionSubsystem extends SubsystemBase {
     
     private final IPerceptionCamera camera;
     private final Supplier<Angle> yawSupplier;
-    private static final Distance FIELD_LENGTH = Meter.of(16.54);
-    private static final Distance FIELD_WIDTH = Meter.of(8.02);
+    private static final Distance FIELD_LENGTH = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldLength());
+    private static final Distance FIELD_WIDTH = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldWidth());
     private static final RectanglePoseArea field = new RectanglePoseArea(
         new Translation2d(Meter.of(0), Meter.of(0))
         , new Translation2d(
