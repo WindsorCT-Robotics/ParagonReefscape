@@ -608,4 +608,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         ) {
         return new PathConstraints(maxLinearVelocity, maxLinearAcceleration, maxAngularVelocity, maxAngularAcceleration, nomialVoltage, ignoreConstraints);
     }
+
+    private PathPlannerPath createPath(List<Waypoint> waypoints, PathConstraints constraints, IdealStartingState idealStartingState, GoalEndState goalEndState) {
+        return new PathPlannerPath(waypoints, constraints, idealStartingState, goalEndState);
+    }
 }
