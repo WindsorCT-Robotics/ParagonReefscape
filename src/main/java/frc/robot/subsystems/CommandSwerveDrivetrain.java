@@ -1,10 +1,11 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -25,12 +26,22 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
@@ -97,6 +108,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         ALIGN_LEFT,
         ALIGN_RIGHT
     }
+
+    private static final Distance BRANCH_DISTANCE = Meters.of(0.1651);
 
     public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_LEFT))
             .debounce(DEBOUNCE_TIME.in(Seconds));
@@ -542,4 +555,43 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return distanceFromPointToPoint;
     }
 
+    private Pose2d poseToBranch(Pose2d pose, BranchAlignment branchSide) {
+        switch (branchSide) {
+            case ALIGN_LEFT:
+                pose = translateTo(pose, Degrees.of(90), BRANCH_DISTANCE.times(-1));
+                break;
+            case ALIGN_RIGHT:
+                pose = translateTo(pose, Degrees.of(90), BRANCH_DISTANCE);
+                break;
+        }
+
+        return pose;
+    }
+
+    private Pose2d translateTo(Pose2d pose, Angle angle, Rotation2d rotation, Distance distance) {
+        Distance translationDistanceX = distance.times(Math.cos(angle.in(Radians)));
+        Distance translationDistanceY = distance.times(Math.sin(angle.in(Radians)));
+
+        Pose2d position = pose.plus(new Transform2d(translationDistanceX, translationDistanceY, rotation));
+
+        return position;
+    }
+
+    private Pose2d translateTo(Pose2d pose, Angle angle, Distance distance) {
+        return translateTo(pose, angle, pose.getRotation(), distance);
+    }
+
+    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
+        Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
+        Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
+        Distance translationDistanceZ = distance.times(Math.cos(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
+
+        Pose3d position = pose.plus(new Transform3d(translationDistanceX, translationDistanceY, translationDistanceZ, rotation));
+
+        return position;
+    }
+
+    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Distance distance) {
+        return translateTo(pose, yaw, pitch, pose.getRotation(), distance);
+    }
 }
