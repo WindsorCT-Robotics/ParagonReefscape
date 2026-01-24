@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -65,6 +66,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
 import frc.robot.apriltag.AprilTagLocation;
 import frc.robot.apriltag.ReefscapeAprilTagFieldLayoutMapper;
 import frc.robot.apriltag.ReefscapeApriltag;
@@ -690,5 +692,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         Pose3d branchPose = translateTo(findClosestTag().getValue().pose, Degrees.of(90.0), Degrees.zero(), BRANCH_DISTANCE);
         return pathToTagCommand(branchPose, branchAlignment, pathConstraints, goalEndState);
+    }
+
+    private Command addVisionMeasurementCommand(Supplier<PoseEstimate> positionEstimate) {
+        return run(() -> {
+            this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds));
+        });
     }
 }
