@@ -31,8 +31,7 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
 
         builder.addBooleanProperty("IsEnabled", () -> targetDutyCycle.equals(Percent.zero()), null);
         builder.addDoubleProperty("Target Duty Cycle (%)", () -> targetDutyCycle.in(Percent), this::setTargetDutyCycle);
-        builder.addDoubleProperty("Voltage (v)", () -> motor.getVoltage().in(Volts),
-                v -> motor.setVoltage(Volts.of(v)));
+        builder.addDoubleProperty("Voltage (v)", () -> motor.getVoltage().in(Volts), null);
     }
 
     private void setTargetDutyCycle(double duty) {
