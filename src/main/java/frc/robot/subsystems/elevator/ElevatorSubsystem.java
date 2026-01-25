@@ -90,7 +90,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private void setHeight(double heightMeters) {
-        runOnce(() -> motor.travelTo(Meters.of(heightMeters)));
+        runOnce(() -> motor.travelTo(Meters.of(heightMeters))).schedule();
     }
 
     public Command reset() {
