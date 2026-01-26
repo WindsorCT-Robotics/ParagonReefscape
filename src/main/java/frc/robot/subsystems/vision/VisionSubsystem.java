@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
 
 import java.util.function.Supplier;
@@ -29,7 +28,7 @@ public class VisionSubsystem extends SubsystemBase {
     private static final Distance FIELD_LENGTH = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldLength());
     private static final Distance FIELD_WIDTH = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldWidth());
     private static final RectanglePoseArea field = new RectanglePoseArea(
-        new Translation2d(Meter.of(0), Meter.of(0))
+        new Translation2d(Meters.of(0), Meters.of(0))
         , new Translation2d(
             FIELD_LENGTH
             , FIELD_WIDTH));
