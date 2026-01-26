@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Millimeters;
@@ -14,7 +13,6 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -27,7 +25,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathfindThenFollowPath;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -547,7 +544,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return new Failure<>(new AllianceUnknown());
         }
 
-        alliance = DriverStation.getAlliance().get();
+        alliance = DriverStation.getAlliance().orElseThrow();
 
         closestTag = tags.stream()
             .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.REEF)
@@ -574,8 +571,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Distance x, 
         Distance y) {
         Distance squaredSum = Meters.of(Math.pow(x.in(Meters), 2) + Math.pow(y.in(Meters), 2));
-        Distance distanceFromPointToPoint = Meters.of(Math.sqrt(squaredSum.in(Meters)));
-        return distanceFromPointToPoint;
+        return Meters.of(Math.sqrt(squaredSum.in(Meters)));
     }
 
     private Pose3d poseToBranch(Pose3d pose, BranchAlignment branchSide) {
@@ -595,9 +591,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Distance translationDistanceX = distance.times(Math.cos(angle.in(Radians)));
         Distance translationDistanceY = distance.times(Math.sin(angle.in(Radians)));
 
-        Pose2d position = pose.plus(new Transform2d(translationDistanceX, translationDistanceY, rotation));
-
-        return position;
+        return pose.plus(new Transform2d(translationDistanceX, translationDistanceY, rotation));
     }
 
     private Pose2d translateTo(Pose2d pose, Angle angle, Distance distance) {
@@ -609,9 +603,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
         Distance translationDistanceZ = distance.times(Math.cos(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
 
-        Pose3d position = pose.plus(new Transform3d(translationDistanceX, translationDistanceY, translationDistanceZ, rotation));
-
-        return position;
+        return pose.plus(new Transform3d(translationDistanceX, translationDistanceY, translationDistanceZ, rotation));
     }
 
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Distance distance) {
@@ -666,11 +658,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Waypoint branchWaypoint = new Waypoint(prevControlBranch, branchPose, nextControlBranch);
         Waypoint robotPositionWaypoint = new Waypoint(prevControlRobot, robotWaypointAnchor, nextControlRobot);
 
-        List<Waypoint> waypoints = new ArrayList<Waypoint>(List.of(robotPositionWaypoint, branchWaypoint));
+        List<Waypoint> waypoints = List.of(robotPositionWaypoint, branchWaypoint);
         IdealStartingState idealStartingState = new IdealStartingState(robotVelocity, new Rotation2d(gyro.getYaw().getValue()));
-        PathPlannerPath path = createPath(waypoints, pathConstraints, idealStartingState, goalEndState);
 
-        return path;
+        return createPath(waypoints, pathConstraints, idealStartingState, goalEndState);
     }
 
     private Command followPath(PathPlannerPath path) {
@@ -712,7 +703,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return pathToTagCommand(branchPose, branchAlignment, pathConstraints, goalEndState);
     }
 
-    private Command addVisionMeasurementCommand(Supplier<PoseEstimate> positionEstimate) {
+    public Command addVisionMeasurementCommand(Supplier<PoseEstimate> positionEstimate) {
         return run(() -> 
             this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
             .asProxy();
