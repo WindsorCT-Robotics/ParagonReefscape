@@ -1,8 +1,11 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.DegreesPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Radians;
@@ -39,7 +42,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -61,6 +63,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -80,7 +83,7 @@ import frc.robot.result.Success;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem, Sendable {
-    private static final LinearVelocity MAX_VELOCITY = TunerConstants.kSpeedAt12Volts;
+    private static final LinearVelocity MAX_LINEAR_VELOCITY = TunerConstants.kSpeedAt12Volts;
     private static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(1.0);
 
     private static final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
@@ -124,6 +127,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .debounce(DEBOUNCE_TIME.in(Seconds));
     public final Trigger isRightReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_RIGHT))
             .debounce(DEBOUNCE_TIME.in(Seconds));
+
+    private static final LinearVelocity LINEAR_VELOCITY_CONSTRAINT = MetersPerSecond.of(0.0);
+    private static final LinearAcceleration LINEAR_ACCELERATION_CONSTRAINT = MetersPerSecondPerSecond.of(0.0);
+    private static final AngularVelocity ANGULAR_VELOCITY_CONSTRAINT = DegreesPerSecond.of(0.0);
+    private static final AngularAcceleration ANGULAR_ACCELERATION_CONSTRAINT = DegreesPerSecondPerSecond.of(0.0);
+    private static final Voltage NOMIAL_VOLTAGE = Volts.of(12.0); 
+    // TODO: Once robot refactoring is completed, experiment with values.
+
+    private static final PathConstraints DEFAULT_PATH_CONSTRAINTS = new PathConstraints(
+        LINEAR_VELOCITY_CONSTRAINT, 
+        LINEAR_ACCELERATION_CONSTRAINT, 
+        ANGULAR_VELOCITY_CONSTRAINT, 
+        ANGULAR_ACCELERATION_CONSTRAINT, 
+        NOMIAL_VOLTAGE, 
+        false);
 
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
@@ -435,8 +453,26 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return runOnce(() -> setControl(new RobotCentric()));
     }
 
+    private enum RelativeReference {
+        ROBOT_RELATIVE,
+        FIELD_RELATIVE
+    }
+
     public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
-            Supplier<AngularVelocity> rotationalRate) {
+            Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
+        switch (relativeReference) {
+            case ROBOT_RELATIVE:
+                return robotRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            case FIELD_RELATIVE:
+                return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            default:
+                return robotRelativeSwerveRequest(() -> MetersPerSecond.zero(), () -> MetersPerSecond.zero(), () -> DegreesPerSecond.zero());
+        }
+    }
+
+    private Command robotRelativeSwerveRequest(
+        Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+        Supplier<AngularVelocity> rotationalRate) {
         return run(() -> setControl(
                 new RobotCentric()
                         .withVelocityX(velocityX.get())
@@ -444,89 +480,47 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         .withRotationalRate(rotationalRate.get())));
     }
 
+    private Command fieldRelativeSwerveRequest(
+        Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+        Supplier<AngularVelocity> rotationalRate) {
+        return run(() -> setControl(
+                new FieldCentric()
+                        .withVelocityX(velocityX.get())
+                        .withVelocityY(velocityY.get())
+                        .withRotationalRate(rotationalRate.get())));
+    }
+
     public Command moveWithPercentages(Supplier<Dimensionless> percentX, Supplier<Dimensionless> percentY,
-            Supplier<Dimensionless> percentRotationalRate) {
+            Supplier<Dimensionless> percentRotationalRate, RelativeReference relativeReference) {
         return move(
                 () -> calculateLinearVelocityFromPercentage(percentX),
                 () -> calculateLinearVelocityFromPercentage(percentY),
-                () -> calculateAngularVelocityFromPercentage(percentRotationalRate));
+                () -> calculateAngularVelocityFromPercentage(percentRotationalRate),
+                relativeReference);
     }
 
-    private Command alignToBranch(BranchAlignment alignment) {
-        return runEnd(
-                () -> move(MetersPerSecond::zero,
-                        () -> (alignment == BranchAlignment.ALIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED,
-                        RadiansPerSecond::zero),
-                this::stop)
-                .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
+    private LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
+        return MetersPerSecond.of(percent.get().times(MAX_LINEAR_VELOCITY.in(MetersPerSecond)).in(Value));
     }
 
-    public RobotConfig getPathConfig() {
-        return config;
-    }
-
-    public LinearVelocity getMaxVelocity() {
-        return MAX_VELOCITY;
-    }
-
-    public AngularVelocity getMaxAngularRate() {
-        return MAX_ANGULAR_VELOCITY;
-    }
-
-    public PIDConstants getTranslationPID() {
-        return TRANSLATION_PID;
-    }
-
-    public PIDConstants getRotationPID() {
-        return ROTATION_PID;
-    }
-
-    public SwerveRequest.ApplyRobotSpeeds getPathDriveController() {
-        return pathDriveController;
-    }
-
-    public LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
-        return MetersPerSecond.of(percent.get().times(MAX_VELOCITY.in(MetersPerSecond)).in(Value));
-    }
-
-    public AngularVelocity calculateAngularVelocityFromPercentage(Supplier<Dimensionless> percent) {
+    private AngularVelocity calculateAngularVelocityFromPercentage(Supplier<Dimensionless> percent) {
         return RadiansPerSecond.of(percent.get().times(MAX_ANGULAR_VELOCITY.in(RadiansPerSecond)).in(Value));
     }
 
-    public void robotCentricDriveRequest(
-            Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis,
-            Supplier<Dimensionless> xRightAxis) {
-        setControl(new RobotCentric()
-                .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station
-                                                                                 // inverting the axis makes sense.
-                .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
-                .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis)));
+    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
+        return new SequentialCommandGroup(
+            pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS),
+            alignToBranch(branchAlignment));
     }
 
-    public void fieldCentricDriveRequest(
-            Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis,
-            Supplier<Dimensionless> xRightAxis) {
-        setControl(new FieldCentric()
-                .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station
-                                                                                 // inverting the axis makes sense.
-                .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
-                .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis)));
-    }
-
-    public void robotCentricSwerveRequest(LinearVelocity xVelocity, LinearVelocity yVelocity,
-            AngularVelocity angularVelocity) {
-        setControl(new RobotCentric()
-                .withVelocityX(xVelocity)
-                .withVelocityY(yVelocity)
-                .withRotationalRate(angularVelocity));
-    }
-
-    public void fieldCentricSwerveRequest(LinearVelocity xVelocity, LinearVelocity yVelocity,
-            AngularVelocity angularVelocity) {
-        setControl(new FieldCentric()
-                .withVelocityX(xVelocity)
-                .withVelocityY(yVelocity)
-                .withRotationalRate(angularVelocity));
+    public Command alignToBranch(BranchAlignment alignment) {
+        return runEnd(
+                () -> move(MetersPerSecond::zero,
+                        () -> (alignment == BranchAlignment.ALIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED,
+                        RadiansPerSecond::zero,
+                        RelativeReference.ROBOT_RELATIVE),
+                this::stop)
+                .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
     }
 
     private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
@@ -553,13 +547,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         return new Success<>(closestTag);
     }
-
-    /**
-     * 
-     * @param pose1
-     * @param pose2
-     * @return 
-     */
+    
     private Distance pointToPointDistance(Pose3d pose1, Pose3d pose2) {
         Distance differenceX = Meters.of(pose1.getX() - pose2.getX());
         Distance differenceY = Meters.of(pose1.getY() - pose2.getY());
@@ -587,17 +575,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return pose;
     }
 
-    private Pose2d translateTo(Pose2d pose, Angle angle, Rotation2d rotation, Distance distance) {
-        Distance translationDistanceX = distance.times(Math.cos(angle.in(Radians)));
-        Distance translationDistanceY = distance.times(Math.sin(angle.in(Radians)));
-
-        return pose.plus(new Transform2d(translationDistanceX, translationDistanceY, rotation));
-    }
-
-    private Pose2d translateTo(Pose2d pose, Angle angle, Distance distance) {
-        return translateTo(pose, angle, pose.getRotation(), distance);
-    }
-
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
         Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
         Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
@@ -610,26 +587,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return translateTo(pose, yaw, pitch, pose.getRotation(), distance);
     }
 
-    private PathConstraints createPathConstraints(
-        LinearVelocity maxLinearVelocity, 
-        LinearAcceleration maxLinearAcceleration,
-        AngularVelocity maxAngularVelocity,
-        AngularAcceleration maxAngularAcceleration,
-        Voltage nomialVoltage,
-        boolean ignoreConstraints
-        ) {
-        return new PathConstraints(maxLinearVelocity, maxLinearAcceleration, maxAngularVelocity, maxAngularAcceleration, nomialVoltage, ignoreConstraints);
-    }
-
-    private PathPlannerPath createPath(List<Waypoint> waypoints, PathConstraints constraints, IdealStartingState idealStartingState, GoalEndState goalEndState) {
-        return new PathPlannerPath(waypoints, constraints, idealStartingState, goalEndState);
-    }
-
     private PathPlannerPath createPathToTag(
         Pose3d tag, 
         BranchAlignment branchAlignment,
-        PathConstraints pathConstraints,
-        GoalEndState goalEndState
+        PathConstraints pathConstraints
     ) {
         SwerveDriveState robotCurrentState = getState();
         Pigeon2 gyro = getPigeon2();
@@ -660,8 +621,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         List<Waypoint> waypoints = List.of(robotPositionWaypoint, branchWaypoint);
         IdealStartingState idealStartingState = new IdealStartingState(robotVelocity, new Rotation2d(gyro.getYaw().getValue()));
+        GoalEndState goalEndState = new GoalEndState(MetersPerSecond.zero(), new Rotation2d(invertedBranchYawAngle));
 
-        return createPath(waypoints, pathConstraints, idealStartingState, goalEndState);
+        return new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
     }
 
     private Command followPath(PathPlannerPath path) {
@@ -672,40 +634,62 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
     }
 
-    public Command pathToTagCommand(
+    public Command pathToTag(
         Pose3d tag, 
         BranchAlignment branchAlignment,
-        PathConstraints pathConstraints,
-        GoalEndState goalEndState
+        PathConstraints pathConstraints
     ) {
-        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints, goalEndState);
+        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints);
 
         return followPath(path);
     }
 
-    public Command pathFindThenPathToTagCommand(
+    public Command pathFindThenPathToTag(
         Pose3d tag, 
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints,
         GoalEndState goalEndState
     ) {
-        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints, goalEndState);
+        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints);
 
         return pathFindThenFollowPath(path, pathConstraints);
     }
 
-    public Command createPathToClosestTagCommand(
+    public Command pathToClosestSideBranch(
         BranchAlignment branchAlignment,
-        PathConstraints pathConstraints,
-        GoalEndState goalEndState
+        PathConstraints pathConstraints
     ) {
         Pose3d branchPose = translateTo(findClosestTag().getValue().pose, Degrees.of(90.0), Degrees.zero(), BRANCH_DISTANCE);
-        return pathToTagCommand(branchPose, branchAlignment, pathConstraints, goalEndState);
+        return pathToTag(branchPose, branchAlignment, pathConstraints);
     }
 
-    public Command addVisionMeasurementCommand(Supplier<PoseEstimate> positionEstimate) {
+    public Command addVisionMeasurementToRobotPosition(Supplier<PoseEstimate> positionEstimate) {
         return run(() -> 
             this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
             .asProxy();
+    }
+
+    public RobotConfig getPathConfig() {
+        return config;
+    }
+
+    public LinearVelocity getMaxVelocity() {
+        return MAX_LINEAR_VELOCITY;
+    }
+
+    public AngularVelocity getMaxAngularRate() {
+        return MAX_ANGULAR_VELOCITY;
+    }
+
+    public PIDConstants getTranslationPID() {
+        return TRANSLATION_PID;
+    }
+
+    public PIDConstants getRotationPID() {
+        return ROTATION_PID;
+    }
+
+    public SwerveRequest.ApplyRobotSpeeds getPathDriveController() {
+        return pathDriveController;
     }
 }
