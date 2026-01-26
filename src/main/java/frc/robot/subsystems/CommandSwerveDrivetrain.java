@@ -668,28 +668,4 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
             .asProxy();
     }
-
-    public RobotConfig getPathConfig() {
-        return config;
-    }
-
-    public LinearVelocity getMaxVelocity() {
-        return MAX_LINEAR_VELOCITY;
-    }
-
-    public AngularVelocity getMaxAngularRate() {
-        return MAX_ANGULAR_VELOCITY;
-    }
-
-    public PIDConstants getTranslationPID() {
-        return TRANSLATION_PID;
-    }
-
-    public PIDConstants getRotationPID() {
-        return ROTATION_PID;
-    }
-
-    public SwerveRequest.ApplyRobotSpeeds getPathDriveController() {
-        return pathDriveController;
-    }
 }
