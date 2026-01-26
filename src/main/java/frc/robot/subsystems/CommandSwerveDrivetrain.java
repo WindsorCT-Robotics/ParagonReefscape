@@ -659,7 +659,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints
     ) {
-        Pose3d branchPose = translateTo(findClosestTag().getValue().pose, Degrees.of(90.0), Degrees.zero(), BRANCH_DISTANCE);
+        Pose3d branchPose = poseToBranch(findClosestTag().getValue().pose, branchAlignment);
         return pathToTag(branchPose, branchAlignment, pathConstraints);
     }
 
