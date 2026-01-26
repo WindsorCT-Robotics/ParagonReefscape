@@ -466,7 +466,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             case FIELD_RELATIVE:
                 return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
             default:
-                return robotRelativeSwerveRequest(() -> MetersPerSecond.zero(), () -> MetersPerSecond.zero(), () -> DegreesPerSecond.zero());
+                throw new IllegalStateException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
         }
     }
 
