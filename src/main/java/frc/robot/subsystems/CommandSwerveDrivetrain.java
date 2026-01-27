@@ -561,8 +561,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new Success<>(closestTag);
     }
 
-    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
-        Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS); // TODO: Rename 'pathToClosest'
+    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment, PathConstraints pathConstraints) {
+        Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, pathConstraints);
 
         if (pathToClosestSideBranchState.isSuccess()) {
             return pathToClosestSideBranchState.getValue().andThen(alignToBranch(branchAlignment));
@@ -577,9 +577,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             return Commands.none();
         }
-        
     }
 
+    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
+        return pathAndAlignToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS);
+    }
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
         Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
         Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
