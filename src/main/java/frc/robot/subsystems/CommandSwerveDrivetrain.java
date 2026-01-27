@@ -647,21 +647,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
     }
 
-    private Command followPath(PathPlannerPath path) {
-        return AutoBuilder.followPath(path);
-    }
-
     public Command pathToPose(
         Pose3d pose,
         PathConstraints pathConstraints
     ) {
         PathPlannerPath path = createPathToPose(pose, pathConstraints);
 
-        return followPath(path);
-    }
-
-    private Command pathFindThenFollowPath(PathPlannerPath path, PathConstraints pathConstraints) {
-        return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
+        return AutoBuilder.followPath(path);
     }
 
     public Command pathFindThenPathToPose(
@@ -670,7 +662,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         PathPlannerPath path = createPathToPose(pose, pathConstraints);
 
-        return pathFindThenFollowPath(path, pathConstraints);
+        return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
     }
 
     public Result<Command, AprilTagSearchError> pathToClosestSideBranch(
