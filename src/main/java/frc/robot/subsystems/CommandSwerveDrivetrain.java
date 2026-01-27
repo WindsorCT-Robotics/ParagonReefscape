@@ -143,6 +143,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         NOMIAL_VOLTAGE, 
         false);
 
+    private final ReefscapeAprilTagFieldLayoutMapper mapper;
+
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
      * for the drive motors.
@@ -227,6 +229,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public CommandSwerveDrivetrain(String name,
             IDistanceSensor leftTofSensor,
             IDistanceSensor rightTofSensor,
+            ReefscapeAprilTagFieldLayoutMapper mapper,
             SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
@@ -235,6 +238,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
+        this.mapper = mapper;
     }
 
     /**
@@ -260,6 +264,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public CommandSwerveDrivetrain(String name,
             IDistanceSensor leftTofSensor,
             IDistanceSensor rightTofSensor,
+            ReefscapeAprilTagFieldLayoutMapper mapper,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             SwerveModuleConstants<?, ?, ?>... modules) {
@@ -269,6 +274,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
+        this.mapper = mapper;
     }
 
     /**
@@ -306,6 +312,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public CommandSwerveDrivetrain(String name,
             IDistanceSensor leftTofSensor,
             IDistanceSensor rightTofSensor,
+            ReefscapeAprilTagFieldLayoutMapper mapper,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             Matrix<N3, N1> odometryStandardDeviation,
@@ -318,6 +325,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
+        this.mapper = mapper;
     }
 
     /**
@@ -530,7 +538,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
-        ReefscapeAprilTagFieldLayoutMapper mapper = new ReefscapeAprilTagFieldLayoutMapper();
         ReefscapeApriltag closestTag;
         List<ReefscapeApriltag> tags = mapper.getTags();
         Alliance alliance;
