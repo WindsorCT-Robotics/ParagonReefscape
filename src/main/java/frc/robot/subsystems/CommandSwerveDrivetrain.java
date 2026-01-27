@@ -665,8 +665,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command pathFindThenPathToPose(
-        Pose3d pose, 
-        BranchAlignment branchAlignment,
+        Pose3d pose,
         PathConstraints pathConstraints
     ) {
         PathPlannerPath path = createPathToPose(pose, pathConstraints);
