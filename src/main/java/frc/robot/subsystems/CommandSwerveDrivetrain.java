@@ -464,7 +464,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             case FIELD_RELATIVE:
                 return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
             default:
-                throw new IllegalStateException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
+                throw new IllegalArgumentException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
         }
     }
 
