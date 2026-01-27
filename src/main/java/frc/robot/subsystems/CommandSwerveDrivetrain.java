@@ -488,15 +488,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         .withRotationalRate(rotationalRate.get())));
     }
 
-    public Command moveWithPercentages(Supplier<Dimensionless> percentX, Supplier<Dimensionless> percentY,
-            Supplier<Dimensionless> percentRotationalRate, RelativeReference relativeReference) {
-        return move(
-                () -> calculateLinearVelocityFromPercentage(percentX),
-                () -> calculateLinearVelocityFromPercentage(percentY),
-                () -> calculateAngularVelocityFromPercentage(percentRotationalRate),
-                relativeReference);
-    }
-
     private LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
         return MetersPerSecond.of(percent.get().times(MAX_LINEAR_VELOCITY.in(MetersPerSecond)).in(Value));
     }
@@ -505,10 +496,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return RadiansPerSecond.of(percent.get().times(MAX_ANGULAR_VELOCITY.in(RadiansPerSecond)).in(Value));
     }
 
-    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
-        return new SequentialCommandGroup(
-            pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS),
-            alignToBranch(branchAlignment));
+    public Command moveWithPercentages(Supplier<Dimensionless> percentX, Supplier<Dimensionless> percentY,
+            Supplier<Dimensionless> percentRotationalRate, RelativeReference relativeReference) {
+        return move(
+                () -> calculateLinearVelocityFromPercentage(percentX),
+                () -> calculateLinearVelocityFromPercentage(percentY),
+                () -> calculateAngularVelocityFromPercentage(percentRotationalRate),
+                relativeReference);
     }
 
     public Command alignToBranch(BranchAlignment alignment) {
@@ -519,6 +513,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         RelativeReference.ROBOT_RELATIVE),
                 this::stop)
                 .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
+    }
+    
+    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
+        return new SequentialCommandGroup(
+            pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS),
+            alignToBranch(branchAlignment));
     }
 
     private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
