@@ -63,7 +63,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -561,27 +560,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new Success<>(closestTag);
     }
 
-    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment, PathConstraints pathConstraints) {
+    public Result<Command, AprilTagSearchError> pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment, PathConstraints pathConstraints) {
         Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, pathConstraints);
 
-        if (pathToClosestSideBranchState.isSuccess()) {
-            return pathToClosestSideBranchState.getValue().andThen(alignToBranch(branchAlignment));
-        } else {
-            if (pathToClosestSideBranchState.getError() instanceof AllianceUnknown) {
-                DriverStation.reportError("Cannot determine Alliance side to find closest april tag to path.", true);
-            }
-    
-            if (pathToClosestSideBranchState.getError() instanceof NoAprilTagsFound) {
-                DriverStation.reportError("Cannot find april tags to path to.", true);
-            }
-
-            return Commands.none();
-        }
+        return pathToClosestSideBranchState.map((command) -> {
+            return command.andThen(alignToBranch(branchAlignment));
+        });
     }
 
-    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
-        return pathAndAlignToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS);
-    }
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
         Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
         Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
