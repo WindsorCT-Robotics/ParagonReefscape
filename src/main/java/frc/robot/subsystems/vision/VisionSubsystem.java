@@ -4,8 +4,6 @@ import static edu.wpi.first.units.Units.Meters;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
@@ -25,20 +23,23 @@ public class VisionSubsystem extends SubsystemBase {
     
     private final IPerceptionCamera camera;
     private final Supplier<Angle> yawSupplier;
-    private static final Distance FIELD_LENGTH = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldLength());
-    private static final Distance FIELD_WIDTH = Meters.of(AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark).getFieldWidth());
-    private static final RectanglePoseArea field = new RectanglePoseArea(
-        new Translation2d(Meters.of(0), Meters.of(0))
-        , new Translation2d(
-            FIELD_LENGTH
-            , FIELD_WIDTH));
+    private final Distance FIELD_LENGTH;
+    private final Distance FIELD_WIDTH;
+    private final RectanglePoseArea field;
     
-    public VisionSubsystem(String subsystemName, IPerceptionCamera camera, Supplier<Angle> yawSupplier) {
+    public VisionSubsystem(String subsystemName, IPerceptionCamera camera, Supplier<Angle> yawSupplier, Distance fieldLength, Distance fieldWidth) {
         super(subsystemName);
         
         this.camera = camera;
         CameraServer.addCamera(camera.getCamera());
         this.yawSupplier = yawSupplier;
+        FIELD_LENGTH = fieldLength;
+        FIELD_WIDTH = fieldWidth;
+        field = new RectanglePoseArea(
+            new Translation2d(Meters.of(0), Meters.of(0))
+            , new Translation2d(
+                FIELD_LENGTH
+                , FIELD_WIDTH));
     }
 
     private Result<PoseEstimate, VisionError> estimatePosition() {
