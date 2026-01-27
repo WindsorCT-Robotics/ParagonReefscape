@@ -600,6 +600,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             case ALIGN_RIGHT:
                 pose = translateTo(pose, Degrees.of(90), Degrees.zero(), BRANCH_DISTANCE);
                 break;
+            default:
+                throw new IllegalArgumentException("Unable to determine the Pose3d return. Illegal BranchAlignment: " + branchSide);
         }
 
         return pose;
