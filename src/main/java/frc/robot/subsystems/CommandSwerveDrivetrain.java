@@ -86,7 +86,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final LinearVelocity MAX_LINEAR_VELOCITY = TunerConstants.kSpeedAt12Volts;
     private static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(1.0);
 
-    private static final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
+    private static final PIDConstants TRANSLATION_PID = new PIDConstants(10.0, 0.0, 0.0);
     private static final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
 
     public sealed interface AprilTagSearchError permits NoAprilTagsFound, AllianceUnknown { }
@@ -425,10 +425,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                                     .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
                     new PPHolonomicDriveController(
-                            // PID constants for translation
-                            new PIDConstants(10, 0, 0),
-                            // PID constants for rotation
-                            new PIDConstants(7, 0, 0)),
+                            TRANSLATION_PID,
+                            ROTATION_PID),
                     config,
                     // Assume the path needs to be flipped for Red vs Blue, this is normally the
                     // case
