@@ -63,7 +63,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -514,11 +513,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 this::stop)
                 .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
     }
-    
+
     public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
-        return new SequentialCommandGroup(
-            pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS),
-            alignToBranch(branchAlignment));
+        return pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS).andThen(alignToBranch(branchAlignment));
     }
 
     private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
