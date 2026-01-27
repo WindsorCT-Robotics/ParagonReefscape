@@ -556,7 +556,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         closestTag = tags.stream()
             .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.REEF)
             .min((tag1, tag2) -> pointToPointDistance(new Pose3d(robotPosition), tag1.pose).compareTo(pointToPointDistance(new Pose3d(robotPosition), tag2.pose)))
-            .get();
+            .orElseThrow();
 
         return new Success<>(closestTag);
     }
