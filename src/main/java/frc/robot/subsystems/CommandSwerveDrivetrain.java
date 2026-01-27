@@ -63,6 +63,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -554,7 +555,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
-        return pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS).andThen(alignToBranch(branchAlignment));
+        Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS); // TODO: Rename 'pathToClosest'
+
+        if (pathToClosestSideBranchState.isSuccess()) {
+            return pathToClosestSideBranchState.getValue().andThen(alignToBranch(branchAlignment));
+        } else {
+            if (pathToClosestSideBranchState.getError() instanceof AllianceUnknown) {
+                DriverStation.reportError("Cannot determine Alliance side to find closest april tag to path.", true);
+            }
+    
+            if (pathToClosestSideBranchState.getError() instanceof NoAprilTagsFound) {
+                DriverStation.reportError("Cannot find april tags to path to.", true);
+            }
+
+            return Commands.none();
+        }
+        
     }
 
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
@@ -583,8 +599,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     private PathPlannerPath createPathToPose(
-        Pose3d pose, 
-        BranchAlignment branchAlignment,
+        Pose3d pose,
         PathConstraints pathConstraints
     ) {
         SwerveDriveState robotCurrentState = getState();
@@ -626,11 +641,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Command pathToPose(
-        Pose3d pose, 
-        BranchAlignment branchAlignment,
+        Pose3d pose,
         PathConstraints pathConstraints
     ) {
-        PathPlannerPath path = createPathToPose(pose, branchAlignment, pathConstraints);
+        PathPlannerPath path = createPathToPose(pose, pathConstraints);
 
         return followPath(path);
     }
@@ -644,17 +658,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints
     ) {
-        PathPlannerPath path = createPathToPose(pose, branchAlignment, pathConstraints);
+        PathPlannerPath path = createPathToPose(pose, pathConstraints);
 
         return pathFindThenFollowPath(path, pathConstraints);
     }
 
-    public Command pathToClosestSideBranch(
+    public Result<Command, AprilTagSearchError> pathToClosestSideBranch(
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints
     ) {
-        Pose3d branchPose = poseToBranch(findClosestTag().getValue().pose, branchAlignment);
-        return pathToPose(branchPose, branchAlignment, pathConstraints);
+        return findClosestTag().map(tag -> {
+            Pose3d branchPose = poseToBranch(tag.pose, branchAlignment);
+            return pathToPose(branchPose, pathConstraints);
+        });
     }
 
     public Command addVisionMeasurementToRobotPosition(Supplier<PoseEstimate> positionEstimate) {
