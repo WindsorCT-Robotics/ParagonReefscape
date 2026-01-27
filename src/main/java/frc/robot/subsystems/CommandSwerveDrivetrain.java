@@ -513,9 +513,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 this::stop)
                 .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
     }
+    
+    private Distance pythagoreanDistance(
+        Distance x, 
+        Distance y) {
+        Distance squaredSum = Meters.of(Math.pow(x.in(Meters), 2) + Math.pow(y.in(Meters), 2));
+        return Meters.of(Math.sqrt(squaredSum.in(Meters)));
+    }
 
-    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
-        return pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS).andThen(alignToBranch(branchAlignment));
+    private Distance pointToPointDistance(Pose3d pose1, Pose3d pose2) {
+        Distance differenceX = Meters.of(pose1.getX() - pose2.getX());
+        Distance differenceY = Meters.of(pose1.getY() - pose2.getY());
+
+        return pythagoreanDistance(differenceX, differenceY);
     }
 
     private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
@@ -542,19 +552,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         return new Success<>(closestTag);
     }
-    
-    private Distance pointToPointDistance(Pose3d pose1, Pose3d pose2) {
-        Distance differenceX = Meters.of(pose1.getX() - pose2.getX());
-        Distance differenceY = Meters.of(pose1.getY() - pose2.getY());
 
-        return pythagoreanDistance(differenceX, differenceY);
+    public Command pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
+        return pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS).andThen(alignToBranch(branchAlignment));
     }
 
-    private Distance pythagoreanDistance(
-        Distance x, 
-        Distance y) {
-        Distance squaredSum = Meters.of(Math.pow(x.in(Meters), 2) + Math.pow(y.in(Meters), 2));
-        return Meters.of(Math.sqrt(squaredSum.in(Meters)));
+    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
+        Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
+        Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
+        Distance translationDistanceZ = distance.times(Math.cos(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
+
+        return pose.plus(new Transform3d(translationDistanceX, translationDistanceY, translationDistanceZ, rotation));
+    }
+
+    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Distance distance) {
+        return translateTo(pose, yaw, pitch, pose.getRotation(), distance);
     }
 
     private Pose3d poseToBranch(Pose3d pose, BranchAlignment branchSide) {
@@ -570,20 +582,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return pose;
     }
 
-    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
-        Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
-        Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
-        Distance translationDistanceZ = distance.times(Math.cos(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
-
-        return pose.plus(new Transform3d(translationDistanceX, translationDistanceY, translationDistanceZ, rotation));
-    }
-
-    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Distance distance) {
-        return translateTo(pose, yaw, pitch, pose.getRotation(), distance);
-    }
-
-    private PathPlannerPath createPathToTag(
-        Pose3d tag, 
+    private PathPlannerPath createPathToPose(
+        Pose3d pose, 
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints
     ) {
@@ -606,7 +606,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Translation2d prevControlRobot = new Translation2d();
         Translation2d nextControlRobot = new Translation2d(DEFAULT_CONTROL_DISTANCE.in(Meters), new Rotation2d(directionOfVelocity));
         
-        Translation2d branchPose = poseToBranch(tag, branchAlignment).getTranslation().toTranslation2d();
+        Translation2d branchPose = pose.getTranslation().toTranslation2d();
         Angle invertedBranchYawAngle = Degrees.of(branchPose.getAngle().getDegrees() + 180 % 360);
         Translation2d prevControlBranch = new Translation2d(DEFAULT_CONTROL_DISTANCE.in(Meters), new Rotation2d(invertedBranchYawAngle.in(Degrees)));
         Translation2d nextControlBranch = new Translation2d();
@@ -625,27 +625,26 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return AutoBuilder.followPath(path);
     }
 
-    private Command pathFindThenFollowPath(PathPlannerPath path, PathConstraints pathConstraints) {
-        return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
-    }
-
-    public Command pathToTag(
-        Pose3d tag, 
+    public Command pathToPose(
+        Pose3d pose, 
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints
     ) {
-        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints);
+        PathPlannerPath path = createPathToPose(pose, branchAlignment, pathConstraints);
 
         return followPath(path);
     }
 
-    public Command pathFindThenPathToTag(
-        Pose3d tag, 
+    private Command pathFindThenFollowPath(PathPlannerPath path, PathConstraints pathConstraints) {
+        return AutoBuilder.pathfindThenFollowPath(path, pathConstraints);
+    }
+
+    public Command pathFindThenPathToPose(
+        Pose3d pose, 
         BranchAlignment branchAlignment,
-        PathConstraints pathConstraints,
-        GoalEndState goalEndState
+        PathConstraints pathConstraints
     ) {
-        PathPlannerPath path = createPathToTag(tag, branchAlignment, pathConstraints);
+        PathPlannerPath path = createPathToPose(pose, branchAlignment, pathConstraints);
 
         return pathFindThenFollowPath(path, pathConstraints);
     }
@@ -655,7 +654,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         PathConstraints pathConstraints
     ) {
         Pose3d branchPose = poseToBranch(findClosestTag().getValue().pose, branchAlignment);
-        return pathToTag(branchPose, branchAlignment, pathConstraints);
+        return pathToPose(branchPose, branchAlignment, pathConstraints);
     }
 
     public Command addVisionMeasurementToRobotPosition(Supplier<PoseEstimate> positionEstimate) {
