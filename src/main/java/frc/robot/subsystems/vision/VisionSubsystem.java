@@ -23,8 +23,8 @@ public class VisionSubsystem extends SubsystemBase {
     
     private final IPerceptionCamera camera;
     private final Supplier<Angle> yawSupplier;
-    private final Distance FIELD_LENGTH;
-    private final Distance FIELD_WIDTH;
+    private final Distance fieldLength;
+    private final Distance fieldWidth;
     private final RectanglePoseArea field;
     
     public VisionSubsystem(String subsystemName, IPerceptionCamera camera, Supplier<Angle> yawSupplier, Distance fieldLength, Distance fieldWidth) {
@@ -33,13 +33,13 @@ public class VisionSubsystem extends SubsystemBase {
         this.camera = camera;
         CameraServer.addCamera(camera.getCamera());
         this.yawSupplier = yawSupplier;
-        FIELD_LENGTH = fieldLength;
-        FIELD_WIDTH = fieldWidth;
+        this.fieldLength = fieldLength;
+        this.fieldWidth = fieldWidth;
         field = new RectanglePoseArea(
             new Translation2d(Meters.of(0), Meters.of(0))
             , new Translation2d(
-                FIELD_LENGTH
-                , FIELD_WIDTH));
+                fieldLength
+                , fieldWidth));
     }
 
     private Result<PoseEstimate, VisionError> estimatePosition() {
