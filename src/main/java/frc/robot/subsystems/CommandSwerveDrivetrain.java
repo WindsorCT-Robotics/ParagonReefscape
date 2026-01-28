@@ -1,8 +1,14 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.DegreesPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Millimeters;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -10,26 +16,46 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -40,23 +66,31 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
+import frc.robot.apriltag.AprilTagLocation;
+import frc.robot.apriltag.ReefscapeAprilTagFieldLayoutMapper;
+import frc.robot.apriltag.ReefscapeApriltag;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.hardware.IDistanceSensor;
-
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
-import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
+import frc.robot.result.Failure;
+import frc.robot.result.Result;
+import frc.robot.result.Success;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem, Sendable {
-    private static final LinearVelocity MAX_VELOCITY = TunerConstants.kSpeedAt12Volts;
+    private static final LinearVelocity MAX_LINEAR_VELOCITY = TunerConstants.kSpeedAt12Volts;
     private static final AngularVelocity MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(1.0);
 
-    private static final PIDConstants TRANSLATION_PID = new PIDConstants(3.0, 0.0, 0.0);
+    private static final PIDConstants TRANSLATION_PID = new PIDConstants(10.0, 0.0, 0.0);
     private static final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
+
+    public sealed interface AprilTagSearchError permits NoAprilTagsFound, AllianceUnknown { }
+    public record NoAprilTagsFound() implements AprilTagSearchError { }
+    public record AllianceUnknown() implements AprilTagSearchError { }
 
     private final SwerveRequest.ApplyRobotSpeeds pathDriveController = new SwerveRequest.ApplyRobotSpeeds();
     private static final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
@@ -74,7 +108,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
-    
+
     private static final Distance THRESHOLD_DISTANCE = Millimeters.of(400);
     private static final Time DEBOUNCE_TIME = Milliseconds.of(50);
     private final IDistanceSensor leftTofSensor;
@@ -85,8 +119,30 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         ALIGN_RIGHT
     }
 
-    public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_LEFT)).debounce(DEBOUNCE_TIME.in(Seconds));
-    public final Trigger isRightReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_RIGHT)).debounce(DEBOUNCE_TIME.in(Seconds));
+    private static final Distance BRANCH_DISTANCE = Meters.of(0.1651);
+    private static final Distance DEFAULT_CONTROL_DISTANCE = Meters.of(0.5);
+
+    public final Trigger isLeftReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_LEFT))
+            .debounce(DEBOUNCE_TIME.in(Seconds));
+    public final Trigger isRightReefAligned = new Trigger(() -> isBranchAligned(BranchAlignment.ALIGN_RIGHT))
+            .debounce(DEBOUNCE_TIME.in(Seconds));
+
+    private static final LinearVelocity LINEAR_VELOCITY_CONSTRAINT = MetersPerSecond.of(0.0);
+    private static final LinearAcceleration LINEAR_ACCELERATION_CONSTRAINT = MetersPerSecondPerSecond.of(0.0);
+    private static final AngularVelocity ANGULAR_VELOCITY_CONSTRAINT = DegreesPerSecond.of(0.0);
+    private static final AngularAcceleration ANGULAR_ACCELERATION_CONSTRAINT = DegreesPerSecondPerSecond.of(0.0);
+    private static final Voltage NOMIAL_VOLTAGE = Volts.of(12.0); 
+    // TODO: Once robot refactoring is completed, experiment with values.
+
+    private static final PathConstraints DEFAULT_PATH_CONSTRAINTS = new PathConstraints(
+        LINEAR_VELOCITY_CONSTRAINT, 
+        LINEAR_ACCELERATION_CONSTRAINT, 
+        ANGULAR_VELOCITY_CONSTRAINT, 
+        ANGULAR_ACCELERATION_CONSTRAINT, 
+        NOMIAL_VOLTAGE, 
+        false);
+
+    private final ReefscapeAprilTagFieldLayoutMapper mapper;
 
     /*
      * SysId routine for characterizing translation. This is used to find PID gains
@@ -162,14 +218,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * getters in the classes.
      *
      * @param name                Name of the subsystem
-     * @param leftTofSensor       Distance sensor for calibrating alignment to the left branch on a reef.
-     * @param rightTofSensor      Distance sensor for calibrating alignment to the right branch on a reef.
+     * @param leftTofSensor       Distance sensor for calibrating alignment to the
+     *                            left branch on a reef.
+     * @param rightTofSensor      Distance sensor for calibrating alignment to the
+     *                            right branch on a reef.
      * @param drivetrainConstants Drivetrain-wide constants for the swerve drive
      * @param modules             Constants for each specific module
      */
     public CommandSwerveDrivetrain(String name,
             IDistanceSensor leftTofSensor,
             IDistanceSensor rightTofSensor,
+            ReefscapeAprilTagFieldLayoutMapper mapper,
             SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
@@ -178,6 +237,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
+        this.mapper = mapper;
     }
 
     /**
@@ -189,9 +249,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * through
      * getters in the classes.
      *
-     * @param name                Name of the subsystem
-     * @param leftTofSensor       Distance sensor for calibrating alignment to the left branch on a reef.
-     * @param rightTofSensor      Distance sensor for calibrating alignment to the right branch on a reef.
+     * @param name                    Name of the subsystem
+     * @param leftTofSensor           Distance sensor for calibrating alignment to
+     *                                the left branch on a reef.
+     * @param rightTofSensor          Distance sensor for calibrating alignment to
+     *                                the right branch on a reef.
      * @param drivetrainConstants     Drivetrain-wide constants for the swerve drive
      * @param odometryUpdateFrequency The frequency to run the odometry loop. If
      *                                unspecified or set to 0 Hz, this is 250 Hz on
@@ -201,6 +263,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public CommandSwerveDrivetrain(String name,
             IDistanceSensor leftTofSensor,
             IDistanceSensor rightTofSensor,
+            ReefscapeAprilTagFieldLayoutMapper mapper,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             SwerveModuleConstants<?, ?, ?>... modules) {
@@ -210,6 +273,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
+        this.mapper = mapper;
     }
 
     /**
@@ -221,9 +285,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * through
      * getters in the classes.
      *
-     * @param name                Name of the subsystem
-     * @param leftTofSensor       Distance sensor for calibrating alignment to the left branch on a reef.
-     * @param rightTofSensor      Distance sensor for calibrating alignment to the right branch on a reef.
+     * @param name                      Name of the subsystem
+     * @param leftTofSensor             Distance sensor for calibrating alignment to
+     *                                  the left branch on a reef.
+     * @param rightTofSensor            Distance sensor for calibrating alignment to
+     *                                  the right branch on a reef.
      * @param drivetrainConstants       Drivetrain-wide constants for the swerve
      *                                  drive
      * @param odometryUpdateFrequency   The frequency to run the odometry loop. If
@@ -245,6 +311,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public CommandSwerveDrivetrain(String name,
             IDistanceSensor leftTofSensor,
             IDistanceSensor rightTofSensor,
+            ReefscapeAprilTagFieldLayoutMapper mapper,
             SwerveDrivetrainConstants drivetrainConstants,
             double odometryUpdateFrequency,
             Matrix<N3, N1> odometryStandardDeviation,
@@ -257,6 +324,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SendableRegistry.addLW(this, name, name);
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
+        this.mapper = mapper;
     }
 
     /**
@@ -364,10 +432,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                                     .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
                     new PPHolonomicDriveController(
-                            // PID constants for translation
-                            new PIDConstants(10, 0, 0),
-                            // PID constants for rotation
-                            new PIDConstants(7, 0, 0)),
+                            TRANSLATION_PID,
+                            ROTATION_PID),
                     config,
                     // Assume the path needs to be flipped for Red vs Blue, this is normally the
                     // case
@@ -379,95 +445,220 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     ex.getStackTrace());
         }
     }
-    
+
     private boolean isBranchAligned(BranchAlignment alignment) {
-        Distance distance =
-            (alignment == BranchAlignment.ALIGN_LEFT) 
+        Distance distance = (alignment == BranchAlignment.ALIGN_LEFT)
                 ? leftTofSensor.getDistance()
                 : rightTofSensor.getDistance();
 
         return distance.gte(THRESHOLD_DISTANCE);
     }
-    
+
     private Command stop() {
         return runOnce(() -> setControl(new RobotCentric()));
     }
-    
-    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY, Supplier<AngularVelocity> rotationalRate) {
+
+    private enum RelativeReference {
+        ROBOT_RELATIVE,
+        FIELD_RELATIVE
+    }
+
+    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+            Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
+        switch (relativeReference) {
+            case ROBOT_RELATIVE:
+                return robotRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            case FIELD_RELATIVE:
+                return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            default:
+                throw new IllegalArgumentException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
+        }
+    }
+
+    private Command robotRelativeSwerveRequest(
+        Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+        Supplier<AngularVelocity> rotationalRate) {
         return run(() -> setControl(
-            new RobotCentric()
-            .withVelocityX(velocityX.get())
-            .withVelocityY(velocityY.get())
-            .withRotationalRate(rotationalRate.get())
-        ));
-    }
-    
-    public Command moveWithPercentages(Supplier<Dimensionless> percentX, Supplier<Dimensionless> percentY, Supplier<Dimensionless> percentRotationalRate) {
-        return move(
-            () -> calculateLinearVelocityFromPercentage(percentX),
-            () -> calculateLinearVelocityFromPercentage(percentY),
-            () -> calculateAngularVelocityFromPercentage(percentRotationalRate)
-        );
-    }
-    
-    private Command alignToBranch(BranchAlignment alignment) {
-        return runEnd(
-            () -> move(MetersPerSecond::zero, 
-                () -> (alignment == BranchAlignment.ALIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED, 
-                RadiansPerSecond::zero),
-            this::stop)
-            .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
+                new RobotCentric()
+                        .withVelocityX(velocityX.get())
+                        .withVelocityY(velocityY.get())
+                        .withRotationalRate(rotationalRate.get())));
     }
 
-    public RobotConfig getPathConfig() {
-        return config;
+    private Command fieldRelativeSwerveRequest(
+        Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+        Supplier<AngularVelocity> rotationalRate) {
+        return run(() -> setControl(
+                new FieldCentric()
+                        .withVelocityX(velocityX.get())
+                        .withVelocityY(velocityY.get())
+                        .withRotationalRate(rotationalRate.get())));
     }
 
-    public LinearVelocity getMaxVelocity() {
-        return MAX_VELOCITY;
+    private LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
+        return MetersPerSecond.of(percent.get().times(MAX_LINEAR_VELOCITY.in(MetersPerSecond)).in(Value));
     }
 
-    public AngularVelocity getMaxAngularRate() {
-        return MAX_ANGULAR_VELOCITY;
-    }
-
-    public PIDConstants getTranslationPID() {
-        return TRANSLATION_PID;
-    }
-
-    public PIDConstants getRotationPID() {
-        return ROTATION_PID;
-    }
-
-    public SwerveRequest.ApplyRobotSpeeds getPathDriveController() {
-        return pathDriveController;
-    }
-
-    public LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
-        return MetersPerSecond.of(percent.get().times(MAX_VELOCITY.in(MetersPerSecond)).in(Value));
-    }
-
-    public AngularVelocity calculateAngularVelocityFromPercentage(Supplier<Dimensionless> percent) {
+    private AngularVelocity calculateAngularVelocityFromPercentage(Supplier<Dimensionless> percent) {
         return RadiansPerSecond.of(percent.get().times(MAX_ANGULAR_VELOCITY.in(RadiansPerSecond)).in(Value));
     }
 
-    public Supplier<RobotCentric> robotCentricDriveRequest(
-        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
-        Supplier<Dimensionless> xRightAxis
-        ) {
-        return () -> new RobotCentric()
-        .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
-        .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
-        .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis));
+    public Command moveWithPercentages(Supplier<Dimensionless> percentX, Supplier<Dimensionless> percentY,
+            Supplier<Dimensionless> percentRotationalRate, RelativeReference relativeReference) {
+        return move(
+                () -> calculateLinearVelocityFromPercentage(percentX),
+                () -> calculateLinearVelocityFromPercentage(percentY),
+                () -> calculateAngularVelocityFromPercentage(percentRotationalRate),
+                relativeReference);
     }
 
-    public Supplier<FieldCentric> fieldCentricDriveRequest(
-        Supplier<Dimensionless> xLeftAxis, Supplier<Dimensionless> yLeftAxis, 
-        Supplier<Dimensionless> xRightAxis
-        ) {
-        return () -> new FieldCentric()
-            .withVelocityX(calculateLinearVelocityFromPercentage(yLeftAxis)) // Relative to a driver station inverting the axis makes sense.
-            .withVelocityY(calculateLinearVelocityFromPercentage(xLeftAxis))
-            .withRotationalRate(calculateAngularVelocityFromPercentage(xRightAxis));
+    public Command alignToBranch(BranchAlignment alignment) {
+        return runEnd(
+                () -> move(MetersPerSecond::zero,
+                        () -> (alignment == BranchAlignment.ALIGN_LEFT) ? TOF_SPEED.times(-1) : TOF_SPEED,
+                        RadiansPerSecond::zero,
+                        RelativeReference.ROBOT_RELATIVE),
+                this::stop)
+                .until((alignment == BranchAlignment.ALIGN_LEFT) ? isLeftReefAligned : isRightReefAligned);
+    }
+    
+    private Distance pythagoreanDistance(
+        Distance x, 
+        Distance y) {
+        Distance squaredSum = Meters.of(Math.pow(x.in(Meters), 2) + Math.pow(y.in(Meters), 2));
+        return Meters.of(Math.sqrt(squaredSum.in(Meters)));
+    }
+
+    private Distance pointToPointDistance(Pose3d pose1, Pose3d pose2) {
+        Distance differenceX = Meters.of(pose1.getX() - pose2.getX());
+        Distance differenceY = Meters.of(pose1.getY() - pose2.getY());
+
+        return pythagoreanDistance(differenceX, differenceY);
+    }
+
+    private Result<ReefscapeApriltag, AprilTagSearchError> findClosestTag() {
+        ReefscapeApriltag closestTag;
+        List<ReefscapeApriltag> tags = mapper.getTags();
+        Alliance alliance;
+        Pose2d robotPosition = getState().Pose;
+
+        if (tags.isEmpty()) {
+            return new Failure<>(new NoAprilTagsFound());
+        }
+
+        if (DriverStation.getAlliance().isEmpty()) {
+            return new Failure<>(new AllianceUnknown());
+        }
+
+        alliance = DriverStation.getAlliance().orElseThrow();
+
+        closestTag = tags.stream()
+            .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.REEF)
+            .min((tag1, tag2) -> pointToPointDistance(new Pose3d(robotPosition), tag1.pose).compareTo(pointToPointDistance(new Pose3d(robotPosition), tag2.pose)))
+            .orElseThrow();
+
+        return new Success<>(closestTag);
+    }
+
+    public Result<Command, AprilTagSearchError> pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment, PathConstraints pathConstraints) {
+        Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, pathConstraints);
+        return pathToClosestSideBranchState.map(command -> command.andThen(alignToBranch(branchAlignment)));
+    }
+
+    public Result<Command, AprilTagSearchError> pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
+        Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS);
+        return pathToClosestSideBranchState.map(command -> command.andThen(alignToBranch(branchAlignment)));
+    }
+
+    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
+        Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
+        Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
+        Distance translationDistanceZ = distance.times(Math.cos(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
+
+        return pose.plus(new Transform3d(translationDistanceX, translationDistanceY, translationDistanceZ, rotation));
+    }
+
+    private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Distance distance) {
+        return translateTo(pose, yaw, pitch, pose.getRotation(), distance);
+    }
+
+    private Pose3d poseToBranch(Pose3d pose, BranchAlignment branchSide) {
+        switch (branchSide) {
+            case ALIGN_LEFT:
+                pose = translateTo(pose, Degrees.of(90), Degrees.zero(), BRANCH_DISTANCE.times(-1));
+                break;
+            case ALIGN_RIGHT:
+                pose = translateTo(pose, Degrees.of(90), Degrees.zero(), BRANCH_DISTANCE);
+                break;
+            default:
+                throw new IllegalArgumentException("Unable to determine the Pose3d return. Illegal BranchAlignment: " + branchSide);
+        }
+
+        return pose;
+    }
+
+    private PathPlannerPath createPathToPose(
+        Pose3d pose,
+        PathConstraints pathConstraints
+    ) {
+        SwerveDriveState robotCurrentState = getState();
+        Pigeon2 gyro = getPigeon2();
+
+        ChassisSpeeds robotRelativeChassisSpeeds = robotCurrentState.Speeds;
+        ChassisSpeeds fieldRelativeChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(robotRelativeChassisSpeeds, gyro.getRotation2d());
+
+        Translation2d robotWaypointAnchor = robotCurrentState.Pose.getTranslation();
+
+        LinearVelocity robotVelocity = MetersPerSecond.of(
+            Math.sqrt(
+                Math.pow(robotRelativeChassisSpeeds.vxMetersPerSecond, 2)
+                + Math.pow(robotRelativeChassisSpeeds.vyMetersPerSecond, 2)
+        ));
+        Angle directionOfVelocity = Radians.of(
+            Math.atan2(fieldRelativeChassisSpeeds.vyMetersPerSecond, fieldRelativeChassisSpeeds.vxMetersPerSecond));
+
+        Translation2d prevControlRobot = new Translation2d();
+        Translation2d nextControlRobot = new Translation2d(DEFAULT_CONTROL_DISTANCE.in(Meters), new Rotation2d(directionOfVelocity));
+        
+        Translation2d branchPose = pose.getTranslation().toTranslation2d();
+        Angle invertedBranchYawAngle = Degrees.of(branchPose.getAngle().getDegrees() + 180 % 360);
+        Translation2d prevControlBranch = new Translation2d(DEFAULT_CONTROL_DISTANCE.in(Meters), new Rotation2d(invertedBranchYawAngle.in(Degrees)));
+        Translation2d nextControlBranch = new Translation2d();
+
+        Waypoint branchWaypoint = new Waypoint(prevControlBranch, branchPose, nextControlBranch);
+        Waypoint robotPositionWaypoint = new Waypoint(prevControlRobot, robotWaypointAnchor, nextControlRobot);
+
+        List<Waypoint> waypoints = List.of(robotPositionWaypoint, branchWaypoint);
+        IdealStartingState idealStartingState = new IdealStartingState(robotVelocity, new Rotation2d(gyro.getYaw().getValue()));
+        GoalEndState goalEndState = new GoalEndState(MetersPerSecond.zero(), new Rotation2d(invertedBranchYawAngle));
+
+        return new PathPlannerPath(waypoints, pathConstraints, idealStartingState, goalEndState);
+    }
+
+    public Command pathToPose(
+        Pose3d pose,
+        PathConstraints pathConstraints
+    ) {
+        return AutoBuilder.followPath(createPathToPose(pose, pathConstraints));
+    }
+
+    public Command pathFindThenPathToPose(
+        Pose3d pose,
+        PathConstraints pathConstraints
+    ) {
+        return AutoBuilder.pathfindThenFollowPath(createPathToPose(pose, pathConstraints), pathConstraints);
+    }
+
+    public Result<Command, AprilTagSearchError> pathToClosestSideBranch(
+        BranchAlignment branchAlignment,
+        PathConstraints pathConstraints
+    ) {
+        return findClosestTag().map(tag -> pathToPose(poseToBranch(tag.pose, branchAlignment), pathConstraints));
+    }
+
+    public Command addVisionMeasurementToRobotPosition(Supplier<PoseEstimate> positionEstimate) {
+        return run(() -> 
+            addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
+            .asProxy();
     }
 }
