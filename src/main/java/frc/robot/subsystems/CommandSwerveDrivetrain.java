@@ -562,7 +562,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Result<Command, AprilTagSearchError> pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment, PathConstraints pathConstraints) {
         Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, pathConstraints);
-
         return pathToClosestSideBranchState.map(command -> command.andThen(alignToBranch(branchAlignment)));
     }
 
@@ -654,7 +653,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command addVisionMeasurementToRobotPosition(Supplier<PoseEstimate> positionEstimate) {
         return run(() -> 
-            this.addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
+            addVisionMeasurement(positionEstimate.get().pose, Utils.fpgaToCurrentTime(positionEstimate.get().timestampSeconds)))
             .asProxy();
     }
 }
