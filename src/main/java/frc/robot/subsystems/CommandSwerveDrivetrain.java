@@ -563,9 +563,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Result<Command, AprilTagSearchError> pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment, PathConstraints pathConstraints) {
         Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, pathConstraints);
 
-        return pathToClosestSideBranchState.map((command) -> {
-            return command.andThen(alignToBranch(branchAlignment));
-        });
+        return pathToClosestSideBranchState.map(command -> command.andThen(alignToBranch(branchAlignment)));
     }
 
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
@@ -651,10 +649,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         BranchAlignment branchAlignment,
         PathConstraints pathConstraints
     ) {
-        return findClosestTag().map(tag -> {
-            Pose3d branchPose = poseToBranch(tag.pose, branchAlignment);
-            return pathToPose(branchPose, pathConstraints);
-        });
+        return findClosestTag().map(tag -> pathToPose(poseToBranch(tag.pose, branchAlignment), pathConstraints));
     }
 
     public Command addVisionMeasurementToRobotPosition(Supplier<PoseEstimate> positionEstimate) {
