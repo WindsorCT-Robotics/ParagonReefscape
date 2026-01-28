@@ -565,6 +565,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return pathToClosestSideBranchState.map(command -> command.andThen(alignToBranch(branchAlignment)));
     }
 
+    public Result<Command, AprilTagSearchError> pathAndAlignToClosestSideBranch(BranchAlignment branchAlignment) {
+        Result<Command, AprilTagSearchError> pathToClosestSideBranchState = pathToClosestSideBranch(branchAlignment, DEFAULT_PATH_CONSTRAINTS);
+        return pathToClosestSideBranchState.map(command -> command.andThen(alignToBranch(branchAlignment)));
+    }
+
     private Pose3d translateTo(Pose3d pose, Angle yaw, Angle pitch, Rotation3d rotation, Distance distance) {
         Distance translationDistanceX = distance.times(Math.sin(yaw.in(Radians))).times(Math.cos(pitch.in(Radians)));
         Distance translationDistanceY = distance.times(Math.sin(pitch.in(Radians)));
