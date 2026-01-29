@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
@@ -24,6 +25,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -61,6 +63,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
 import frc.robot.apriltag.AprilTagLocation;
@@ -83,6 +86,20 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
 
     private static final PIDConstants TRANSLATION_PID = new PIDConstants(10.0, 0.0, 0.0);
     private static final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
+
+    private static final PIDConstants DEFAULT_TARGET_DIRECTION_PID = new PIDConstants(7, 0, 0);
+
+    private static final List<Angle> CARDINAL_DIRECTIONS_OF_REEF = List.of(
+        Degrees.of(0),
+        Degrees.of(60),
+        Degrees.of(120), 
+        Degrees.of(180), 
+        Degrees.of(240), 
+        Degrees.of(300)
+    );
+
+    public sealed interface ClosestAngleError permits NoAnglesFound { }
+    public record NoAnglesFound() implements ClosestAngleError { }
 
     public sealed interface AprilTagSearchError permits NoAprilTagsFound, AllianceUnknown { }
     public record NoAprilTagsFound() implements AprilTagSearchError { }
@@ -325,18 +342,6 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         FIELD_RELATIVE
     }
 
-    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
-            Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
-        switch (relativeReference) {
-            case ROBOT_RELATIVE:
-                return robotRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
-            case FIELD_RELATIVE:
-                return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
-            default:
-                throw new IllegalArgumentException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
-        }
-    }
-
     private Command robotRelativeSwerveRequest(
         Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
         Supplier<AngularVelocity> rotationalRate) {
@@ -355,6 +360,66 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
                         .withVelocityX(velocityX.get())
                         .withVelocityY(velocityY.get())
                         .withRotationalRate(rotationalRate.get())));
+    }
+
+    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+            Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
+        switch (relativeReference) {
+            case ROBOT_RELATIVE:
+                return robotRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            case FIELD_RELATIVE:
+                return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            default:
+                throw new IllegalArgumentException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
+        }
+    }
+
+    private void fieldRelativeSetControlWithLockedAngle(
+        LinearVelocity velocityX, LinearVelocity velocityY, Angle orientation) {
+        setControl(
+                new FieldCentricFacingAngle()
+                        .withVelocityX(velocityX)
+                        .withVelocityY(velocityY)
+                        .withHeadingPID(DEFAULT_TARGET_DIRECTION_PID.kP, DEFAULT_TARGET_DIRECTION_PID.kI, DEFAULT_TARGET_DIRECTION_PID.kD)
+                        .withTargetDirection(new Rotation2d(orientation.in(Degrees))));
+    }
+
+    private Result<Angle, ClosestAngleError> getClosestAngleToRobotOrientation(List<Angle> angleList) {
+        if (angleList.isEmpty()) {
+            return new Failure<>(new NoAnglesFound());
+        }
+
+        Angle robotOrientation = getPigeon2().getYaw().getValue();
+        return new Success<>(angleList.stream().min((angle1, angle2) -> {
+            Angle angleDifference1 = angle1.minus(robotOrientation);
+            Angle angleDifference2 = angle2.minus(robotOrientation);
+
+            return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1; // TODO: Is the condition correct?
+        }).orElseThrow());
+    }
+
+    /*
+     * Get position of robot and if robot is on one side, make robot snap to coral station angle.
+     */
+    public Command MoveWithPercentagesAndAngleToCoralStation(
+        Supplier<Dimensionless> percentX, 
+        Supplier<Dimensionless> percentY,
+        Supplier<Dimensionless> percentRotationalRate) {
+        return run(() -> {
+            Pose2d robotPosition = getState().Pose;
+            Distance halfFieldWidth = mapper.getFieldWidth().div(2);
+            List<ReefscapeApriltag> tags = mapper.getTags();
+            fieldRelativeSetControlWithLockedAngle();
+        });        
+    }
+
+    /*
+     * Get closest angle to robot, make robot snap to closest angle.
+     */
+    public Command AngleToReef() {
+        return run(() -> {
+
+        });
     }
 
     private LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
