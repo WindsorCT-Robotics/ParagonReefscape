@@ -396,7 +396,7 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
     /*
      * Get position of robot and if robot is on one side, make robot snap to coral station angle.
      */
-    public Command MoveWithPercentagesAndAngleToCoralStation(
+    public Command AngleToCoralStation(
         Supplier<Dimensionless> percentX,
         Supplier<Dimensionless> percentY) {
         return run(() -> {
