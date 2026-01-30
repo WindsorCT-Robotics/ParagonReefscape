@@ -97,12 +97,11 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         Degrees.of(300)
     );
 
-    public sealed interface ClosestAngleError permits NoAnglesFound { }
-    public record NoAnglesFound() implements ClosestAngleError { }
+    public sealed interface DriverStationError permits AllianceUnknown { }
 
     public sealed interface AprilTagSearchError permits NoAprilTagsFound, AllianceUnknown { }
     public record NoAprilTagsFound() implements AprilTagSearchError { }
-    public record AllianceUnknown() implements AprilTagSearchError { }
+    public record AllianceUnknown() implements AprilTagSearchError, DriverStationError { }
 
     private final SwerveRequest.ApplyRobotSpeeds pathDriveController = new SwerveRequest.ApplyRobotSpeeds();
     private static final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
@@ -382,22 +381,16 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
                         .withHeadingPID(DEFAULT_TARGET_DIRECTION_PID.kP, DEFAULT_TARGET_DIRECTION_PID.kI, DEFAULT_TARGET_DIRECTION_PID.kD)
                         .withTargetDirection(new Rotation2d(orientation.in(Degrees))));
     }
-
-    private Angle getClosestAngleToRobotOrientation() {
-        Angle robotOrientation = getPigeon2().getYaw().getValue();
-        return CARDINAL_DIRECTIONS_OF_REEF.stream().min((angle1, angle2) -> {
-            Angle angleDifference1 = angle1.minus(robotOrientation);
-            Angle angleDifference2 = angle2.minus(robotOrientation);
-
-            return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1; // TODO: Is the condition correct?
-        }).get();
-    }
     
-    public Command AngleToCoralStation(
+    public Result<Command, DriverStationError> AngleToCoralStation(
         Supplier<Dimensionless> percentX,
         Supplier<Dimensionless> percentY) {
-        return run(() -> {
-            Alliance alliance = DriverStation.getAlliance().orElseThrow(); // TODO: Throws shouldn't be handled within the subsystem.
+        if (DriverStation.getAlliance().isEmpty()) {
+            return new Failure<>(new AllianceUnknown());
+        }
+
+        return new Success<>(run(() -> {
+            Alliance alliance = DriverStation.getAlliance().orElseThrow();
             Pose2d robotPosition = getState().Pose;
 
             Stream<ReefscapeApriltag> reefStationTags = mapper.getTags().stream()
@@ -415,9 +408,19 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
                 calculateLinearVelocityFromPercentage(percentY),
                 orientation
             );
-        });
+        }));
     }
     
+    private Angle getClosestAngleToRobotOrientation() {
+        Angle robotOrientation = getPigeon2().getYaw().getValue();
+        return CARDINAL_DIRECTIONS_OF_REEF.stream().min((angle1, angle2) -> {
+            Angle angleDifference1 = angle1.minus(robotOrientation);
+            Angle angleDifference2 = angle2.minus(robotOrientation);
+
+            return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1;
+        }).get();
+    }
+
     public Command AngleToReef(
         Supplier<Dimensionless> percentX,
         Supplier<Dimensionless> percentY
