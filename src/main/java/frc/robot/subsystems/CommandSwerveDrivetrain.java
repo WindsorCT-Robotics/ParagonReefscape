@@ -16,8 +16,8 @@ import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -63,7 +63,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Limelight.LimelightHelpers.PoseEstimate;
 import frc.robot.apriltag.AprilTagLocation;
@@ -402,15 +401,29 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
      * Get position of robot and if robot is on one side, make robot snap to coral station angle.
      */
     public Command MoveWithPercentagesAndAngleToCoralStation(
-        Supplier<Dimensionless> percentX, 
-        Supplier<Dimensionless> percentY,
-        Supplier<Dimensionless> percentRotationalRate) {
+        Supplier<Dimensionless> percentX,
+        Supplier<Dimensionless> percentY) {
         return run(() -> {
+            Alliance alliance = DriverStation.getAlliance().orElseThrow(); // TODO: Is there a better way for this?
             Pose2d robotPosition = getState().Pose;
-            Distance halfFieldWidth = mapper.getFieldWidth().div(2);
-            List<ReefscapeApriltag> tags = mapper.getTags();
-            fieldRelativeSetControlWithLockedAngle();
-        });        
+
+            Stream<ReefscapeApriltag> reefStationTags = mapper.getTags()
+            .stream()
+            .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.SOURCE);
+
+            Angle orientation = reefStationTags.min((tag1, tag2) -> {
+                Distance tagDifference1 = Meters.of(robotPosition.getY() - tag1.pose.getY());
+                Distance tagDifference2 = Meters.of(robotPosition.getY() - tag2.pose.getY());
+
+                return (tagDifference1.lt(tagDifference2)) ? -1 : 1;
+            }).get().pose.getRotation().getMeasureAngle();
+
+            fieldRelativeSetControlWithLockedAngle(
+                calculateLinearVelocityFromPercentage(percentX),
+                calculateLinearVelocityFromPercentage(percentY),
+                orientation
+            );
+        });
     }
 
     /*
