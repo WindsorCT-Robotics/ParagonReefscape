@@ -383,18 +383,14 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
                         .withTargetDirection(new Rotation2d(orientation.in(Degrees))));
     }
 
-    private Result<Angle, ClosestAngleError> getClosestAngleToRobotOrientation(List<Angle> angleList) {
-        if (angleList.isEmpty()) {
-            return new Failure<>(new NoAnglesFound());
-        }
-
+    private Angle getClosestAngleToRobotOrientation() {
         Angle robotOrientation = getPigeon2().getYaw().getValue();
-        return new Success<>(angleList.stream().min((angle1, angle2) -> {
+        return CARDINAL_DIRECTIONS_OF_REEF.stream().min((angle1, angle2) -> {
             Angle angleDifference1 = angle1.minus(robotOrientation);
             Angle angleDifference2 = angle2.minus(robotOrientation);
 
             return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1; // TODO: Is the condition correct?
-        }).orElseThrow());
+        }).get();
     }
 
     /*
@@ -407,8 +403,7 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
             Alliance alliance = DriverStation.getAlliance().orElseThrow(); // TODO: Is there a better way for this?
             Pose2d robotPosition = getState().Pose;
 
-            Stream<ReefscapeApriltag> reefStationTags = mapper.getTags()
-            .stream()
+            Stream<ReefscapeApriltag> reefStationTags = mapper.getTags().stream()
             .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.SOURCE);
 
             Angle orientation = reefStationTags.min((tag1, tag2) -> {
@@ -428,6 +423,7 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
 
     /*
      * Get closest angle to robot, make robot snap to closest angle.
+     * At certain threshold of controller will override angle to reef
      */
     public Command AngleToReef() {
         return run(() -> {
