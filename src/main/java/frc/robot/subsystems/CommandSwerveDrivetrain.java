@@ -382,7 +382,7 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
                         .withTargetDirection(new Rotation2d(orientation.in(Degrees))));
     }
     
-    public Result<Command, DriverStationError> AngleToCoralStation(
+    public Result<Command, DriverStationError> angleToCoralStation(
         Supplier<Dimensionless> percentX,
         Supplier<Dimensionless> percentY) {
         if (DriverStation.getAlliance().isEmpty()) {
@@ -414,14 +414,14 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
     private Angle getClosestAngleToRobotOrientation() {
         Angle robotOrientation = getPigeon2().getYaw().getValue();
         return CARDINAL_DIRECTIONS_OF_REEF.stream().min((angle1, angle2) -> {
-            Angle angleDifference1 = angle1.minus(robotOrientation);
+            Angle angleDifference1 = angle1.minus(robotOrientation); // TODO: Check if this is the correct way to get angle differences and comparison.
             Angle angleDifference2 = angle2.minus(robotOrientation);
 
             return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1;
         }).get();
     }
 
-    public Command AngleToReef(
+    public Command angleToReef(
         Supplier<Dimensionless> percentX,
         Supplier<Dimensionless> percentY
     ) {
