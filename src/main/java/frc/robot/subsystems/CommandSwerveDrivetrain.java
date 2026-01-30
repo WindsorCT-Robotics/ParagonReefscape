@@ -392,15 +392,12 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
             return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1; // TODO: Is the condition correct?
         }).get();
     }
-
-    /*
-     * Get position of robot and if robot is on one side, make robot snap to coral station angle.
-     */
+    
     public Command AngleToCoralStation(
         Supplier<Dimensionless> percentX,
         Supplier<Dimensionless> percentY) {
         return run(() -> {
-            Alliance alliance = DriverStation.getAlliance().orElseThrow(); // TODO: Is there a better way for this?
+            Alliance alliance = DriverStation.getAlliance().orElseThrow(); // TODO: Throws shouldn't be handled within the subsystem.
             Pose2d robotPosition = getState().Pose;
 
             Stream<ReefscapeApriltag> reefStationTags = mapper.getTags().stream()
@@ -420,14 +417,18 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
             );
         });
     }
-
-    /*
-     * Get closest angle to robot, make robot snap to closest angle.
-     * At certain threshold of controller will override angle to reef
-     */
-    public Command AngleToReef() {
+    
+    public Command AngleToReef(
+        Supplier<Dimensionless> percentX,
+        Supplier<Dimensionless> percentY
+    ) {
         return run(() -> {
-
+            Angle orientation = getClosestAngleToRobotOrientation();
+            fieldRelativeSetControlWithLockedAngle(
+                calculateLinearVelocityFromPercentage(percentX),
+                calculateLinearVelocityFromPercentage(percentY),
+                orientation
+            );
         });
     }
 
