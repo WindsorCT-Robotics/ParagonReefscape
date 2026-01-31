@@ -1,13 +1,10 @@
 package frc.robot.apriltag;
 
-import static edu.wpi.first.units.Units.Meters;
-
 import java.util.List;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public final class ReefscapeAprilTagFieldLayoutMapper {
@@ -52,13 +49,5 @@ public final class ReefscapeAprilTagFieldLayoutMapper {
         return layout.getTags().stream()
                 .map(ReefscapeApriltag.class::cast)
                 .toList();
-    }
-
-    public Distance getFieldWidth() {
-        return Meters.of(layout.getFieldWidth());
-    }
-
-    public Distance getFieldLength() {
-        return Meters.of(layout.getFieldLength());
     }
 }
