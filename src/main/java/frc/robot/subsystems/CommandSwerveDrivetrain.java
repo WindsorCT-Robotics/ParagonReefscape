@@ -37,6 +37,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -414,8 +415,15 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
     private Angle getClosestAngleToRobotOrientation() {
         Angle robotOrientation = getPigeon2().getYaw().getValue();
         return CARDINAL_DIRECTIONS_OF_REEF.stream().min((angle1, angle2) -> {
-            Angle angleDifference1 = angle1.minus(robotOrientation); // TODO: Check if this is the correct way to get angle differences and comparison.
-            Angle angleDifference2 = angle2.minus(robotOrientation);
+            Angle angleDifference1 = Radians.of(
+                Math.abs(
+                    MathUtil.angleModulus(angle1.minus(robotOrientation).in(Radians))
+            ));
+
+            Angle angleDifference2 = Radians.of(
+                Math.abs(
+                    MathUtil.angleModulus(angle2.minus(robotOrientation).in(Radians))
+            ));
 
             return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1;
         }).get();
