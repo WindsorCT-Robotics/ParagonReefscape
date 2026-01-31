@@ -13,6 +13,7 @@ public class LEDSubsystem extends SubsystemBase {
     private final IAddressableLED led;
     public final Trigger isLEDOn;
 
+    
     public LEDSubsystem(String subsystemName, IAddressableLED led) {
         super(subsystemName);
 
@@ -31,6 +32,11 @@ public class LEDSubsystem extends SubsystemBase {
         builder.addStringArrayProperty("LED Colors", () -> Arrays.stream(led.getColors()).map(Color::toString).toArray(String[]::new), null);
     }
 
+    /**
+     * Assigns each LED colors.
+     * @param color
+     * @return
+     */
     public Command setAllLEDColor(Color color) {
         return runOnce(() ->  led.setAllLEDColor(color));
     }
