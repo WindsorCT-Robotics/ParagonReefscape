@@ -17,6 +17,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -24,6 +25,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -35,6 +37,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -84,9 +87,22 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
     private static final PIDConstants TRANSLATION_PID = new PIDConstants(10.0, 0.0, 0.0);
     private static final PIDConstants ROTATION_PID = new PIDConstants(7.0, 0.0, 0.0);
 
+    private static final PIDConstants DEFAULT_TARGET_DIRECTION_PID = new PIDConstants(7, 0, 0);
+
+    private static final List<Angle> CARDINAL_DIRECTIONS_OF_REEF = List.of(
+        Degrees.of(0),
+        Degrees.of(60),
+        Degrees.of(120), 
+        Degrees.of(180), 
+        Degrees.of(240), 
+        Degrees.of(300)
+    );
+
+    public sealed interface DriverStationError permits AllianceUnknown { }
+
     public sealed interface AprilTagSearchError permits NoAprilTagsFound, AllianceUnknown { }
     public record NoAprilTagsFound() implements AprilTagSearchError { }
-    public record AllianceUnknown() implements AprilTagSearchError { }
+    public record AllianceUnknown() implements AprilTagSearchError, DriverStationError { }
 
     private final SwerveRequest.ApplyRobotSpeeds pathDriveController = new SwerveRequest.ApplyRobotSpeeds();
     private static final LinearVelocity TOF_SPEED = MetersPerSecond.of(0.6);
@@ -128,6 +144,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
 
     private final ReefscapeAprilTagFieldLayoutMapper mapper;
 
+    private final Stream<ReefscapeApriltag> reefStationTags;
+
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>
@@ -158,6 +176,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
         this.mapper = mapper;
+        reefStationTags = mapper.getTags().stream()
+        .filter(tag -> tag.location == AprilTagLocation.SOURCE);
     }
 
     /**
@@ -194,6 +214,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
         this.mapper = mapper;
+        reefStationTags = mapper.getTags().stream()
+        .filter(tag -> tag.location == AprilTagLocation.SOURCE);
     }
 
     /**
@@ -244,6 +266,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
         this.mapper = mapper;
+        reefStationTags = mapper.getTags().stream()
+        .filter(tag -> tag.location == AprilTagLocation.SOURCE);
     }
 
     @Override
@@ -325,18 +349,6 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         FIELD_RELATIVE
     }
 
-    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
-            Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
-        switch (relativeReference) {
-            case ROBOT_RELATIVE:
-                return robotRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
-            case FIELD_RELATIVE:
-                return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
-            default:
-                throw new IllegalArgumentException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
-        }
-    }
-
     private Command robotRelativeSwerveRequest(
         Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
         Supplier<AngularVelocity> rotationalRate) {
@@ -355,6 +367,85 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
                         .withVelocityX(velocityX.get())
                         .withVelocityY(velocityY.get())
                         .withRotationalRate(rotationalRate.get())));
+    }
+
+    public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
+            Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
+        switch (relativeReference) {
+            case ROBOT_RELATIVE:
+                return robotRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            case FIELD_RELATIVE:
+                return fieldRelativeSwerveRequest(velocityX, velocityY, rotationalRate);
+            default:
+                throw new IllegalArgumentException("Unable to determine the SwerveRequest return. Illegal RelativeReference: " + relativeReference);
+        }
+    }
+
+    private void fieldRelativeSetControlWithLockedAngle(
+        LinearVelocity velocityX, LinearVelocity velocityY, Angle orientation) {
+        setControl(
+                new FieldCentricFacingAngle()
+                        .withVelocityX(velocityX)
+                        .withVelocityY(velocityY)
+                        .withHeadingPID(DEFAULT_TARGET_DIRECTION_PID.kP, DEFAULT_TARGET_DIRECTION_PID.kI, DEFAULT_TARGET_DIRECTION_PID.kD)
+                        .withTargetDirection(new Rotation2d(orientation.in(Degrees))));
+    }
+    
+    public Result<Command, DriverStationError> angleToCoralStation(
+        Supplier<Dimensionless> percentX,
+        Supplier<Dimensionless> percentY) {
+        if (DriverStation.getAlliance().isEmpty()) {
+            return new Failure<>(new AllianceUnknown());
+        }
+
+        return new Success<>(run(() -> {
+            Alliance alliance = DriverStation.getAlliance().orElseThrow();
+            Pose2d robotPosition = getState().Pose;
+
+            Angle orientation = reefStationTags.filter( tag -> tag.alliance.equals(alliance)).min((tag1, tag2) -> {
+                Distance tagDifference1 = Meters.of(robotPosition.getY() - tag1.pose.getY());
+                Distance tagDifference2 = Meters.of(robotPosition.getY() - tag2.pose.getY());
+
+                return (tagDifference1.lt(tagDifference2)) ? -1 : 1;
+            }).get().pose.getRotation().getMeasureAngle();
+
+            fieldRelativeSetControlWithLockedAngle(
+                calculateLinearVelocityFromPercentage(percentX),
+                calculateLinearVelocityFromPercentage(percentY),
+                orientation
+            );
+        }));
+    }
+    
+    private Angle getClosestAngleToRobotOrientation() {
+        Angle robotOrientation = getPigeon2().getYaw().getValue();
+        return CARDINAL_DIRECTIONS_OF_REEF.stream().min((angle1, angle2) -> {
+            Angle angleDifference1 = Radians.of(
+                Math.abs(
+                    MathUtil.angleModulus(angle1.minus(robotOrientation).in(Radians))
+            ));
+
+            Angle angleDifference2 = Radians.of(
+                Math.abs(
+                    MathUtil.angleModulus(angle2.minus(robotOrientation).in(Radians))
+            ));
+
+            return (angleDifference1.in(Degrees) < angleDifference2.in(Degrees)) ? -1 : 1;
+        }).get();
+    }
+
+    public Command angleToReef(
+        Supplier<Dimensionless> percentX,
+        Supplier<Dimensionless> percentY
+    ) {
+        return run(() -> {
+            Angle orientation = getClosestAngleToRobotOrientation();
+            fieldRelativeSetControlWithLockedAngle(
+                calculateLinearVelocityFromPercentage(percentX),
+                calculateLinearVelocityFromPercentage(percentY),
+                orientation
+            );
+        });
     }
 
     private LinearVelocity calculateLinearVelocityFromPercentage(Supplier<Dimensionless> percent) {
