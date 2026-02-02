@@ -144,6 +144,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
 
     private final ReefscapeAprilTagFieldLayoutMapper mapper;
 
+    private final Stream<ReefscapeApriltag> reefStationTags;
+
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>
@@ -174,6 +176,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
         this.mapper = mapper;
+        reefStationTags = mapper.getTags().stream()
+        .filter(tag -> tag.location == AprilTagLocation.SOURCE);
     }
 
     /**
@@ -210,6 +214,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
         this.mapper = mapper;
+        reefStationTags = mapper.getTags().stream()
+        .filter(tag -> tag.location == AprilTagLocation.SOURCE);
     }
 
     /**
@@ -260,6 +266,8 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         CommandScheduler.getInstance().registerSubsystem(this);
         configureAutobuilder();
         this.mapper = mapper;
+        reefStationTags = mapper.getTags().stream()
+        .filter(tag -> tag.location == AprilTagLocation.SOURCE);
     }
 
     @Override
@@ -394,10 +402,7 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
             Alliance alliance = DriverStation.getAlliance().orElseThrow();
             Pose2d robotPosition = getState().Pose;
 
-            Stream<ReefscapeApriltag> reefStationTags = mapper.getTags().stream()
-            .filter(tag -> tag.alliance == alliance && tag.location == AprilTagLocation.SOURCE);
-
-            Angle orientation = reefStationTags.min((tag1, tag2) -> {
+            Angle orientation = reefStationTags.filter( tag -> tag.alliance.equals(alliance)).min((tag1, tag2) -> {
                 Distance tagDifference1 = Meters.of(robotPosition.getY() - tag1.pose.getY());
                 Distance tagDifference2 = Meters.of(robotPosition.getY() - tag2.pose.getY());
 
