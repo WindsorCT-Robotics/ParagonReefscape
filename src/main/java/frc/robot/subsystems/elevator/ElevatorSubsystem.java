@@ -70,6 +70,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         }
     }
     
+    /**
+     * Moves the elevator to a specific position and <b>HOLDS THE POSITION<b>.
+     * @param position
+     * @return
+     */
     public Command move(Position position) {
         return move(() -> getDistance(position));
     }
@@ -93,22 +98,43 @@ public class ElevatorSubsystem extends SubsystemBase {
         runOnce(() -> motor.travelTo(Meters.of(heightMeters))).schedule();
     }
 
+    /**
+     * Resets the motor's rotation to 0
+     * @return
+     */
     public Command reset() {
         return runOnce(motor::resetRelativeEncoder);
     }
     
+    /**
+     * Holds the motor at its current position.
+     * @return
+     */
     public Command hold() {
         return runOnce(motor::hold);
     }
 
-    public Command stop() {
+    /**
+         * @return
+         * Stops the motor at its current position.
+         */
+        public Command stop() {
         return runOnce(motor::stop);
     }
 
+     /**
+      * Moves the elevator to a specific position and <b>DOESN'T HOLD THE POSITION<b>.
+     * @param position
+     * @return
+     */
     public Command translateElevator(Position position) {
         return run(() -> move(position));
     }
     
+    /**
+     * Elevator goes down untill it hits its limit switch, and resets the encoder once the limit switch is triggered.
+     * @return
+     */
     public Command home() {
         return run(() -> motor.home())
             .until(motor::isAtReverseLimit)

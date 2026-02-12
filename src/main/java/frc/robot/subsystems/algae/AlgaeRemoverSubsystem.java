@@ -13,6 +13,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AlgaeRemoverSubsystem extends SubsystemBase {
+    /**
+     * A number that represents the targetDutyCycle.
+     */
     private Dimensionless targetDutyCycle;
     private IDutyMotor motor;
     private static final Dimensionless DEFAULT_SPEED = Percent.of(70); // TODO: Determine if speed needs to be negated
@@ -38,6 +41,11 @@ public class AlgaeRemoverSubsystem extends SubsystemBase {
         setSpeed(() -> Percent.of(duty)).schedule();
     }
 
+    /**
+     * Sets the speed of dutyCycle
+     * @param duty
+     * @return dutyCycle
+     */
     private Command setSpeed(Supplier<Dimensionless> duty) {
         return run(() -> {
             Dimensionless dutyCycle = duty.get();

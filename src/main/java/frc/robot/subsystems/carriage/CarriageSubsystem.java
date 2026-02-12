@@ -37,6 +37,12 @@ public class CarriageSubsystem extends SubsystemBase {
         RIGHT
     }
 
+    /**
+     * Controls the transportation of coral.
+     * @param subsystemName
+     * @param rollerMotors
+     * @param beamBreak
+     */
     public CarriageSubsystem(String subsystemName, IDifferentialMotors rollerMotors, IBeamBreak beamBreak) {
         super(subsystemName);
         this.rollerMotors = rollerMotors;
@@ -51,18 +57,34 @@ public class CarriageSubsystem extends SubsystemBase {
         builder.addBooleanProperty("Outtake Beam Breaker", this::isBeamBroken, null);
     }
     
+    /**
+     * The rollers will intake the coral into the carriage
+     * @return
+     */
     public Command loadCoral() {
         return runEnd(this::moveRollers, rollerMotors::stop).until(beamBroken);
     }
     
+    /**
+     * The rollers will push coral towards the carriage hopper until the beam sensor no longer dects the coral.
+     * @return
+     */
     public Command unloadCoral() {
         return runEnd(this::reverseRollers, rollerMotors::stop).until(beamIntact);
     }
 
+    /** 
+     * The coral will be pushed towards the carriage hopper until the sensor no longer detects the coral, then pulled in towards the intake until the sensor detects the coral.
+     * @return
+     */
     public Command reloadCoral() {
         return unloadCoral().andThen(loadCoral());
     }
     
+    /**
+     * The rollers will push out the coral outside of the outtake.
+     * @param direction Controls what direction the coral is shot.
+     */
     public Command scoreCoral(CamberDirection direction) {
         return runEnd(() -> {
             switch (direction) {
@@ -79,6 +101,10 @@ public class CarriageSubsystem extends SubsystemBase {
         }, rollerMotors::stop).until(beamIntact);
     }
 
+    /**
+     * Resets the motor encoder to 0 rotations.
+     * @return
+     */
     public Command resetMotorEncoder() {
         return runOnce(rollerMotors::resetRelativeEncoder);
     }
@@ -91,11 +117,17 @@ public class CarriageSubsystem extends SubsystemBase {
         rollerMotors.move(DEFAULT_SPEED.unaryMinus());
     }
 
+    /**
+     * @return true when something is detected in the sensor's path.
+     */
     @AutoLogOutput(key = "Sensor/OuttakeBeam")
     private boolean isBeamBroken() {
         return beamBreak.isBeamBroken();
     }
     
+    /**
+     * @return true when something is no longer detected in the sensor's path.
+     */
     private boolean isBeamIntact() {
         return !beamBreak.isBeamBroken();
     }

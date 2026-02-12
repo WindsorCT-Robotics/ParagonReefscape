@@ -38,6 +38,9 @@ public class VisionSubsystem extends SubsystemBase {
                 , fieldWidth));
     }
 
+    /**
+     * @return Handles vision errors and calculates robot pose estimation on field
+     */
     private Result<PoseEstimate, VisionError> estimatePosition() {
         PoseEstimate result;
 
@@ -54,6 +57,10 @@ public class VisionSubsystem extends SubsystemBase {
         return new Success<>(result);
     }
 
+    /**
+     * @return Result of calling estimatePosition function
+     * 
+     */
     public Supplier<Result<PoseEstimate, VisionError>> positionEstimateSupplier() {
         return this::estimatePosition;
     }

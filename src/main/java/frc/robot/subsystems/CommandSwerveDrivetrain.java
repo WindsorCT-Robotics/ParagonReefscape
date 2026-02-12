@@ -308,6 +308,10 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         }
     }
 
+    // --------------------------------------------------------------------
+    /**
+     * @return True if branch alignment is left to sensor, False if right to sensor
+     */
     private boolean isBranchAligned(BranchAlignment alignment) {
         Distance distance = (alignment == BranchAlignment.ALIGN_LEFT)
                 ? leftTofSensor.getDistance()
@@ -315,7 +319,9 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
 
         return distance.gte(THRESHOLD_DISTANCE);
     }
-
+    /**
+     * Stops the robot
+     */
     private Command stop() {
         return runOnce(() -> setControl(new RobotCentric()));
     }
@@ -324,7 +330,9 @@ public class CommandSwerveDrivetrain extends GeneratedCommandSwerveDrivetrain im
         ROBOT_RELATIVE,
         FIELD_RELATIVE
     }
-
+    /**
+     * 
+     */
     public Command move(Supplier<LinearVelocity> velocityX, Supplier<LinearVelocity> velocityY,
             Supplier<AngularVelocity> rotationalRate, RelativeReference relativeReference) {
         switch (relativeReference) {
